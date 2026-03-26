@@ -167,29 +167,6 @@ function SchlingelInc.Rules:AutoDeclineDuels()
 	CancelDuel()
 end
 
--- Notify guild when a Paladin uses Divine Shield and then the Hearthstone
-function SchlingelInc.Rules:CheckDivineHearth(event, _, _, spellId)
-    local _, englishClass = UnitClass("player")
-
-    if englishClass ~= "PALADIN" then
-        return
-    end
-
-    local hasBuff = C_UnitAuras.GetPlayerAuraBySpellID(1020) or C_UnitAuras.GetPlayerAuraBySpellID(642) -- Divine Shield (Rank 1 and 2)
-
-    if spellId == 8690 or spellId == 1265709 or spellId == 348699 then
-        if hasBuff then
-            local playerName = UnitName("player") or "Unbekannt"
-            local handle = SchlingelInc:GetDiscordHandle()
-            local playerDisplay = (handle and handle ~= "") and (playerName .. " (" .. handle .. ")") or playerName
-            local msg = "SCHANDE! " .. playerDisplay .. " benutzt Bubble-Ruhestein"
-            if IsInGuild() then
-                SendChatMessage(msg, "GUILD")
-            end
-        end
-    end
-end
-
 -- Initialize rules
 function SchlingelInc.Rules:Initialize()
     SchlingelInc.Rules:LoadFromGuildInfo()
@@ -236,11 +213,6 @@ function SchlingelInc.Rules:Initialize()
 		function()
 			SchlingelInc.Rules:ProhibitGroupingWithNonGuildMembers()
 		end, 0, "RaidRosterCheck")
-
-    SchlingelInc.EventManager:RegisterHandler("UNIT_SPELLCAST_START",
-        function(event, _, _, _, spellId)
-            SchlingelInc.Rules:CheckDivineHearth(event, _, _, _, spellId)
-        end, 0, "DivineHearthCheck")
 
     SchlingelInc.EventManager:RegisterHandler("DUEL_REQUESTED",
 		function()

@@ -31,7 +31,7 @@ function CheckForMilestone(level)
 end
 
 function SchlingelInc.LevelUps:CheckForCap(level, announce)
-	if SchlingelInc.Rules.CurrentCap == 0 then return end
+	if SchlingelInc.Rules.CurrentCap == 0 or level == SchlingelInc.Constants.MAX_LEVEL then return end
 	if level >= SchlingelInc.Rules.CurrentCap then
 		local playerExp = UnitXP("player")
 		local levelUpXP = UnitXPMax("player")

@@ -1,3 +1,8 @@
+# 3.2.2
+
+- Bubble-Ruhestein-Beschämung entfernt: Paladine werden nicht mehr im Gildenchat angezeigt, wenn sie Divine Shield + Ruhestein benutzen
+- Cap-Check wird übersprungen, wenn der Spieler bereits auf Max-Level ist
+
 # 3.2.1
 
 - Bugfix: PvP-Todesmeldungen wurden durch einen Operator-Fehler nicht korrekt unterdrückt – wer am Cap im BG gestorben ist, hat trotzdem eine Meldung bekommen.
