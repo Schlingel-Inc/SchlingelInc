@@ -1,4 +1,4 @@
-# 3.2.2
+# 3.2.3
 
 - Bubble-Ruhestein-Beschämung entfernt: Paladine werden nicht mehr im Gildenchat angezeigt, wenn sie Divine Shield + Ruhestein benutzen
 - Cap-Check wird übersprungen, wenn der Spieler bereits auf Max-Level ist
