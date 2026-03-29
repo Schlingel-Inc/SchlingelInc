@@ -28,63 +28,6 @@ function SchlingelInc.Death:AddLogEntry(entry)
 	end
 end
 
--- Parse guild chat death messages
--- Format: "Name der/die Class ist mit Level X in Zone gestorben. Schande!"
--- Format with handle: "Name (DiscordHandle) der/die Class ist mit Level X in Zone gestorben. Schande!"
--- Format with rank: "Ewiger Schlingel Name, der/die Class ist mit Level X in Zone gestorben. Schande!"
--- Format with rank and handle: "Ewiger Schlingel Name (DiscordHandle), der/die Class ist mit Level X in Zone gestorben. Schande!"
--- Format with cause: "... Gestorben an Source"
--- Format with last words: '... Die letzten Worte: "text"'
-local function parseGuildDeathMessage(message)
-	local name, discordHandle, pronoun, className, level, zone, cause, lastWords
-
-	-- Extract optional ' Die letzten Worte: "..."' suffix
-	lastWords = message:match(' Die letzten Worte: "(.+)"$')
-	local cleanMessage = message:gsub('%. Die letzten Worte: ".-"$', "")
-
-	-- Extract optional " Gestorben an [source]" suffix
-	cause = cleanMessage:match(" Gestorben an (.+)$")
-	if cause then
-		-- Remove the "Gestorben an" part for further parsing
-		cleanMessage = cleanMessage:gsub(" Gestorben an .+$", "")
-	end
-
-	-- Try format with rank and handle: "Ewiger Schlingel Name (Handle), der/die Class ist mit Level X in Zone gestorben. Schande!"
-	name, discordHandle, pronoun, className, level, zone = cleanMessage:match("^Ewiger Schlingel ([^%(]+) %(([^%)]+)%), (d[ei][re]) (.+) ist mit Level (%d+) in (.+) gestorben%. Schande!$")
-
-	-- Try format with rank without handle: "Ewiger Schlingel Name, der/die Class ist mit Level X in Zone gestorben. Schande!"
-	if not name then
-		name, pronoun, className, level, zone = cleanMessage:match("^Ewiger Schlingel ([^,]+), (d[ei][re]) (.+) ist mit Level (%d+) in (.+) gestorben%. Schande!$")
-		discordHandle = nil
-	end
-
-	-- Try format with handle: "Name (Handle) der/die Class ist mit Level X in Zone gestorben. Schande!"
-	if not name then
-		name, discordHandle, pronoun, className, level, zone = cleanMessage:match("^([^%(]+) %(([^%)]+)%) (d[ei][re]) (.+) ist mit Level (%d+) in (.+) gestorben%. Schande!$")
-	end
-
-	-- Try standard format without handle: "Name der/die Class ist mit Level X in Zone gestorben. Schande!"
-	if not name then
-		name, pronoun, className, level, zone = cleanMessage:match("^(.+) (d[ei][re]) (.+) ist mit Level (%d+) in (.+) gestorben%. Schande!$")
-		discordHandle = nil
-	end
-
-	if not name or not level or not zone then return nil end
-
-	-- Trim whitespace from name
-	name = name:match("^%s*(.-)%s*$")
-
-	return {
-		name = name,
-		class = className,
-		level = tonumber(level),
-		zone = zone,
-		cause = cause,
-		lastWords = lastWords,
-		discordHandle = discordHandle,
-		pronoun = pronoun,
-	}
-end
 
 -- Process a death (from guild chat parsing or addon messages)
 local function processDeath(data, isOwnDeath)
@@ -237,8 +180,6 @@ function SchlingelInc.Death:Initialize()
 			}
 			processDeath(deathData, true)
 
-			-- Clear legacy guild note and broadcast updated profile with new death count
-			SchlingelInc:ClearGuildNote()
 			C_Timer.After(2, function()
 				SchlingelInc.GuildProfiles:Broadcast()
 			end)
@@ -257,15 +198,6 @@ function SchlingelInc.Death:Initialize()
 		-- Track last words for own messages
 		if senderBase == playerName then
 			SchlingelInc.Death.lastChatMessage = msg
-		end
-
-		-- Parse death messages from guild chat (for other players' deaths)
-		local deathData = parseGuildDeathMessage(msg)
-		if deathData then
-			-- Only process if it's not our own death (already processed in PLAYER_DEAD)
-			if deathData.name ~= playerName then
-				processDeath(deathData, false)
-			end
 		end
 	end, 0, "LastWordsGuild")
 

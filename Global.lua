@@ -247,29 +247,13 @@ function SchlingelInc:SanitizeText(text)
     return text
 end
 
--- Returns a formatted prefix containing the guild public note (Gildeninfo) for a sender.
+-- Returns a formatted prefix containing the Discord handle for a sender.
 function SchlingelInc:GetGuildPublicNotePrefix(sender)
     if not sender then return "" end
-    -- Ensure roster cache is reasonably fresh
-    if not SchlingelInc.GuildCache:IsValid() then
-        SchlingelInc.GuildCache:RequestUpdate()
-    end
-    local member = SchlingelInc.GuildCache:GetMemberInfo(sender)
-    if member and member.publicNote and member.publicNote ~= "" then
-        local note = SchlingelInc:SanitizeText(member.publicNote)
-
-        note = note:gsub("%b()", function(par)
-            if par:lower():find("tode") then
-                return ""
-            end
-            return par
-        end)
-
-        note = note:gsub("[Tt]ode[:%s%d]*", "")
-        -- Trim whitespace
-        note = note:match("^%s*(.-)%s*$") or note
-        if note == "" then return "" end
-        return SchlingelInc.colorCode .. "[" .. note .. "]|r "
+    local shortName = SchlingelInc:RemoveRealmFromName(sender)
+    local profile = SchlingelGuildProfileCache and SchlingelGuildProfileCache[shortName]
+    if profile and profile.discord and profile.discord ~= "" then
+        return SchlingelInc.colorCode .. "[" .. SchlingelInc:SanitizeText(profile.discord) .. "]|r "
     end
     return ""
 end

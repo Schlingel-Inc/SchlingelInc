@@ -1,3 +1,9 @@
+# 3.5.1
+
+- Bugfix: Guild-chat-Parser für Todesmeldungen entfernt – Tode werden jetzt ausschließlich über Addon-Messages verarbeitet, was doppelte Einträge und Fehlzuordnungen verhindert
+- Bugfix: Gildennotiz wird beim Tod nicht mehr automatisch geleert
+- Bugfix: Discord-Handle-Anzeige im Chat liest jetzt direkt aus dem Profil-Cache statt aus der Gildennotiz
+
 # 3.5.0
 
 - Neue Gildenansicht: zeigt alle Gildenmitglieder mit Level, Rang, Zone, Rolle, Berufen und Todesfällen auf einen Blick
