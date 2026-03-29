@@ -95,6 +95,37 @@ function SchlingelInc.Global:Initialize()
 					if capName and capNum and SchlingelInc:IsValidGuildSender(sender) then
 						SchlingelInc.LevelUpAnnouncement:ShowCap(capName, tonumber(capNum))
 					end
+
+					-- Structured death message (guild chat parsing remains as fallback)
+					if message:match("^DEATH|") and SchlingelInc:IsValidGuildSender(sender) then
+						local parts = {}
+						for part in (message .. "|"):gmatch("([^|]*)|?") do
+							table.insert(parts, part)
+						end
+						if #parts >= 5 then
+							local senderShort = SchlingelInc:RemoveRealmFromName(sender)
+							if senderShort ~= UnitName("player") then
+								local deathData = {
+									name    = parts[2],
+									class   = parts[3],
+									level   = tonumber(parts[4]),
+									zone    = parts[5],
+									cause   = (parts[6] and parts[6] ~= "") and parts[6] or nil,
+									pronoun = SchlingelInc.Constants.PRONOUNS[2] or "der",
+								}
+								local profile = SchlingelGuildProfileCache and
+									SchlingelGuildProfileCache[senderShort]
+								if profile then
+									deathData.discordHandle = profile.discord
+									profile.deaths = (profile.deaths or 0) + 1
+								end
+								SchlingelInc.Death.ProcessDeath(deathData)
+							end
+						end
+					end
+
+					-- Profile sync messages
+					SchlingelInc.GuildProfiles:HandleMessage(sender, message)
 				end
 			end
 		end, 0, "VersionChecker")

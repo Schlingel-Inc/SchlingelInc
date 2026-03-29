@@ -86,7 +86,7 @@ local function parseGuildDeathMessage(message)
 	}
 end
 
--- Process a death (from guild chat parsing)
+-- Process a death (from guild chat parsing or addon messages)
 local function processDeath(data, isOwnDeath)
 	-- Create unique ID to prevent duplicates
 	local deathID = data.name .. "-" .. data.level .. "-" .. data.zone .. "-" .. time()
@@ -122,6 +122,11 @@ local function processDeath(data, isOwnDeath)
 			data.name, pronoun, data.class, data.level, data.zone)
 	end
 	SchlingelInc.DeathAnnouncement:ShowDeathMessage(messageString)
+end
+
+-- Public wrapper for use from other modules (e.g. Global.lua addon message handler)
+SchlingelInc.Death.ProcessDeath = function(data)
+	processDeath(data, false)
 end
 
 -- Initializes the Death module and registers events
@@ -205,6 +210,18 @@ function SchlingelInc.Death:Initialize()
 				SendChatMessage(messageString, "GUILD")
 				CharacterDeaths = CharacterDeaths + 1
 				lastOwnDeathSendTime = now
+
+				-- Structured addon message for other addon users (chat parsing stays as fallback)
+				-- Format: DEATH|name|class|level|zone|cause
+				local addonDeathMsg = table.concat({
+					"DEATH",
+					name,
+					class,
+					tostring(level),
+					zone,
+					deathCause or "",
+				}, "|")
+				C_ChatInfo.SendAddonMessage(SchlingelInc.prefix, addonDeathMsg, "GUILD")
 			end
 
 			-- Process own death immediately (add to log with cause, last words, and handle)
@@ -220,11 +237,11 @@ function SchlingelInc.Death:Initialize()
 			}
 			processDeath(deathData, true)
 
-			-- Update guild note with new death count
-			local handle = SchlingelInc:GetDiscordHandle()
-			if handle and handle ~= "" then
-				SchlingelInc:UpdateGuildNote(handle, CharacterDeaths)
-			end
+			-- Clear legacy guild note and broadcast updated profile with new death count
+			SchlingelInc:ClearGuildNote()
+			C_Timer.After(2, function()
+				SchlingelInc.GuildProfiles:Broadcast()
+			end)
 		end, 0, "DeathTracker")
 
 	-- Chat message tracker for last words

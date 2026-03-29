@@ -2,10 +2,10 @@
 ## Title: Schlingel Inc
 ## Notes: Visit DerHauges Discord for more information: https://discord.gg/KXkyUZW
 ## Author: Cricksu, Pudi, Canasterzaster
-## Version: 3.2.3
+## Version: 3.5.0
 ## IconTexture: Interface\AddOns\SchlingelInc\media\graphics\SI_Transp_512_x_512_px.tga
-## SavedVariablesPerCharacter: CharacterDeaths, SchlingelOptionsDB
-## SavedVariables: DiscordHandle, Pronouns
+## SavedVariablesPerCharacter: CharacterDeaths, SchlingelOptionsDB, SchlingelOwnProfile
+## SavedVariables: DiscordHandle, Pronouns, SchlingelGuildProfileCache
 
 # Notwendiges externe Abhängigkeiten aus dem Lib Folder
 ## OptionalDeps: LibStub, CallbackHandler-1.0, LibDataBroker-1.1, LibDBIcon-1.0
@@ -22,6 +22,7 @@ MiniMapIcon.lua
 Constants.lua
 EventManager.lua
 GuildCache.lua
+GuildProfiles.lua
 Tooltip.lua
 Debug.lua
 Options.lua
@@ -38,6 +39,11 @@ interfaces\popups\GuildInvites.lua
 interfaces\InactivityWindow.lua
 interfaces\popups\PvPFrame.lua
 interfaces\DiscordHandlePrompt.lua
-interfaces\GuildJoinPrompt.lua
+interfaces\SetupWizard.lua
+interfaces\GuildPanel\init.lua
+interfaces\GuildPanel\Data.lua
+interfaces\GuildPanel\Rows.lua
+interfaces\GuildPanel\FilterPanel.lua
+interfaces\GuildPanel\Frame.lua
 Death.lua
 Main.lua

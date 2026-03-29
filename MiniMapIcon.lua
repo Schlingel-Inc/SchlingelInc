@@ -13,7 +13,11 @@ if LDB then -- Only proceeds if LibDataBroker is available
         icon = "Interface\\AddOns\\SchlingelInc\\media\\graphics\\icon-minimap.tga", -- Path to icon
         OnClick = function(clickedFrame, button)
             if button == "LeftButton" then
-                SchlingelInc:ToggleDeathLogWindow()
+                if IsShiftKeyDown() then
+                    SchlingelInc:ToggleDeathLogWindow()
+                else
+                    SchlingelInc.GuildPanel:Toggle()
+                end
             elseif button == "RightButton" then
                 if CanGuildInvite() then
                     if SchlingelInc.ToggleInactivityWindow then
@@ -31,7 +35,8 @@ if LDB then -- Only proceeds if LibDataBroker is available
             GameTooltip:SetOwner(selfFrame, "ANCHOR_RIGHT")
             GameTooltip:AddLine(SchlingelInc.name, 1, 0.7, 0.9)
             GameTooltip:AddLine("Version: " .. (SchlingelInc.version or "Unknown"), 1, 1, 1)
-            GameTooltip:AddLine("Linksklick: Tode anzeigen", 1, 1, 1)
+            GameTooltip:AddLine("Linksklick: Gilde anzeigen", 1, 1, 1)
+            GameTooltip:AddLine("Shift+Linksklick: Tode anzeigen", 0.8, 0.8, 0.8)
             if CanGuildInvite() then
                 GameTooltip:AddLine("Rechtsklick: Inaktive Mitglieder", 0.8, 0.8, 0.8)
             elseif not IsInGuild() then

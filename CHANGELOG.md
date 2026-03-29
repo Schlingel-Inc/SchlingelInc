@@ -1,3 +1,15 @@
+# 3.5.0
+
+- Neue Gildenansicht: zeigt alle Gildenmitglieder mit Level, Rang, Zone, Rolle, Berufen und Todesfällen auf einen Blick
+- Spieler-Profile: jedes Mitglied kann Rolle und Berufe hinterlegen – die Daten werden automatisch mit allen anderen Addon-Nutzern synchronisiert
+- Einrichtungsassistent: beim ersten Start führt ein Assistent durch die Eingabe von Rolle, Berufen und Discord-Handle
+- Berufsanzeige einheitlich auf Deutsch – unabhängig davon, ob der Spieler einen deutschen oder englischen Client nutzt
+- Gildenansicht: Klick auf eine Spaltenüberschrift sortiert die Liste auf- oder absteigend
+- Gildenansicht: Offline-Mitglieder können per Schalter ausgeblendet werden
+- Gildenansicht: Filtermenü zum Suchen nach Name, Rolle und Beruf
+- Gildenansicht: Rechtsklick auf ein Mitglied öffnet das gewohnte WoW-Kontextmenü mit Flüstern, Einladen, Inspizieren usw.
+- Bugfix: Einrichtungsassistent wurde bei manchen Spielern fälschlicherweise beim Login angezeigt, obwohl sie bereits in der Gilde waren
+
 # 3.2.3
 
 - Bubble-Ruhestein-Beschämung entfernt: Paladine werden nicht mehr im Gildenchat angezeigt, wenn sie Divine Shield + Ruhestein benutzen

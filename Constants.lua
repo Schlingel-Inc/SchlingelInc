@@ -118,3 +118,24 @@ SchlingelInc.Constants.POPUPBACKDROP = {
 
 -- Inactivity threshold (days)
 SchlingelInc.Constants.INACTIVE_DAYS_THRESHOLD = 10
+
+-- Guild member roles
+SchlingelInc.Constants.ROLES = { "Tank", "Heal", "DPS" }
+
+-- Profession name normalisation: maps English client names → German display names.
+-- GetSkillLineInfo returns localised strings, so English-client players end up with
+-- English profession names in their profile.  This table is used to normalise them
+-- to German at both save-time (DetectProfessions) and render-time (GuildPanel).
+SchlingelInc.Constants.PROFESSION_NAMES_DE = {
+    -- Primary trade professions
+    ["Alchemy"]        = "Alchimie",
+    ["Blacksmithing"]  = "Schmiedekunst",
+    ["Enchanting"]     = "Verzauberung",
+    ["Engineering"]    = "Ingenieurskunst",
+    ["Herbalism"]      = "Kräuterkunde",
+    ["Jewelcrafting"]  = "Juwelierkunst",
+    ["Leatherworking"] = "Lederverarbeitung",
+    ["Mining"]         = "Bergbau",
+    ["Skinning"]       = "Kürschnerei",
+    ["Tailoring"]      = "Schneiderei",
+}
