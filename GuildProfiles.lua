@@ -114,4 +114,32 @@ function SchlingelInc.GuildProfiles:Initialize()
                 SchlingelInc.GuildProfiles:Broadcast()
             end)
         end, 90, "GuildProfilesBroadcast")
+
+    -- Update profession ranks whenever the player skills up anything.
+    -- DetectProfessions() filters to primary tradeskills (isAbandonable=true) only,
+    -- so weapon/secondary skill-ups produce no change and trigger no broadcast.
+    SchlingelInc.EventManager:RegisterHandler("CHAT_MSG_SKILL",
+        function()
+            local detected = SchlingelInc.GuildProfiles:DetectProfessions()
+            local changed = false
+
+            for slot = 1, 2 do
+                local d = detected[slot]
+                local newName = d and d.name or nil
+                local newRank = d and d.rank or nil
+
+                if SchlingelOwnProfile["prof"..slot] ~= newName then
+                    SchlingelOwnProfile["prof"..slot] = newName
+                    changed = true
+                end
+                if SchlingelOwnProfile["prof"..slot.."rank"] ~= newRank then
+                    SchlingelOwnProfile["prof"..slot.."rank"] = newRank
+                    changed = true
+                end
+            end
+
+            if changed then
+                SchlingelInc.GuildProfiles:Broadcast()
+            end
+        end, 0, "GuildProfilesSkillUp")
 end

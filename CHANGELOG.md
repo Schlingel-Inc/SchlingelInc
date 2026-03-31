@@ -1,3 +1,7 @@
+# 3.5.2
+
+- Berufsränge werden jetzt automatisch aktualisiert, wenn ein Spieler einen Berufsskill steigert – die neuen Werte werden sofort ins eigene Profil übernommen und an andere Addon-Nutzer in der Gilde übermittelt
+
 # 3.5.1
 
 - Bugfix: Guild-chat-Parser für Todesmeldungen entfernt – Tode werden jetzt ausschließlich über Addon-Messages verarbeitet, was doppelte Einträge und Fehlzuordnungen verhindert

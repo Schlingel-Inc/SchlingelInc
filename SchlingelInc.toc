@@ -2,7 +2,7 @@
 ## Title: Schlingel Inc
 ## Notes: Visit DerHauges Discord for more information: https://discord.gg/KXkyUZW
 ## Author: Cricksu, Pudi, Canasterzaster
-## Version: 3.5.1
+## Version: 3.5.2
 ## IconTexture: Interface\AddOns\SchlingelInc\media\graphics\SI_Transp_512_x_512_px.tga
 ## SavedVariablesPerCharacter: CharacterDeaths, SchlingelOptionsDB, SchlingelOwnProfile
 ## SavedVariables: DiscordHandle, Pronouns, SchlingelGuildProfileCache
