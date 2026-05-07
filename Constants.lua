@@ -3,6 +3,23 @@
 
 SchlingelInc.Constants = {}
 
+-- ============================================================
+-- == GUILD CONFIGURATION =====================================
+-- Officers configure rules via the in-game Officer Panel.
+-- ============================================================
+
+-- Key used in guild info to encode the current level cap.
+-- Officers put this in the guild description: e.g. "SchlingelCap:40"
+SchlingelInc.Constants.RULES_CAP_KEY = "SchlingelCap"
+
+-- Separator line written before the SchlingelInc block in guild info.
+SchlingelInc.Constants.GUILD_INFO_SEPARATOR = "--- SchlingelInc ---"
+
+-- Key used in the guild info text to encode rules.
+-- Officers put this in the guild description: e.g. "Schlingel:1111"
+-- Each digit (0/1) controls: mail, auction house, trade, grouping rules.
+SchlingelInc.Constants.RULES_KEY = "Schlingel"
+
 -- Maximum level (TBC Classic = 70)
 SchlingelInc.Constants.MAX_LEVEL = 70
 

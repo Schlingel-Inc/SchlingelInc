@@ -31,8 +31,8 @@ end
 
 -- Process a death (from guild chat parsing or addon messages)
 local function processDeath(data, isOwnDeath)
-	-- Create unique ID to prevent duplicates
-	local deathID = data.name .. "-" .. data.level .. "-" .. data.zone .. "-" .. time()
+	-- Create unique ID to prevent duplicates (bucket to 5s to handle dual-path latency)
+	local deathID = data.name .. "-" .. data.level .. "-" .. data.zone .. "-" .. math.floor(time() / 5)
 	if seenDeaths[deathID] then
 		return
 	end

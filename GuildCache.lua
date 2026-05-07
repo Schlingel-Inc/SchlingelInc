@@ -179,7 +179,7 @@ function SchlingelInc.GuildCache:Initialize()
 	SchlingelInc.EventManager:RegisterHandler("GUILD_ROSTER_UPDATE",
 		function()
 			SchlingelInc.GuildCache:ProcessRosterData()
-		end, 0, "GuildCacheAutoUpdate")
+		end, 100, "GuildCacheAutoUpdate")
 
 	-- Initial update on login
 	SchlingelInc.EventManager:RegisterHandler("PLAYER_ENTERING_WORLD",

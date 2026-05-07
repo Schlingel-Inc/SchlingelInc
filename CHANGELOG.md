@@ -1,3 +1,14 @@
+# 3.6.0
+
+- Neues Offizier Panel: Gildenregeln (Briefkasten, Auktionshaus, Handel, Gruppierung, Duelle, Level Cap) direkt im Spiel konfigurieren und in die Gildeninfo schreiben – erreichbar per Rechtsklick auf das Minimap-Icon
+- Offizier-Einrichtungsassistent: Führt beim ersten Start durch die Auswahl der Offiziersränge und die initiale Regelkonfiguration – öffnet sich automatisch wenn noch keine Regeln in der Gildeninfo hinterlegt sind
+- Minimap Icon Rechtsklick öffnet jetzt das Offizier Panel für alle Gildenmitglieder
+- Bugfix: Doppelte Todesmeldungen wenn ein Tod sowohl über den Gildenchat als auch über eine Addon-Nachricht empfangen wurde
+- Bugfix: Eigenes Profil wurde nach dem Login nicht im lokalen Profil-Cache gespeichert – GUILD-Addon-Nachrichten kommen beim Absender in WoW Classic nicht zurück
+- Bugfix: Profile von bereits eingeloggten Gildenmitgliedern wurden beim eigenen Login nicht empfangen; das Addon fordert beim Start nun aktiv Profile von allen online Mitgliedern an
+- Bugfix: Gildencheck im Briefkasten und bei der Gruppenregel lief bisher über einen vollständigen Roster-Scan; beide nutzen jetzt den Gildenmitglieder-Cache
+- Gildencache wird jetzt mit höherer Priorität aktualisiert, damit er für alle anderen Module stets aktuell ist
+
 # 3.5.2
 
 - Berufsränge werden jetzt automatisch aktualisiert, wenn ein Spieler einen Berufsskill steigert – die neuen Werte werden sofort ins eigene Profil übernommen und an andere Addon-Nutzer in der Gilde übermittelt

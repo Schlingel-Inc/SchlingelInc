@@ -9,7 +9,7 @@ _G.GameTooltip:HookScript("OnTooltipSetUnit", function(self)
     local guildName, rank = _G.GetGuildInfo(unit)
     if not (guildName and _G.UnitExists(unit) and _G.UnitPlayerControlled(unit)) then return end
 
-    _G.GameTooltip:AddLine(string.format("%s der Gilde %s", rank, guildName))
+    _G.GameTooltip:AddLine(string.format("%s der Gilde %s", rank, guildName), 1, 1, 1)
 
     if not IsInGuild() then return end
 
@@ -30,7 +30,7 @@ _G.GameTooltip:HookScript("OnTooltipSetUnit", function(self)
 
     -- Role
     if profile.role then
-        _G.GameTooltip:AddLine("Rolle: " .. profile.role, 0.6, 0.8, 1)
+        _G.GameTooltip:AddDoubleLine("Rolle:", profile.role, 0.6, 0.8, 1, 0.6, 0.8, 1)
     end
 
     -- Professions
@@ -47,6 +47,6 @@ _G.GameTooltip:HookScript("OnTooltipSetUnit", function(self)
 
     -- Deaths
     if profile.deaths and profile.deaths > 0 then
-        _G.GameTooltip:AddLine("Tode: " .. profile.deaths, 0.8, 0.2, 0.2)
+        _G.GameTooltip:AddDoubleLine("Tode:", tostring(profile.deaths), 0.8, 0.2, 0.2, 0.8, 0.2, 0.2)
     end
 end)

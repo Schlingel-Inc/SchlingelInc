@@ -14,8 +14,14 @@ local function GetAuthorizedOfficers()
 
 	local officers = {}
 
+	-- Use ranks configured via OfficerWizard; fall back to hardcoded Constants if not set yet
+	local officerRanks = (SchlingelGuildDB and SchlingelGuildDB.officerRanks
+		and #SchlingelGuildDB.officerRanks > 0)
+		and SchlingelGuildDB.officerRanks
+		or SchlingelInc.Constants.OFFICER_RANKS
+
 	-- Loop through all authorized ranks
-	for _, rankName in ipairs(SchlingelInc.Constants.OFFICER_RANKS) do
+	for _, rankName in ipairs(officerRanks) do
 		local membersWithRank = SchlingelInc.GuildCache:GetMembersByRank(rankName)
 
 		-- Add all online members of this rank to the officer list
@@ -144,9 +150,12 @@ end
 -- Initializes the GuildRecruitment module
 function SchlingelInc.GuildRecruitment:Initialize()
 	SchlingelInc.EventManager:RegisterHandler("CHAT_MSG_ADDON",
-		function(_, prefix, message)
+		function(_, prefix, message, _, sender)
 			if prefix == SchlingelInc.prefix then
-				if message:find("INVITE_REQUEST") or message:find("INVITE_SENT") then
+				if message:find("^INVITE_REQUEST:") then
+					HandleAddonMessage(message)
+				elseif (message:find("INVITE_SENT") or message:find("INVITE_DECLINED"))
+					and SchlingelInc:IsValidGuildSender(sender) then
 					HandleAddonMessage(message)
 				end
 			end

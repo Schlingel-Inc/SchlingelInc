@@ -1,6 +1,11 @@
 -- Global table for the addon
 SchlingelInc = {}
 
+-- Account-wide guild configuration (officer ranks, etc.). Initialized here so it
+-- is available before any module accesses it; WoW has already loaded the SavedVariable
+-- by the time this file runs, so the `or {}` guard only fires on a fresh installation.
+SchlingelGuildDB = SchlingelGuildDB or {}
+
 -- Addon name
 SchlingelInc.name = "SchlingelInc"
 
@@ -98,10 +103,7 @@ function SchlingelInc.Global:Initialize()
 
 					-- Structured death message (guild chat parsing remains as fallback)
 					if message:match("^DEATH|") and SchlingelInc:IsValidGuildSender(sender) then
-						local parts = {}
-						for part in (message .. "|"):gmatch("([^|]*)|?") do
-							table.insert(parts, part)
-						end
+						local parts = SchlingelInc:ParsePipeMessage(message)
 						if #parts >= 5 then
 							local senderShort = SchlingelInc:RemoveRealmFromName(sender)
 							if senderShort ~= UnitName("player") then
@@ -222,6 +224,66 @@ if not SchlingelInc.guildChatFilterRegistered then
         ChatFrame_AddMessageEventFilter(ev, GuildChatVersionFilter)
     end
     SchlingelInc.guildChatFilterRegistered = true
+end
+
+-- Splits a pipe-delimited addon message string into a parts table.
+function SchlingelInc:ParsePipeMessage(message)
+    local parts = {}
+    for part in (message .. "|"):gmatch("([^|]*)|") do
+        table.insert(parts, part)
+    end
+    return parts
+end
+
+-- Encodes and writes guild rules into the SchlingelInc block of guild info text.
+-- Returns true on success, false if the player lacks officer permission.
+function SchlingelInc:WriteGuildInfo(mail, ah, trade, group, cap)
+    if not CanGuildRemove() then return false end
+    local sep = SchlingelInc.Constants.GUILD_INFO_SEPARATOR
+    local current = GetGuildInfoText() or ""
+    local sepPos = current:find("\n\n" .. sep, 1, true)
+                or current:find("\n" .. sep, 1, true)
+                or current:find(sep, 1, true)
+    if sepPos then
+        current = current:sub(1, sepPos - 1)
+    else
+        current = current:gsub(SchlingelInc.Constants.RULES_KEY .. ":%d+", "")
+        current = current:gsub(SchlingelInc.Constants.RULES_CAP_KEY .. ":%d+", "")
+    end
+    current = current:gsub("%s+$", "")
+    local block = string.format("%s:%d%d%d%d",
+        SchlingelInc.Constants.RULES_KEY,
+        mail  and 1 or 0,
+        ah    and 1 or 0,
+        trade and 1 or 0,
+        group and 1 or 0)
+    if cap and cap > 0 then
+        block = block .. string.format(" %s:%d", SchlingelInc.Constants.RULES_CAP_KEY, cap)
+    end
+    local newText = (current ~= "") and (current .. "\n\n" .. sep .. "\n" .. block) or (sep .. "\n" .. block)
+    SetGuildInfoText(newText)
+    SchlingelInc:Print("Gildeninfo mit neuen Regeln aktualisiert.")
+    SchlingelInc.Rules:LoadFromGuildInfo()
+    return true
+end
+
+-- Saves a frame's current position to SchlingelOptionsDB under dbKey.
+function SchlingelInc:SaveFramePosition(frame, dbKey)
+    SchlingelOptionsDB = SchlingelOptionsDB or {}
+    local point, _, relPoint, x, y = frame:GetPoint()
+    if not point then return end
+    SchlingelOptionsDB[dbKey] = { point = point, relPoint = relPoint, x = x, y = y }
+end
+
+-- Restores a frame's position from SchlingelOptionsDB[dbKey], or applies the given default.
+function SchlingelInc:RestoreFramePosition(frame, dbKey, defaultPoint, defaultX, defaultY)
+    local p = SchlingelOptionsDB and SchlingelOptionsDB[dbKey]
+    if p then
+        frame:ClearAllPoints()
+        frame:SetPoint(p.point, UIParent, p.relPoint, p.x, p.y)
+    else
+        frame:SetPoint(defaultPoint or "CENTER", UIParent, defaultPoint or "CENTER", defaultX or 0, defaultY or 0)
+    end
 end
 
 -- Removes the realm name from a full player name (e.g. "Player-Realm" -> "Player").

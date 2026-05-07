@@ -111,8 +111,9 @@ Erweitert Tooltips mit nützlichen Informationen.
 Zentraler Zugriffspunkt für alle Addon-Funktionen.
 
 **Funktionen:**
-- **Linksklick:** Death Log anzeigen/verstecken
-- **Rechtsklick (Offiziere):** Inaktivitäts-Fenster öffnen
+- **Linksklick:** Gildenübersicht anzeigen/verstecken
+- **Shift+Linksklick:** Death Log anzeigen/verstecken
+- **Rechtsklick (Gildenmitglieder):** Offizier Panel öffnen
 - **Rechtsklick (Nicht-Mitglieder):** Gildenbeitritts-Prompt öffnen
 - **Tooltip zeigt:**
   - Addon Version
@@ -122,13 +123,14 @@ Zentraler Zugriffspunkt für alle Addon-Funktionen.
 
 Spezielle Funktionen für Gildenoffiziere.
 
-**Features:**
-- **Inaktivitäts-Tracker:** Zeigt Mitglieder die 10+ Tage offline sind
-- **Detaillierte Informationen:** Name, Level, Rang, Offline-Dauer
-- **Entfernen-Button:** Direkte Möglichkeit inaktive Mitglieder zu entfernen
-- **Sortierung:** Nach Offline-Zeit (absteigend), dann nach Level
+**Offizier Panel** (Rechtsklick auf Minimap-Icon):
+- **Regeln konfigurieren:** Briefkasten, Auktionshaus, Handel, Gruppierung, Duelle und Level Cap direkt im Spiel ein-/ausschalten
+- **Gildeninfo aktualisieren:** Änderungen werden mit einem Klick in die Gildeninfo geschrieben und sofort von allen Mitgliedern geladen
+- **Inaktive Mitglieder:** Zeigt Mitglieder die 10+ Tage offline sind, mit Name, Level, Rang und Offline-Dauer sowie direktem Entfernen-Button
 
-> **Zugriff:** Rechtsklick auf das Minimap-Icon (nur für Offiziere sichtbar)
+**Offizier-Einrichtungsassistent** (automatisch beim ersten Start, oder manuell über das Offizier Panel):
+- **Schritt 1:** Auswahl der Ränge, die Beitrittsanfragen erhalten sollen
+- **Schritt 2:** Initiale Regelkonfiguration mit direktem Schreiben in die Gildeninfo
 
 ### Automatische Optimierungen
 
@@ -179,12 +181,18 @@ Das Addon hat einige optionale Einstellungen die du im WoW Options-Menü unter "
 ## Technische Details
 
 - **Interface-Version:** 20505 (WoW Classic TBC 2.5.x)
-- **Addon-Version:** 3.0.0-rc1
+- **Addon-Version:** 3.6.0
 
-**SavedVariables:**
-- `SchlingelOptionsDB` (per Character) - Einstellungen und UI-Positionen
-- `CharacterDeaths` (per Character) - Todeszähler
-- `DiscordHandle` (Account-wide) - Discord Handle
+**SavedVariables (per Character):**
+- `SchlingelOptionsDB` - Einstellungen und UI-Positionen
+- `CharacterDeaths` - Todeszähler
+- `SchlingelOwnProfile` - Eigenes Profil (Rolle, Berufe)
+
+**SavedVariables (Account-wide):**
+- `DiscordHandle` - Discord Handle
+- `Pronouns` - Bevorzugte Pronomen
+- `SchlingelGuildProfileCache` - Profilcache aller Gildenmitglieder
+- `SchlingelGuildDB` - Gilden-Konfiguration (Offiziersränge)
 
 **Addon Message Prefixes:**
 - `SchlingelInc` - Guild Communication
@@ -199,7 +207,7 @@ Das Addon hat einige optionale Einstellungen die du im WoW Options-Menü unter "
 ## Bekannte Einschränkungen
 
 - **Guild Only:** Alle Features funktionieren nur mit Gildenmitgliedern auf dem gleichen Realm
-- **Regel-Konfiguration:** Die Regeln werden aus der Gildeninfo geladen und können nur von Offizieren geändert werden
+- **Regel-Konfiguration:** Regeln werden in die Gildeninfo geschrieben und von allen Mitgliedern geladen – Änderungen nur über das Offizier Panel (erfordert Offiziersrechte)
 - **Offiziers-Features:** Inaktivitäts-Tracker nur für Ränge: Devschlingel, Pfundschlingel, Großschlingel
 
 ---

@@ -37,20 +37,31 @@ end
 
 function SchlingelInc.Rules:LoadFromGuildInfo()
     SchlingelInc.Rules:GetRules(function(text)
-        if not text then
-            return
+        if not text then return end
+
+        -- Try new compact format: Schlingel:1111
+        local mailRule, auctionHouseRule, tradeRule, groupingRule =
+            text:match(SchlingelInc.Constants.RULES_KEY .. ":(%d)(%d)(%d)(%d)")
+
+        -- Fall back to legacy format: Schlingel: 1, 1, 1, 1
+        if not mailRule then
+            mailRule, auctionHouseRule, tradeRule, groupingRule =
+                text:match("Schlingel:%s*(%d+)%s*,?%s*(%d+)%s*,?%s*(%d+)%s*,?%s*(%d+)")
         end
 
-        local mailRule,auctionHouseRule,tradeRule,groupingRule = text:match("Schlingel:%s*(%d+)%s*,?%s*(%d+)%s*,?%s*(%d+)%s*,?%s*(%d+)")
-        mailRule,auctionHouseRule,tradeRule,groupingRule = tonumber(mailRule), tonumber(auctionHouseRule), tonumber(tradeRule), tonumber(groupingRule)
+        SchlingelInc.InfoRules.mailRule         = tonumber(mailRule)         or SchlingelInc.InfoRules.mailRule
+        SchlingelInc.InfoRules.auctionHouseRule = tonumber(auctionHouseRule) or SchlingelInc.InfoRules.auctionHouseRule
+        SchlingelInc.InfoRules.tradeRule        = tonumber(tradeRule)        or SchlingelInc.InfoRules.tradeRule
+        SchlingelInc.InfoRules.groupingRule     = tonumber(groupingRule)     or SchlingelInc.InfoRules.groupingRule
 
-        SchlingelInc.InfoRules.mailRule = mailRule
-        SchlingelInc.InfoRules.auctionHouseRule = auctionHouseRule
-        SchlingelInc.InfoRules.tradeRule = tradeRule
-        SchlingelInc.InfoRules.groupingRule = groupingRule
+        -- Try new cap format: SchlingelCap:40
+        local currentCap = text:match(SchlingelInc.Constants.RULES_CAP_KEY .. ":(%d+)")
 
-        -- Extract and store CurrentCap from guild info
-        local currentCap = text:match("Aktuelles Bracket:.-Level%s*(%d+)")
+        -- Fall back to legacy cap format: Aktuelles Bracket:...Level 40
+        if not currentCap then
+            currentCap = text:match("Aktuelles Bracket:.-Level%s*(%d+)")
+        end
+
         if currentCap then
             SchlingelInc.Rules.CurrentCap = tonumber(currentCap)
             SchlingelInc.LevelUps:CheckForCap(UnitLevel("player"))
@@ -111,23 +122,10 @@ end
 
 -- Rule: Prohibit grouping with players outside the guild
 function SchlingelInc.Rules:ProhibitGroupingWithNonGuildMembers()
-   if tonumber(SchlingelInc.InfoRules.groupingRule) == 0 then
+    if tonumber(SchlingelInc.InfoRules.groupingRule) == 0 then
         return
     end
-    -- Request fresh guild roster data
-    C_GuildInfo.GuildRoster()
 
-    -- Build list of all guild members
-    local guildMembers = {}
-    local numTotalGuildMembers = GetNumGuildMembers()
-    for i = 1, numTotalGuildMembers do
-        local name = GetGuildRosterInfo(i)
-        if name then
-            table.insert(guildMembers, SchlingelInc:RemoveRealmFromName(name))
-        end
-    end
-
-    -- Check all group members
     local numGroupMembers = GetNumGroupMembers()
     for i = 1, numGroupMembers do
         local unit = "party" .. i
@@ -135,17 +133,11 @@ function SchlingelInc.Rules:ProhibitGroupingWithNonGuildMembers()
             unit = "raid" .. i
         end
 
-        -- Skip disconnected players - they'll be checked again when they reconnect
-        if UnitExists(unit) and not UnitIsConnected(unit) then
-            -- Player is offline/disconnected, don't kick them
-        else
+        -- Skip disconnected players — they'll be checked again when they reconnect
+        if UnitExists(unit) and UnitIsConnected(unit) then
             local memberName = UnitName(unit)
-            -- Skip if name is not yet available (loading state)
             if memberName and memberName ~= UNKNOWNOBJECT and memberName ~= "" then
-                local shortMemberName = SchlingelInc:RemoveRealmFromName(memberName)
-                local isInGuild = tContains(guildMembers, shortMemberName)
-
-                if not isInGuild then
+                if not SchlingelInc.GuildCache:IsGuildMember(memberName) then
                     LeaveParty()
                     SchlingelInc.Popup:Show({
                         title = "Gruppe verlassen!",

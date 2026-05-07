@@ -32,10 +32,7 @@ end
 
 -- Deserialise a received payload into a profile table (returns nil on bad format).
 local function Deserialize(payload)
-    local parts = {}
-    for part in (payload .. "|"):gmatch("([^|]*)|") do
-        table.insert(parts, part)
-    end
+    local parts = SchlingelInc:ParsePipeMessage(payload)
     -- parts[1] = MSG_PROFILE tag, already stripped by caller
     if #parts < 7 then return nil end
     return {
@@ -51,9 +48,16 @@ local function Deserialize(payload)
 end
 
 -- Broadcast own profile to the guild channel.
+-- Also writes directly to the local cache because GUILD addon messages
+-- do not loop back to the sender in WoW Classic.
 function SchlingelInc.GuildProfiles:Broadcast()
     if not IsInGuild() then return end
-    C_ChatInfo.SendAddonMessage(SchlingelInc.prefix, Serialize(), "GUILD")
+    local payload = Serialize()
+    C_ChatInfo.SendAddonMessage(SchlingelInc.prefix, payload, "GUILD")
+    local ownProfile = Deserialize(payload:sub(#MSG_PROFILE + 2))
+    if ownProfile then
+        SchlingelGuildProfileCache[UnitName("player")] = ownProfile
+    end
 end
 
 -- Save a field on the own profile and re-broadcast.
@@ -94,6 +98,12 @@ end
 
 -- Handle incoming PROFILE2 addon messages (wired in from Global.lua handler).
 function SchlingelInc.GuildProfiles:HandleMessage(sender, message)
+    -- Respond to profile requests from freshly-logged-in guild members.
+    if message == "PROFILE_REQUEST" then
+        SchlingelInc.GuildProfiles:Broadcast()
+        return true
+    end
+
     local tag = message:match("^([^|]+)")
     if tag ~= MSG_PROFILE then return false end
 
@@ -107,11 +117,14 @@ function SchlingelInc.GuildProfiles:HandleMessage(sender, message)
 end
 
 function SchlingelInc.GuildProfiles:Initialize()
-    -- Broadcast own profile on login (after guild cache is ready).
+    -- Broadcast own profile on login and request profiles from already-online members.
     SchlingelInc.EventManager:RegisterHandler("PLAYER_ENTERING_WORLD",
         function()
             C_Timer.After(6, function()
                 SchlingelInc.GuildProfiles:Broadcast()
+                if IsInGuild() then
+                    C_ChatInfo.SendAddonMessage(SchlingelInc.prefix, "PROFILE_REQUEST", "GUILD")
+                end
             end)
         end, 90, "GuildProfilesBroadcast")
 
