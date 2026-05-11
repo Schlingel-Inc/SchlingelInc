@@ -73,6 +73,7 @@ end
 
 -- Rule: Completely prohibit mailbox usage
 function SchlingelInc.Rules:ProhibitMailboxUsage()
+    if tonumber(SchlingelInc.InfoRules.mailRule) == 0 then return end
     CloseMail()
     SchlingelInc.Popup:Show({
         title = "Briefkasten gesperrt!",
@@ -104,8 +105,9 @@ function SchlingelInc.Rules:ProhibitTradeWithNonGuildMembers()
         return
     end
 
-    local inPvP = SchlingelInc:IsInBattleground() or SchlingelInc:IsInRaid() or SchlingelInc:IsInArena()
-    if inPvP then return end
+    -- Skip inside any instance (dungeon, raid, battleground, arena)
+    local inInstance = select(1, IsInInstance())
+    if inInstance then return end
 
     local tradePartner = UnitName("NPC")
     if tradePartner then
@@ -161,14 +163,20 @@ end
 
 -- Initialize rules
 function SchlingelInc.Rules:Initialize()
+    -- Always register MAIL_SHOW; ProhibitMailboxUsage checks the rule at call-time.
+    -- HideMinimapMail is deferred so it only runs after the async guild-info load.
+    SchlingelInc.EventManager:RegisterHandler("MAIL_SHOW", function()
+        SchlingelInc.Rules:ProhibitMailboxUsage()
+    end, 0, "RuleMailbox")
+
     SchlingelInc.Rules:LoadFromGuildInfo()
 
-    if tonumber(SchlingelInc.InfoRules.mailRule) == 1 or #SchlingelInc.MailHandler:MailboxAddonActive() > 0 then
-        SchlingelInc.MailHandler:HideMinimapMail()
-        SchlingelInc.EventManager:RegisterHandler("MAIL_SHOW", function()
-            SchlingelInc.Rules:ProhibitMailboxUsage()
-            end, 0, "RuleMailbox")
-    end
+    -- Hide minimap mail icon once rules are actually known
+    SchlingelInc.Rules:GetRules(function()
+        if tonumber(SchlingelInc.InfoRules.mailRule) == 1 or #SchlingelInc.MailHandler:MailboxAddonActive() > 0 then
+            SchlingelInc.MailHandler:HideMinimapMail()
+        end
+    end)
 
 
 	SchlingelInc.EventManager:RegisterHandler("AUCTION_HOUSE_SHOW",

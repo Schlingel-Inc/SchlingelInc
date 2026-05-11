@@ -44,11 +44,6 @@ function SchlingelInc.GuildRecruitment:SendGuildRequest()
     local playerLevel = UnitLevel("player")
     local playerExp = UnitXP("player")
 
-    if playerLevel > 1 then
-        SchlingelInc:Print("Du kannst nur auf Level 1 eine Anfrage an die Gilde abschicken.")
-        return
-    end
-
     local zone = SchlingelInc.GuildRecruitment:GetPlayerZone()
 
     -- Sanitize inputs by replacing delimiters with safe characters

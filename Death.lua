@@ -82,12 +82,16 @@ function SchlingelInc.Death:Initialize()
 			local name = UnitName("player")
 			if not name then return end
 
+			-- Don't announce deaths inside dungeons or raid instances
+			local inInstance, instanceType = IsInInstance()
+			if inInstance and (instanceType == "party" or instanceType == "raid") then return end
+
 			local _, rank = GetGuildInfo("player")
 			local class = UnitClass("player")
 			local level = UnitLevel("player")
 			local sex = UnitSex("player")
 
-			local inPvP = SchlingelInc:IsInBattleground() or SchlingelInc:IsInRaid() or SchlingelInc:IsInArena()
+			local inPvP = SchlingelInc:IsInBattleground() or SchlingelInc:IsInArena()
 			if inPvP and level == SchlingelInc.Rules.CurrentCap then
 				return
 			end

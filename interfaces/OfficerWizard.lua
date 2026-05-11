@@ -51,13 +51,19 @@ local function NextStep(frame)
 end
 
 local function BuildWizFrame()
-    local f = CreateFrame("Frame", "SchlingelIncOfficerWizard", UIParent,
-        BackdropTemplateMixin and "BackdropTemplate")
+    local TITLE_H = 28
+
+    local f = CreateFrame("Frame", "SchlingelIncOfficerWizard", UIParent, "BackdropTemplate")
     f:SetSize(FRAME_W, FRAME_H)
     f:SetPoint("CENTER")
-    f:SetBackdrop(SchlingelInc.Constants.BACKDROP)
-    f:SetBackdropColor(0.05, 0.05, 0.05, 0.97)
-    f:SetBackdropBorderColor(0.6, 0.6, 0.6, 1)
+    f:SetBackdrop({
+        bgFile   = "Interface\\BUTTONS\\WHITE8X8",
+        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+        tile = true, tileSize = 16, edgeSize = 16,
+        insets = { left = 4, right = 4, top = 4, bottom = 4 }
+    })
+    f:SetBackdropColor(0.07, 0.07, 0.07, 0.96)
+    f:SetBackdropBorderColor(0.45, 0.45, 0.45, 1)
     f:SetFrameStrata("DIALOG")
     f:SetMovable(true)
     f:EnableMouse(true)
@@ -66,22 +72,34 @@ local function BuildWizFrame()
     f:SetScript("OnDragStop", f.StopMovingOrSizing)
     f:Hide()
 
-    local icon = f:CreateTexture(nil, "ARTWORK")
-    icon:SetTexture("Interface\\AddOns\\SchlingelInc\\media\\graphics\\SI_Transp_512_x_512_px.tga")
-    icon:SetSize(48, 48)
-    icon:SetPoint("TOP", f, "TOP", 0, -14)
+    -- Title bar
+    local titleBg = f:CreateTexture(nil, "BACKGROUND")
+    titleBg:SetPoint("TOPLEFT",  f, "TOPLEFT",  4, -4)
+    titleBg:SetPoint("TOPRIGHT", f, "TOPRIGHT", -4, -4)
+    titleBg:SetHeight(TITLE_H)
+    titleBg:SetColorTexture(0.12, 0.12, 0.12, 1)
 
-    local title = f:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-    title:SetPoint("TOP", icon, "BOTTOM", 0, -6)
-    title:SetText("Schlingel Inc — Offi-Einrichtung")
-    title:SetTextColor(1, 0.82, 0, 1)
+    local titleIcon = f:CreateTexture(nil, "OVERLAY")
+    titleIcon:SetSize(18, 18)
+    titleIcon:SetPoint("LEFT", titleBg, "LEFT", 6, 0)
+    titleIcon:SetTexture("Interface\\AddOns\\SchlingelInc\\media\\graphics\\SI_Transp_512_x_512_px.tga")
+
+    local titleText = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    titleText:SetPoint("LEFT", titleIcon, "RIGHT", 4, 0)
+    titleText:SetText("Offizier-Einrichtung")
+    titleText:SetTextColor(1, 0.82, 0, 1)
+
+    local closeBtn = CreateFrame("Button", nil, f, "UIPanelCloseButton")
+    closeBtn:SetSize(20, 20)
+    closeBtn:SetPoint("TOPRIGHT", f, "TOPRIGHT", -2, -2)
+    closeBtn:SetScript("OnClick", function() f:Hide() end)
 
     f.stepLabel = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    f.stepLabel:SetPoint("TOP", title, "BOTTOM", 0, -6)
+    f.stepLabel:SetPoint("TOP", f, "TOP", 0, -(TITLE_H + 12))
     f.stepLabel:SetTextColor(0.7, 0.7, 0.7, 1)
 
     local divTop = f:CreateTexture(nil, "ARTWORK")
-    divTop:SetColorTexture(0.3, 0.3, 0.3, 0.8)
+    divTop:SetColorTexture(0.4, 0.4, 0.4, 0.7)
     divTop:SetSize(FRAME_W - 40, 1)
     divTop:SetPoint("TOP", f.stepLabel, "BOTTOM", 0, -8)
 
@@ -240,10 +258,12 @@ function SchlingelInc:ShowOfficerWizard()
     WizFrame:Show()
 end
 
--- Auto-trigger on login: officer + no SchlingelInc rule block in guild info
+-- Auto-trigger on login/reload only: officer + no SchlingelInc rule block in guild info
 function SchlingelInc:InitializeOfficerWizard()
     SchlingelInc.EventManager:RegisterHandler("PLAYER_ENTERING_WORLD",
-        function()
+        function(event, isLogin, isReload)
+            -- PLAYER_ENTERING_WORLD fires for instance transitions too; only run on actual login/reload
+            if isLogin == false and isReload == false then return end
             C_Timer.After(8, function()
                 if not CanGuildRemove() then return end
                 local info = GetGuildInfoText() or ""
