@@ -132,7 +132,7 @@ function SchlingelInc:CreateMiniDeathLog()
         edgeSize = 16,
         insets = { left = 4, right = 4, top = 4, bottom = 4 }
     })
-    frame:SetBackdropColor(0.1, 0, 0, 0.8)
+    frame:SetBackdropColor(0.07, 0.07, 0.07, 0.96)
     frame:SetBackdropBorderColor(1, 0.55, 0.73, 1)  -- Pink border matching addon theme
     frame:SetMovable(true)
     frame:SetResizable(true)
@@ -203,46 +203,22 @@ function SchlingelInc:CreateMiniDeathLog()
         UpdateDeathLogLayout(frame)
     end)
 
-    -- SI icon top left corner
-    local iconFrame = CreateFrame("Frame", nil, frame)
-    iconFrame:SetSize(24, 24)
-    iconFrame:SetPoint("TOPLEFT", frame, "TOPLEFT", -6, 6)
-    iconFrame:SetFrameLevel(frame:GetFrameLevel() + 2)
-
-    -- Icon border (circular) - match frame backdrop color
-    local iconBorder = iconFrame:CreateTexture(nil, "BORDER")
-    iconBorder:SetAllPoints(iconFrame)
-    iconBorder:SetColorTexture(0.1, 0, 0, 0.9)
-
-    local borderMask = iconFrame:CreateMaskTexture()
-    borderMask:SetAllPoints(iconBorder)
-    borderMask:SetTexture("Interface\\CHARACTERFRAME\\TempPortraitAlphaMask", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
-    iconBorder:AddMaskTexture(borderMask)
-
-    -- Icon background - using in-game skull icon
-    local iconBg = iconFrame:CreateTexture(nil, "ARTWORK")
-    iconBg:SetPoint("CENTER")
-    iconBg:SetSize(20, 20)
-    iconBg:SetTexture("Interface\\AddOns\\SchlingelInc\\media\\graphics\\icon-minimap.tga")
-
-    -- Create circular mask for icon
-    local mask = iconFrame:CreateMaskTexture()
-    mask:SetPoint("CENTER")
-    mask:SetSize(20, 20)
-    mask:SetTexture("Interface\\CHARACTERFRAME\\TempPortraitAlphaMask", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
-    iconBg:AddMaskTexture(mask)
-
     -- Header section with title
     local headerBg = frame:CreateTexture(nil, "BACKGROUND")
     headerBg:SetPoint("TOPLEFT", frame, "TOPLEFT", 4, -4)
     headerBg:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -4, -4)
     headerBg:SetHeight(22)
-    headerBg:SetColorTexture(0.1, 0.1, 0.1, 0.8)
+    headerBg:SetColorTexture(0.12, 0.12, 0.12, 1)
+
+    local titleIcon = frame:CreateTexture(nil, "OVERLAY")
+    titleIcon:SetSize(16, 16)
+    titleIcon:SetPoint("LEFT", headerBg, "LEFT", 5, 0)
+    titleIcon:SetTexture("Interface\\AddOns\\SchlingelInc\\media\\graphics\\SI_Transp_512_x_512_px.tga")
 
     local title = frame:CreateFontString(nil, "OVERLAY", FONT_NORMAL)
-    title:SetPoint("LEFT", headerBg, "LEFT", 20, 0)
+    title:SetPoint("LEFT", titleIcon, "RIGHT", 4, 0)
     title:SetText("Letzte Tode")
-    title:SetTextColor(1, 0.85, 0.1)
+    title:SetTextColor(1, 0.82, 0, 1)
 
     local headers = { "Name", "Klasse", "Level" }
 
@@ -251,7 +227,7 @@ function SchlingelInc:CreateMiniDeathLog()
     for _, text in ipairs(headers) do
         local header = frame:CreateFontString(nil, "OVERLAY", FONT_NORMAL)
         header:SetText(text)
-        header:SetTextColor(1, 0.8, 0.1)
+        header:SetTextColor(1, 0.82, 0, 1)
         table.insert(frame.columnHeaders, header)
     end
 

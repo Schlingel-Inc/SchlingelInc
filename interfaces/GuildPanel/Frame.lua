@@ -216,11 +216,15 @@ function SchlingelInc.GuildPanel:Refresh()
         data = filtered
     end
 
-    -- Apply role filter (any active role must match)
+    -- Apply role filter: member matches if any of their roles matches any active filter
     if next(GP.filterRoles) then
         local filtered = {}
         for _, e in ipairs(data) do
-            if GP.filterRoles[e.role] then table.insert(filtered, e) end
+            local match = false
+            for part in (e.role or ""):gmatch("[^/]+") do
+                if GP.filterRoles[part] then match = true; break end
+            end
+            if match then table.insert(filtered, e) end
         end
         data = filtered
     end

@@ -16,7 +16,7 @@ GP.COLUMNS = {
     { label = "Lvl",   width = 26  },
     { label = "Rang",  width = 84  },
     { label = "Zone",  width = 90  },
-    { label = "Rolle", width = 55  },
+    { label = "Rolle", width = 75  },
     { label = "Tode",  width = 35  },
 }
 

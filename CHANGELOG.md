@@ -5,7 +5,7 @@
 - Bugfix: Offizier-Einrichtungsfenster erscheint beim Betreten oder Verlassen einer Instanz nicht mehr; öffnet sich nur noch beim echten Einloggen oder Reloaden
 - Bugfix: Offizier-Einrichtungsfenster hat jetzt einen X-Button zum Schließen
 - Bugfix: Beitrittsanfragen über das Addon funktionieren jetzt für Charaktere aller Level, nicht nur Level 1
-- Bugfix: Briefkasten war nach dem Einloggen gesperrt obwohl die Regel freigegeben war – das Addon liest die Regel jetzt erst aus der Gildeninfo bevor es den Briefkasten sperrt
+- Bugfix: Briefkasten war nach dem Einloggen gesperrt obwohl die Regel freigegeben war. Das Addon liest die Regel jetzt erst aus der Gildeninfo bevor es den Briefkasten sperrt
 
 # 3.6.0
 

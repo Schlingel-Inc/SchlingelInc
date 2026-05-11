@@ -102,8 +102,16 @@ function GP.SortData(data)
         elseif GP.sortCol == 4 then
             va, vb = a.zone or "", b.zone or "" -- alphabetical
         elseif GP.sortCol == 5 then
-            va = GP.ROLE_ORDER[a.role] or 99
-            vb = GP.ROLE_ORDER[b.role] or 99
+            -- sort by best (lowest-order) role when multiple are set
+            local function bestOrder(roleStr)
+                local best = 99
+                for part in (roleStr or ""):gmatch("[^/]+") do
+                    local v = GP.ROLE_ORDER[part]; if v and v < best then best = v end
+                end
+                return best
+            end
+            va = bestOrder(a.role)
+            vb = bestOrder(b.role)
         elseif GP.sortCol == 6 then
             va = a.deaths or -1
             vb = b.deaths or -1

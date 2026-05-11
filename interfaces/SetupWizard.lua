@@ -8,7 +8,7 @@ local currentStep = 1
 
 -- ── Helpers ──────────────────────────────────────────────────────────────────
 
-local FRAME_W, FRAME_H = 460, 420
+local FRAME_W, FRAME_H = 460, 320
 local DOT_SIZE          = 12
 local DOT_SPACING       = 20
 
@@ -65,6 +65,7 @@ local function ShowStep(frame, index)
     local step = steps[index]
     if step then
         step.render(frame)
+        frame:SetHeight(step.frameH or FRAME_H)
     end
 
     UpdateProgress(frame)
@@ -112,13 +113,19 @@ end
 -- ── Frame construction ───────────────────────────────────────────────────────
 
 local function BuildFrame()
-    local frame = CreateFrame("Frame", "SchlingelSetupWizard", UIParent,
-        BackdropTemplateMixin and "BackdropTemplate")
+    local TITLE_H = 28
+
+    local frame = CreateFrame("Frame", "SchlingelSetupWizard", UIParent, "BackdropTemplate")
     frame:SetSize(FRAME_W, FRAME_H)
     frame:SetPoint("CENTER")
-    frame:SetBackdrop(SchlingelInc.Constants.BACKDROP)
-    frame:SetBackdropColor(0.05, 0.05, 0.05, 0.97)
-    frame:SetBackdropBorderColor(0.6, 0.6, 0.6, 1)
+    frame:SetBackdrop({
+        bgFile   = "Interface\\BUTTONS\\WHITE8X8",
+        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+        tile = true, tileSize = 16, edgeSize = 16,
+        insets = { left = 4, right = 4, top = 4, bottom = 4 }
+    })
+    frame:SetBackdropColor(0.07, 0.07, 0.07, 0.96)
+    frame:SetBackdropBorderColor(0.45, 0.45, 0.45, 1)
     frame:SetFrameStrata("DIALOG")
     frame:SetMovable(true)
     frame:EnableMouse(true)
@@ -127,23 +134,28 @@ local function BuildFrame()
     frame:SetScript("OnDragStop", frame.StopMovingOrSizing)
     frame:Hide()
 
-    -- Logo
-    local icon = frame:CreateTexture(nil, "ARTWORK")
-    icon:SetTexture("Interface\\AddOns\\SchlingelInc\\media\\graphics\\SI_Transp_512_x_512_px.tga")
-    icon:SetSize(64, 64)
-    icon:SetPoint("TOP", frame, "TOP", 0, -16)
+    -- Title bar
+    local titleBg = frame:CreateTexture(nil, "BACKGROUND")
+    titleBg:SetPoint("TOPLEFT",  frame, "TOPLEFT",  4, -4)
+    titleBg:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -4, -4)
+    titleBg:SetHeight(TITLE_H)
+    titleBg:SetColorTexture(0.12, 0.12, 0.12, 1)
 
-    -- Title
-    local title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-    title:SetPoint("TOP", icon, "BOTTOM", 0, -8)
-    title:SetText("Schlingel Inc Setup")
-    title:SetTextColor(1, 0.82, 0, 1)
+    local titleIcon = frame:CreateTexture(nil, "OVERLAY")
+    titleIcon:SetSize(18, 18)
+    titleIcon:SetPoint("LEFT", titleBg, "LEFT", 6, 0)
+    titleIcon:SetTexture("Interface\\AddOns\\SchlingelInc\\media\\graphics\\SI_Transp_512_x_512_px.tga")
+
+    local titleText = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    titleText:SetPoint("LEFT", titleIcon, "RIGHT", 4, 0)
+    titleText:SetText("Schlingel Inc Setup")
+    titleText:SetTextColor(1, 0.82, 0, 1)
 
     -- Progress dots (max 5) — small colored squares, Classic-font-safe
     frame.dots = {}
     local dotContainer = CreateFrame("Frame", nil, frame)
     dotContainer:SetSize(DOT_SPACING * 5, DOT_SIZE)  -- resized dynamically in UpdateProgress
-    dotContainer:SetPoint("TOP", title, "BOTTOM", 0, -12)
+    dotContainer:SetPoint("TOP", frame, "TOP", 0, -(TITLE_H + 14))
     frame.dotContainer = dotContainer
     for i = 1, 5 do
         local dot = dotContainer:CreateTexture(nil, "OVERLAY")
@@ -160,7 +172,7 @@ local function BuildFrame()
 
     -- Divider below header
     local divTop = frame:CreateTexture(nil, "ARTWORK")
-    divTop:SetColorTexture(0.3, 0.3, 0.3, 0.8)
+    divTop:SetColorTexture(0.4, 0.4, 0.4, 0.7)
     divTop:SetSize(FRAME_W - 40, 1)
     divTop:SetPoint("TOP", frame.stepLabel, "BOTTOM", 0, -8)
 
@@ -174,7 +186,7 @@ local function BuildFrame()
 
     -- Footer divider
     local divBot = frame:CreateTexture(nil, "ARTWORK")
-    divBot:SetColorTexture(0.3, 0.3, 0.3, 0.8)
+    divBot:SetColorTexture(0.4, 0.4, 0.4, 0.7)
     divBot:SetSize(FRAME_W - 40, 1)
     divBot:SetPoint("BOTTOM", frame, "BOTTOM", 0, 52)
 
@@ -182,7 +194,7 @@ local function BuildFrame()
     frame.backBtn = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
     frame.backBtn:SetSize(90, 26)
     frame.backBtn:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 20, 16)
-    frame.backBtn:SetText("< Zurueck")
+    frame.backBtn:SetText("< Zurück")
     frame.backBtn:SetScript("OnClick", function() PrevStep(frame) end)
 
     frame.nextBtn = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
@@ -201,7 +213,7 @@ local function RenderDiscord(frame)
     local f = frame.contentAnchor
 
     local lbl = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    lbl:SetPoint("TOPLEFT", f, "BOTTOMLEFT", 20, -20)
+    lbl:SetPoint("TOPLEFT", f, "BOTTOMLEFT", 0, -20)
     lbl:SetWidth(FRAME_W - 40)
     lbl:SetJustifyH("CENTER")
     lbl:SetText("Gib deinen Discord Handle ein.\nEr wird mit deinem Profil gespeichert.")
@@ -242,7 +254,7 @@ local function RenderPronouns(frame)
     local f = frame.contentAnchor
 
     local lbl = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    lbl:SetPoint("TOPLEFT", f, "BOTTOMLEFT", 20, -20)
+    lbl:SetPoint("TOPLEFT", f, "BOTTOMLEFT", 0, -20)
     lbl:SetWidth(FRAME_W - 40)
     lbl:SetJustifyH("CENTER")
     lbl:SetText("Möchtest du bevorzugte Pronomen angeben?\nz.B. er/ihm, sie/ihr, they/them")
@@ -280,10 +292,10 @@ local function RenderRole(frame)
     local f = frame.contentAnchor
 
     local lbl = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    lbl:SetPoint("TOPLEFT", f, "BOTTOMLEFT", 20, -24)
+    lbl:SetPoint("TOPLEFT", f, "BOTTOMLEFT", 0, -24)
     lbl:SetWidth(FRAME_W - 40)
     lbl:SetJustifyH("CENTER")
-    lbl:SetText("Welche Rolle spielst du hauptsächlich?")
+    lbl:SetText("Welche Rollen spielst du? (Mehrfachauswahl möglich)")
     TrackChild(frame, lbl)
 
     local roles = SchlingelInc.Constants.ROLES
@@ -291,12 +303,17 @@ local function RenderRole(frame)
     local totalW = btnW * #roles + 10 * (#roles - 1)
     local startX = -(totalW / 2) + btnW / 2
 
-    frame._selectedRole = SchlingelOwnProfile and SchlingelOwnProfile.role or nil
+    -- Load existing selections from saved profile (split "/" delimited string)
+    frame._selectedRoles = {}
+    local savedRole = SchlingelOwnProfile and SchlingelOwnProfile.role or ""
+    for part in savedRole:gmatch("[^/]+") do
+        frame._selectedRoles[part] = true
+    end
     frame._roleBtns = {}
 
     local function RefreshRoleButtons()
         for _, entry in ipairs(frame._roleBtns) do
-            if entry.name == frame._selectedRole then
+            if frame._selectedRoles[entry.name] then
                 entry.btn:SetNormalFontObject(GameFontHighlight)
             else
                 entry.btn:SetNormalFontObject(GameFontNormal)
@@ -313,7 +330,11 @@ local function RenderRole(frame)
         table.insert(frame._roleBtns, { name = roleName, btn = btn })
 
         btn:SetScript("OnClick", function()
-            frame._selectedRole = roleName
+            if frame._selectedRoles[roleName] then
+                frame._selectedRoles[roleName] = nil
+            else
+                frame._selectedRoles[roleName] = true
+            end
             RefreshRoleButtons()
         end)
     end
@@ -322,13 +343,15 @@ local function RenderRole(frame)
 end
 
 local function OnNextRole(frame)
-    if not frame._selectedRole then
-        SchlingelInc:Print(SchlingelInc.Constants.COLORS.WARNING ..
-            "Bitte eine Rolle auswählen.|r")
-        return false
-    end
     SchlingelOwnProfile = SchlingelOwnProfile or {}
-    SchlingelOwnProfile.role = frame._selectedRole
+    -- Build ordered list (maintain ROLES order for consistent display)
+    local selected = {}
+    for _, roleName in ipairs(SchlingelInc.Constants.ROLES) do
+        if frame._selectedRoles[roleName] then
+            table.insert(selected, roleName)
+        end
+    end
+    SchlingelOwnProfile.role = #selected > 0 and table.concat(selected, "/") or nil
     return true
 end
 
@@ -337,7 +360,7 @@ local function RenderProfessions(frame)
     local f = frame.contentAnchor
 
     local lbl = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    lbl:SetPoint("TOPLEFT", f, "BOTTOMLEFT", 20, -16)
+    lbl:SetPoint("TOPLEFT", f, "BOTTOMLEFT", 0, -16)
     lbl:SetWidth(FRAME_W - 40)
     lbl:SetJustifyH("CENTER")
     lbl:SetText("Deine Berufe (erkannt oder manuell eingeben):")
@@ -347,8 +370,9 @@ local function RenderProfessions(frame)
 
     frame._profFields = {}
 
-    -- Column offsets: name col at x=0, skill col at x=240
-    local SKILL_X = 240
+    -- Columns centered: 225px name + 15px gap + 100px skill = 340px block, centered in 420px
+    local NAME_X  = 40
+    local SKILL_X = 280
 
     for slot = 1, 2 do
         local d = detected[slot]
@@ -356,12 +380,11 @@ local function RenderProfessions(frame)
 
         -- "Beruf N:" label above name field
         local nameLbl = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-        nameLbl:SetPoint("TOPLEFT", lbl, "BOTTOMLEFT", 0, yOff)
+        nameLbl:SetPoint("TOPLEFT", lbl, "BOTTOMLEFT", NAME_X, yOff)
         nameLbl:SetText("Beruf " .. slot .. ":")
         nameLbl:SetTextColor(0.8, 0.8, 0.8, 1)
         TrackChild(frame, nameLbl)
 
-        -- "Skill:" label above skill field, same row as nameLbl
         local skillLbl = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
         skillLbl:SetPoint("TOPLEFT", lbl, "BOTTOMLEFT", SKILL_X, yOff)
         skillLbl:SetText("Skill:")
@@ -428,7 +451,7 @@ local function RenderGuildJoin(frame)
     local f = frame.contentAnchor
 
     local lbl = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    lbl:SetPoint("TOPLEFT", f, "BOTTOMLEFT", 20, -24)
+    lbl:SetPoint("TOPLEFT", f, "BOTTOMLEFT", 0, -24)
     lbl:SetWidth(FRAME_W - 40)
     lbl:SetJustifyH("CENTER")
     lbl:SetText("Du bist noch nicht in der Gilde!\nSende eine Beitrittsanfrage an unsere Offiziere.")
@@ -457,6 +480,7 @@ function SchlingelInc:BuildWizardSteps(forceAll)
             id     = "discord",
             render = RenderDiscord,
             onNext = OnNextDiscord,
+            frameH = 250,
         })
     end
 
@@ -466,6 +490,7 @@ function SchlingelInc:BuildWizardSteps(forceAll)
             id     = "pronouns",
             render = RenderPronouns,
             onNext = OnNextPronouns,
+            frameH = 250,
         })
     end
 
@@ -474,6 +499,7 @@ function SchlingelInc:BuildWizardSteps(forceAll)
             id     = "role",
             render = RenderRole,
             onNext = OnNextRole,
+            frameH = 240,
         })
     end
 
@@ -482,6 +508,7 @@ function SchlingelInc:BuildWizardSteps(forceAll)
             id     = "professions",
             render = RenderProfessions,
             onNext = OnNextProfessions,
+            frameH = 315,
         })
     end
 
@@ -490,11 +517,13 @@ function SchlingelInc:BuildWizardSteps(forceAll)
             id     = "guild",
             render = RenderGuildJoin,
             onNext = nil,
+            frameH = 255,
         })
     end
 end
 
 function SchlingelInc:ShowSetupWizard(forceAll)
+    if not forceAll and WizardFrame and WizardFrame:IsShown() then return end
     SchlingelInc:BuildWizardSteps(forceAll)
     if #steps == 0 then return end
 
@@ -507,7 +536,8 @@ end
 -- Called from Main.lua on login (after guild cache is ready).
 function SchlingelInc:InitializeSetupWizard()
     SchlingelInc.EventManager:RegisterHandler("PLAYER_ENTERING_WORLD",
-        function()
+        function(event, isLogin, isReload)
+            if isLogin == false and isReload == false then return end
             C_Timer.After(6, function()
                 -- First: migrate old note data if present
                 SchlingelInc:MigrateFromGuildNoteIfNeeded()
