@@ -1,3 +1,12 @@
+# 3.6.1
+
+- Bugfix: Todesmeldungen in Dungeons und Raids werden nicht mehr an die Gilde gemeldet und im Todesfenster angezeigt
+- Bugfix: Handelsbeschränkung gilt jetzt nicht mehr innerhalb von Instanzen (Dungeons, Raids, Schlachtfelder, Arenen)
+- Bugfix: Offizier-Einrichtungsfenster erscheint beim Betreten oder Verlassen einer Instanz nicht mehr; öffnet sich nur noch beim echten Einloggen oder Reloaden
+- Bugfix: Offizier-Einrichtungsfenster hat jetzt einen X-Button zum Schließen
+- Bugfix: Beitrittsanfragen über das Addon funktionieren jetzt für Charaktere aller Level, nicht nur Level 1
+- Bugfix: Briefkasten war nach dem Einloggen gesperrt obwohl die Regel freigegeben war – das Addon liest die Regel jetzt erst aus der Gildeninfo bevor es den Briefkasten sperrt
+
 # 3.6.0
 
 - Neues Offizier Panel: Gildenregeln (Briefkasten, Auktionshaus, Handel, Gruppierung, Duelle, Level Cap) direkt im Spiel konfigurieren und in die Gildeninfo schreiben – erreichbar per Rechtsklick auf das Minimap-Icon
@@ -8,6 +17,7 @@
 - Bugfix: Profile von bereits eingeloggten Gildenmitgliedern wurden beim eigenen Login nicht empfangen; das Addon fordert beim Start nun aktiv Profile von allen online Mitgliedern an
 - Bugfix: Gildencheck im Briefkasten und bei der Gruppenregel lief bisher über einen vollständigen Roster-Scan; beide nutzen jetzt den Gildenmitglieder-Cache
 - Gildencache wird jetzt mit höherer Priorität aktualisiert, damit er für alle anderen Module stets aktuell ist
+- Mehrfachrollen: Spieler können jetzt mehrere Rollen gleichzeitig auswählen (z.B. Tank und Heal) – die Gildenansicht filtert und sortiert entsprechend
 
 # 3.5.2
 
