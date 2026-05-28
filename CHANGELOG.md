@@ -1,3 +1,8 @@
+# 3.6.2
+
+- Bugfix: Mail Handler stürzt jetzt nicht mehr nach dem Reload ab.
+- Feature: Mail Regel ist im Offi Setup nun ein Dropdown, um fein granulierter den Mailbox Zugang zu regulieren.
+
 # 3.6.1
 
 - Bugfix: Todesmeldungen in Dungeons und Raids werden nicht mehr an die Gilde gemeldet und im Todesfenster angezeigt

@@ -73,7 +73,7 @@ end
 
 -- Rule: Completely prohibit mailbox usage
 function SchlingelInc.Rules:ProhibitMailboxUsage()
-    if tonumber(SchlingelInc.InfoRules.mailRule) == 0 then return end
+    if tonumber(SchlingelInc.InfoRules.mailRule) ~= 1 then return end
     CloseMail()
     SchlingelInc.Popup:Show({
         title = "Briefkasten gesperrt!",

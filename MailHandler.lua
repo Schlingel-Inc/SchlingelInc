@@ -32,7 +32,7 @@ end
 function SchlingelInc.MailHandler:MailboxAddonActive()
     local detectedAddons = {}
     for _, addonName in ipairs(mailboxAddons) do
-        if IsAddOnLoaded(addonName) then
+        if C_AddOns.IsAddOnLoaded(addonName) then
             table.insert(detectedAddons, addonName)
         end
     end
@@ -60,43 +60,15 @@ end
 
 -- Eigenes Warn-Popup, wenn man auf eine "fremde" Mail klickt
 StaticPopupDialogs["CONFIRM_DELETE_NON_GUILD_MAIL"] = {
-    text = "|cffff0000HINWEIS:|r Post von Nicht-Gildenmitglied!\n\nDiese Post muss gelöscht werden.",
-    button1 = "Löschen",
+    text = "|cffff0000HINWEIS:|r Post von Nicht-Gildenmitglied!\n\nDiese Post muss entfernt werden.",
+    button1 = "Entfernen",
     button2 = "Abbrechen",
     OnAccept = function(_, data)
         if data and data.slot then
-            if not data.itemCount or data.itemCount == 0 then
+            if InboxItemCanDelete(data.slot) then
                 DeleteInboxItem(data.slot)
             else
-				local itemsPerPage = INBOXITEMS_TO_DISPLAY or 7
-                local buttonIndex = ((data.slot - 1) % itemsPerPage) + 1
-                local mailButton = _G["MailItem"..buttonIndex.."Button"]
-                if mailButton then
-                    -- Hide the guard temporarily to allow the original click handler to work
-                    if mailButton.mailGuard then
-                        mailButton.mailGuard:Hide()
-                    end
-
-                    -- Click the button to open the mail
-                    mailButton:Click()
-
-                    -- Kurz warten, bis das Fenster offen ist, dann Blizzards Lösch-Button triggern
-                    C_Timer.After(0.1, function()
-                        if OpenMailFrame:IsVisible() then
-                            OpenMailDeleteButton:Click()
-
-                            -- Falls Blizzard nochmal nachfragt (bei Items/Geld), bestätigen wir das auch automatisch
-                            C_Timer.After(0.1, function()
-                                for j = 1, 4 do
-                                    local f = _G["StaticPopup"..j]
-                                    if f and f:IsVisible() and (f.which == "DELETE_MAIL" or f.which == "CONFIRM_DELETE_ITEM") then
-                                        _G["StaticPopup"..j.."Button1"]:Click()
-                                    end
-                                end
-                            end)
-                        end
-                    end)
-                end
+                ReturnInboxItem(data.slot)
             end
         end
     end,
@@ -130,9 +102,66 @@ local function KillButton(btn)
     btn.isDead = true
 end
 
+local sendMailGuard
+
+local function IsAllowedRecipient()
+    local recipient = SendMailNameEditBox and SendMailNameEditBox:GetText() or ""
+    recipient = recipient:gsub("^%s+", ""):gsub("%s+$", "")
+
+    if recipient == "" then return false end
+
+    if recipient:find("-", 1, true) then
+        local normalizedRecipient = string.lower(recipient)
+        for _, member in ipairs(SchlingelInc.GuildCache:GetFullRoster() or {}) do
+            if member.fullName and string.lower(member.fullName) == normalizedRecipient then
+                return true
+            end
+        end
+        return false
+    end
+
+    return SchlingelInc.GuildCache:IsGuildMember(recipient)
+end
+
+local function UpdateSendMailGuard()
+    if not SendMailMailButton then return end
+
+    if not sendMailGuard then
+        sendMailGuard = CreateFrame("Button", nil, SendMailMailButton)
+        sendMailGuard:SetAllPoints()
+        sendMailGuard:SetFrameLevel(SendMailMailButton:GetFrameLevel() + 10)
+        sendMailGuard:EnableMouse(true)
+        sendMailGuard:SetScript("OnEnter", function(self)
+            GameTooltip:SetOwner(self, "ANCHOR_TOP")
+            GameTooltip:SetText("|cffff0000Post darf nur an Gildenmitglieder gesendet werden.|r", 1, 1, 1, true)
+            GameTooltip:Show()
+        end)
+        sendMailGuard:SetScript("OnLeave", function()
+            GameTooltip:Hide()
+        end)
+    end
+
+    if tonumber(SchlingelInc.InfoRules.mailRule) == 2 and not IsAllowedRecipient() then
+        sendMailGuard:Show()
+    else
+        sendMailGuard:Hide()
+    end
+end
+
 -- Geht die aktuelle Post-Seite durch
 local function UniversalScan()
     if not MailFrame:IsVisible() then return end
+
+    UpdateSendMailGuard()
+
+    if tonumber(SchlingelInc.InfoRules.mailRule) ~= 2 then
+        local itemsPerPage = INBOXITEMS_TO_DISPLAY or 7
+        for i = 1, itemsPerPage do
+            local button = _G["MailItem"..i.."Button"]
+            if button and button.mailGuard then button.mailGuard:Hide() end
+        end
+        return
+    end
 
     -- Wie viele Items sind insgesamt da?
     local numItems = GetInboxNumItems()
@@ -244,6 +273,20 @@ end)
 -- Falls irgendein Addon noch was macht
 if MailFrameTab1 then
     MailFrameTab1:HookScript("OnClick", DelayedScan)
+end
+
+if MailFrameTab2 then
+    MailFrameTab2:HookScript("OnClick", function()
+        C_Timer.After(0.05, UpdateSendMailGuard)
+    end)
+end
+
+if SendMailFrame then
+    SendMailFrame:HookScript("OnShow", UpdateSendMailGuard)
+end
+
+if SendMailNameEditBox then
+    SendMailNameEditBox:HookScript("OnTextChanged", UpdateSendMailGuard)
 end
 
 local errorListener = CreateFrame("Frame")

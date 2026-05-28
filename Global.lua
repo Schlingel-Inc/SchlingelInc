@@ -239,6 +239,10 @@ end
 -- Returns true on success, false if the player lacks officer permission.
 function SchlingelInc:WriteGuildInfo(mail, ah, trade, group, cap)
     if not CanGuildRemove() then return false end
+    local mailRule = tonumber(mail)
+    if mailRule ~= 0 and mailRule ~= 1 and mailRule ~= 2 then
+        mailRule = mail and 1 or 0
+    end
     local sep = SchlingelInc.Constants.GUILD_INFO_SEPARATOR
     local current = GetGuildInfoText() or ""
     local sepPos = current:find("\n\n" .. sep, 1, true)
@@ -253,7 +257,7 @@ function SchlingelInc:WriteGuildInfo(mail, ah, trade, group, cap)
     current = current:gsub("%s+$", "")
     local block = string.format("%s:%d%d%d%d",
         SchlingelInc.Constants.RULES_KEY,
-        mail  and 1 or 0,
+        mailRule,
         ah    and 1 or 0,
         trade and 1 or 0,
         group and 1 or 0)

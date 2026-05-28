@@ -185,8 +185,41 @@ local function RenderInitialRules(frame)
     lbl:SetText("Gildenregeln konfigurieren.\nDiese werden beim Klick auf Fertig in die Gildeninfo gespeichert.")
     Track(frame, lbl)
 
+    local mailRuleOptions = {
+        { value = 0, label = "Briefkasten erlauben" },
+        { value = 2, label = "Nur gildeninterne Post erlauben" },
+        { value = 1, label = "Briefkasten vollständig sperren" },
+    }
+    frame._initMailRule = 1
+
+    local mailLbl = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    mailLbl:SetPoint("TOPLEFT", lbl, "BOTTOMLEFT", 28, -16)
+    mailLbl:SetText("Briefkasten:")
+    Track(frame, mailLbl)
+
+    local mailDropdown = CreateFrame("Frame", nil, frame, "UIDropDownMenuTemplate")
+    mailDropdown:SetPoint("TOPLEFT", lbl, "BOTTOMLEFT", 132, -5)
+    UIDropDownMenu_SetWidth(mailDropdown, 235)
+    UIDropDownMenu_Initialize(mailDropdown, function()
+        for _, option in ipairs(mailRuleOptions) do
+            local value, label = option.value, option.label
+            local info = UIDropDownMenu_CreateInfo()
+            info.text = label
+            info.value = value
+            info.checked = frame._initMailRule == value
+            info.func = function()
+                frame._initMailRule = value
+                UIDropDownMenu_SetSelectedValue(mailDropdown, value)
+                UIDropDownMenu_SetText(mailDropdown, label)
+            end
+            UIDropDownMenu_AddButton(info)
+        end
+    end)
+    UIDropDownMenu_SetSelectedValue(mailDropdown, 1)
+    UIDropDownMenu_SetText(mailDropdown, "Briefkasten vollständig sperren")
+    Track(frame, mailDropdown)
+
     local ruleDefs = {
-        { label = "Briefkasten sperren" },
         { label = "Auktionshaus sperren" },
         { label = "Handel mit Nicht-Mitgliedern sperren" },
         { label = "Gruppierung mit Nicht-Mitgliedern sperren" },
@@ -195,7 +228,7 @@ local function RenderInitialRules(frame)
     frame._initRuleChecks = {}
     for i, rule in ipairs(ruleDefs) do
         local cb = CreateFrame("CheckButton", nil, frame, "UICheckButtonTemplate")
-        cb:SetPoint("TOPLEFT", lbl, "BOTTOMLEFT", 0, -8 - (i - 1) * 28)
+        cb:SetPoint("TOPLEFT", lbl, "BOTTOMLEFT", 0, -8 - i * 28)
         cb:SetSize(24, 24)
         cb:SetChecked(true)
 
@@ -207,7 +240,7 @@ local function RenderInitialRules(frame)
     end
 
     local capLbl = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    capLbl:SetPoint("TOPLEFT", lbl, "BOTTOMLEFT", 0, -8 - #ruleDefs * 28 - 10)
+    capLbl:SetPoint("TOPLEFT", lbl, "BOTTOMLEFT", 0, -8 - (1 + #ruleDefs) * 28 - 10)
     capLbl:SetText("Aktuelles Level Cap (0 = keines):")
     Track(frame, capLbl)
 
@@ -232,10 +265,10 @@ local function OnNextInitialRules(frame)
     local checks = frame._initRuleChecks or {}
     local cap = tonumber(frame._capEb and frame._capEb:GetText()) or 0
     return SchlingelInc:WriteGuildInfo(
+        frame._initMailRule or 1,
         checks[1] and checks[1]:GetChecked(),
         checks[2] and checks[2]:GetChecked(),
         checks[3] and checks[3]:GetChecked(),
-        checks[4] and checks[4]:GetChecked(),
         cap
     )
 end

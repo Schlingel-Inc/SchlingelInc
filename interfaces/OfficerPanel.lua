@@ -158,8 +158,51 @@ local function BuildPanel()
     local rc      = tabContents["rules"]
     local officer = IsOfficer()
 
+    local mailRuleOptions = {
+        { value = 0, label = "Briefkasten erlauben" },
+        { value = 2, label = "Nur gildeninterne Post erlauben" },
+        { value = 1, label = "Briefkasten vollständig sperren" },
+    }
+    local selectedMailRule = tonumber(SchlingelInc.InfoRules.mailRule) or 1
+    if selectedMailRule ~= 0 and selectedMailRule ~= 1 and selectedMailRule ~= 2 then
+        selectedMailRule = 1
+    end
+
+    local mailLbl = rc:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    mailLbl:SetPoint("TOPLEFT", rc, "TOPLEFT", 34, -16)
+    mailLbl:SetText("Briefkasten:")
+
+    local mailDropdown = CreateFrame("Frame", nil, rc, "UIDropDownMenuTemplate")
+    mailDropdown:SetPoint("TOPLEFT", rc, "TOPLEFT", 140, -5)
+    UIDropDownMenu_SetWidth(mailDropdown, 235)
+    UIDropDownMenu_Initialize(mailDropdown, function()
+        for _, option in ipairs(mailRuleOptions) do
+            local value, label = option.value, option.label
+            local info = UIDropDownMenu_CreateInfo()
+            info.text = label
+            info.value = value
+            info.checked = selectedMailRule == value
+            info.func = function()
+                selectedMailRule = value
+                UIDropDownMenu_SetSelectedValue(mailDropdown, value)
+                UIDropDownMenu_SetText(mailDropdown, label)
+            end
+            UIDropDownMenu_AddButton(info)
+        end
+    end)
+    for _, option in ipairs(mailRuleOptions) do
+        if option.value == selectedMailRule then
+            UIDropDownMenu_SetSelectedValue(mailDropdown, option.value)
+            UIDropDownMenu_SetText(mailDropdown, option.label)
+            break
+        end
+    end
+    if not officer then
+        UIDropDownMenu_DisableDropDown(mailDropdown)
+        mailLbl:SetTextColor(0.5, 0.5, 0.5, 1)
+    end
+
     local ruleDefs = {
-        { label = "Briefkasten sperren",                       dbKey = "mailRule" },
         { label = "Auktionshaus sperren",                      dbKey = "auctionHouseRule" },
         { label = "Handel mit Nicht-Mitgliedern sperren",      dbKey = "tradeRule" },
         { label = "Gruppierung mit Nicht-Mitgliedern sperren", dbKey = "groupingRule" },
@@ -167,7 +210,7 @@ local function BuildPanel()
     }
 
     local checkboxes = {}
-    local yOff = -8
+    local yOff = -38
     for _, rule in ipairs(ruleDefs) do
         local cb = CreateFrame("CheckButton", nil, rc, "UICheckButtonTemplate")
         cb:SetPoint("TOPLEFT", rc, "TOPLEFT", 8, yOff)
@@ -231,7 +274,7 @@ local function BuildPanel()
         updateBtn:SetScript("OnClick", function()
             local cap = tonumber(capEb:GetText()) or 0
             SchlingelInc:WriteGuildInfo(
-                checkboxes["Briefkasten sperren"]:GetChecked(),
+                selectedMailRule,
                 checkboxes["Auktionshaus sperren"]:GetChecked(),
                 checkboxes["Handel mit Nicht-Mitgliedern sperren"]:GetChecked(),
                 checkboxes["Gruppierung mit Nicht-Mitgliedern sperren"]:GetChecked(),
