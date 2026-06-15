@@ -20,11 +20,13 @@ SchlingelInc.Constants.GUILD_INFO_SEPARATOR = "--- SchlingelInc ---"
 -- Each digit (0/1) controls: mail, auction house, trade, grouping rules.
 SchlingelInc.Constants.RULES_KEY = "Schlingel"
 
--- Maximum level (TBC Classic = 70)
-SchlingelInc.Constants.MAX_LEVEL = 70
+-- Maximum level (TBC Classic = 70, Season of Discovery = 60)
+SchlingelInc.Constants.MAX_LEVEL = SchlingelInc.IsTBC and 70 or 60
 
 -- Level milestones for announcements
-SchlingelInc.Constants.LEVEL_MILESTONES = {10, 20, 30, 40, 50, 60, 70}
+SchlingelInc.Constants.LEVEL_MILESTONES = SchlingelInc.IsTBC
+	and {10, 20, 30, 40, 50, 60, 70}
+	or  {10, 20, 25, 30, 40, 50, 60}
 
 -- Instance types
 SchlingelInc.Constants.INSTANCE_TYPES = {
@@ -130,6 +132,12 @@ SchlingelInc.Constants.POPUPBACKDROP = {
 -- Inactivity threshold (days)
 SchlingelInc.Constants.INACTIVE_DAYS_THRESHOLD = 10
 
+-- SoD-specific NPC IDs that players are not allowed to trade with (Classic Era only)
+SchlingelInc.Constants.SOD_BLOCKED_TRADERS = {
+    [233335] = true,
+    [233428] = true,
+}
+
 -- Guild member roles
 SchlingelInc.Constants.ROLES = { "Tank", "Heal", "DPS" }
 
@@ -144,7 +152,8 @@ SchlingelInc.Constants.PROFESSION_NAMES_DE = {
     ["Enchanting"]     = "Verzauberung",
     ["Engineering"]    = "Ingenieurskunst",
     ["Herbalism"]      = "Kräuterkunde",
-    ["Jewelcrafting"]  = "Juwelierkunst",
+    -- Jewelcrafting only exists in TBC Classic, not in Classic Era / SoD
+    ["Jewelcrafting"]  = SchlingelInc.IsTBC and "Juwelierkunst" or nil,
     ["Leatherworking"] = "Lederverarbeitung",
     ["Mining"]         = "Bergbau",
     ["Skinning"]       = "Kürschnerei",

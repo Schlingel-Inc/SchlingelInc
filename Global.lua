@@ -1,5 +1,6 @@
 -- Global table for the addon
-SchlingelInc = {}
+-- Use `or {}` to preserve any fields already set by Compat.lua (e.g. IsTBC, IsClassicEra)
+SchlingelInc = SchlingelInc or {}
 
 -- Account-wide guild configuration (officer ranks, etc.). Initialized here so it
 -- is available before any module accesses it; WoW has already loaded the SavedVariable
@@ -157,8 +158,13 @@ function SchlingelInc:IsInRaid()
 end
 
 function SchlingelInc:IsInArena()
-    local isArena, _ = IsActiveBattlefieldArena()
-    return isArena
+    -- Arenas only exist in TBC Classic and above; IsActiveBattlefieldArena()
+    -- does not exist in Classic Era (SoD).
+    if SchlingelInc.IsTBC and IsActiveBattlefieldArena then
+        local isArena, _ = IsActiveBattlefieldArena()
+        return isArena
+    end
+    return false
 end
 
 function SchlingelInc:ParseVersion(v)

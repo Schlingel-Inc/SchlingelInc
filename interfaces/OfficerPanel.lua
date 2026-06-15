@@ -172,7 +172,7 @@ local function BuildPanel()
     mailLbl:SetPoint("TOPLEFT", rc, "TOPLEFT", 34, -16)
     mailLbl:SetText("Briefkasten:")
 
-    local mailDropdown = CreateFrame("Frame", nil, rc, "UIDropDownMenuTemplate")
+    local mailDropdown = CreateFrame("Frame", "SchlingelIncMailDropdown", rc, "UIDropDownMenuTemplate")
     mailDropdown:SetPoint("TOPLEFT", rc, "TOPLEFT", 140, -5)
     UIDropDownMenu_SetWidth(mailDropdown, 235)
     UIDropDownMenu_Initialize(mailDropdown, function()

@@ -1,3 +1,18 @@
+# 3.7.0
+
+- Portierung auf Season of Discovery (Classic 1.x): Interface-Version auf 11508 aktualisiert
+- Multi-Edition-Support: Das Addon läuft jetzt sowohl in TBC Classic als auch in Season of Discovery aus einer gemeinsamen Codebasis
+- Neues `Compat.lua` erkennt die laufende WoW-Edition zur Ladezeit (`SchlingelInc.IsTBC` / `SchlingelInc.IsClassicEra`)
+- Level Cap auf 60 für SoD, bleibt 70 für TBC Classic
+- Level-Meilensteine für SoD angepasst (neu: Level 25); für TBC Classic unverändert
+- Juwelierkunst aus dem Berufs-Mapping entfernt (nicht in Classic Era / SoD verfügbar)
+- SoD: Bestimmte Händler (NPC-IDs 233335 und 233428) werden automatisch gesperrt – Gossip- und Händlerfenster werden geschlossen und ein Hinweis-Popup wird angezeigt
+- Dev-Tooltip: Spieler mit dem Rang "Devschlingel" sehen im Tooltip die NPC-ID von Kreaturen sowie eine Spieler-ID für Charaktere
+- Debug: Neuer Befehl `/schlingeldebug events [start|stop]` – trackt alle gefeuerten WoW-Events im Chat
+- Bugfix: `IsActiveBattlefieldArena()` wird in SoD nicht mehr aufgerufen (API existiert nicht in Classic 1.x)
+- Bugfix: Offizier-Panel stürzte beim Öffnen ab, weil das Briefkasten-Dropdown keinen globalen Frame-Namen hatte – `UIDropDownMenu_DisableDropDown` benötigt einen benannten Frame
+- Bugfix: `SchlingelInc = {}` in `Global.lua` überschrieb die von `Compat.lua` gesetzten Editions-Flags – alle editionsspezifischen Prüfungen (Händlersperre, Arena-Check, Level Cap) waren dadurch wirkungslos
+
 # 3.6.2
 
 - Bugfix: Mail Handler stürzt jetzt nicht mehr nach dem Reload ab.

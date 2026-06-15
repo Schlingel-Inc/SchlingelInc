@@ -153,6 +153,33 @@ function SchlingelInc.Rules:ProhibitGroupingWithNonGuildMembers()
     end
 end
 
+-- Rule: Block interaction with SoD-specific traders (Classic Era only)
+-- NPC ID is extracted from the target's GUID (format: Creature-0-realm-map-instance-npcID-spawnUID)
+-- We block at GOSSIP_SHOW. CloseGossip() is a protected call and cannot be used from a timer,
+-- so we hide the GossipFrame widget directly instead.
+function SchlingelInc.Rules:ProhibitBlockedTrader()
+    if not SchlingelInc.IsClassicEra then return end
+
+    local guid = UnitGUID("npc") or UnitGUID("target")
+    if not guid then return end
+
+    local npcID = tonumber(guid:match("Creature%-%d+%-%d+%-%d+%-%d+%-(%d+)"))
+    if npcID and SchlingelInc.Constants.SOD_BLOCKED_TRADERS[npcID] then
+        C_Timer.After(0, function()
+            if GossipFrame and GossipFrame:IsShown() then
+                GossipFrame:Hide()
+            end
+            if MerchantFrame and MerchantFrame:IsShown() then
+                MerchantFrame:Hide()
+            end
+            SchlingelInc.Popup:Show({
+                title = "Händler gesperrt!",
+                message = "Der Handel mit diesem Händler ist in der Gilde nicht erlaubt.",
+            })
+        end)
+    end
+end
+
 function SchlingelInc.Rules:AutoDeclineDuels()
 	if(not SchlingelOptionsDB.auto_decline_duels) then
 		return
@@ -218,4 +245,14 @@ function SchlingelInc.Rules:Initialize()
 		function()
 			SchlingelInc.Rules:AutoDeclineDuels()
 		end, 0, "DuelAutoDecline")
+
+	SchlingelInc.EventManager:RegisterHandler("GOSSIP_SHOW",
+		function()
+			SchlingelInc.Rules:ProhibitBlockedTrader()
+		end, 0, "RuleBlockedTrader")
+
+	SchlingelInc.EventManager:RegisterHandler("MERCHANT_SHOW",
+		function()
+			SchlingelInc.Rules:ProhibitBlockedTrader()
+		end, 0, "RuleBlockedTraderMerchant")
 end

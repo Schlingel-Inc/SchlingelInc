@@ -7,7 +7,7 @@ SchlingelInc.Debug = {}
 -- Checks if the player has debug permission
 function SchlingelInc.Debug:HasPermission()
 	local _, rank = GetGuildInfo("player")
-	return rank == "DevSchlingel"
+	return rank == "DevSchlingel" or rank == "Devschlingel"
 end
 
 -- Shows a permission error message
@@ -60,6 +60,15 @@ function SchlingelInc.Debug:Initialize()
 			end
 		elseif command == "guildrequest" then
 			SchlingelInc.Debug:TestGuildRequest(args[2])
+		elseif command == "events" then
+			local sub = args[2] or "start"
+			if sub == "start" then
+				SchlingelInc.Debug:StartEventTracking()
+			elseif sub == "stop" then
+				SchlingelInc.Debug:StopEventTracking()
+			else
+				SchlingelInc:Print(SchlingelInc.Constants.COLORS.ERROR .. "Usage: /schlingeldebug events [start|stop]|r")
+			end
 		elseif command == "cachestats" then
 			SchlingelInc.Debug:ShowCacheStats()
 		elseif command == "cacherefresh" then
@@ -87,6 +96,7 @@ function SchlingelInc.Debug:ShowHelp()
 	print(SchlingelInc.colorCode .. "/schlingeldebug cap" .. "|r - Test cap announcement frame")
 	print(SchlingelInc.colorCode .. "/schlingeldebug deathset <number>" .. "|r - Sets the death counter")
 	print(SchlingelInc.colorCode .. "/schlingeldebug guildrequest <name>" .. "|r - Tests guild request to an officer")
+	print(SchlingelInc.colorCode .. "/schlingeldebug events [start|stop]" .. "|r - Track all fired WoW events in chat")
 	print(SchlingelInc.colorCode .. "/schlingeldebug cachestats" .. "|r - Shows guild cache statistics")
 	print(SchlingelInc.colorCode .. "/schlingeldebug cacherefresh" .. "|r - Forces guild cache refresh")
 	print(SchlingelInc.Constants.COLORS.WARNING .. "Alias: /sdebug <command>" .. "|r")
@@ -223,4 +233,29 @@ function SchlingelInc.Debug:Print(message)
 	if SchlingelInc.Debug.enabled then
 		print(SchlingelInc.Constants.COLORS.WARNING .. "[DEBUG]|r " .. message)
 	end
+end
+
+-- Event tracker: hooks all WoW events and prints them to chat
+local eventTrackerFrame
+function SchlingelInc.Debug:StartEventTracking()
+	if eventTrackerFrame then
+		SchlingelInc:Print(SchlingelInc.Constants.COLORS.WARNING .. "Event tracking is already running. Use /schlingeldebug events stop to stop.|r")
+		return
+	end
+	eventTrackerFrame = CreateFrame("Frame", "SchlingelIncEventTracker")
+	eventTrackerFrame:RegisterAllEvents()
+	eventTrackerFrame:SetScript("OnEvent", function(_, event, ...)
+		print(SchlingelInc.Constants.COLORS.INFO .. "[EVENT]|r " .. event)
+	end)
+	SchlingelInc:Print(SchlingelInc.Constants.COLORS.SUCCESS .. "Event tracking started. Use /schlingeldebug events stop to stop.|r")
+end
+
+function SchlingelInc.Debug:StopEventTracking()
+	if not eventTrackerFrame then
+		SchlingelInc:Print(SchlingelInc.Constants.COLORS.WARNING .. "Event tracking is not running.|r")
+		return
+	end
+	eventTrackerFrame:UnregisterAllEvents()
+	eventTrackerFrame = nil
+	SchlingelInc:Print(SchlingelInc.Constants.COLORS.SUCCESS .. "Event tracking stopped.|r")
 end

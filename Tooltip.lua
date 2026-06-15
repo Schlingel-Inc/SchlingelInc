@@ -49,4 +49,30 @@ _G.GameTooltip:HookScript("OnTooltipSetUnit", function(self)
     if profile.deaths and profile.deaths > 0 then
         _G.GameTooltip:AddDoubleLine("Tode:", tostring(profile.deaths), 0.8, 0.2, 0.2, 0.8, 0.2, 0.2)
     end
+
+    -- Dev info: NPC ID shown only to players with the Devschlingel rank
+    local _, myRank = _G.GetGuildInfo("player")
+    if myRank == "Devschlingel" then
+        _G.GameTooltip:AddLine(" ")
+        _G.GameTooltip:AddDoubleLine("[Dev] Player ID:", UnitGUID(unit):match("%-(%d+)$") or "?", 0.4, 1, 0.4, 0.7, 0.7, 0.7)
+    end
+end)
+
+-- Dev info for NPCs: show NPC ID for Devschlingel rank players
+_G.GameTooltip:HookScript("OnTooltipSetUnit", function(self)
+    local _, unit = self:GetUnit()
+    if not unit then return end
+    if UnitPlayerControlled(unit) then return end
+
+    local _, myRank = _G.GetGuildInfo("player")
+    if myRank ~= "Devschlingel" then return end
+
+    local guid = UnitGUID(unit)
+    if not guid then return end
+
+    local npcID = guid:match("Creature%-%d+%-%d+%-%d+%-%d+%-(%d+)")
+    if npcID then
+        _G.GameTooltip:AddLine(" ")
+        _G.GameTooltip:AddDoubleLine("[Dev] NPC ID:", npcID, 0.4, 1, 0.4, 0.7, 0.7, 0.7)
+    end
 end)
