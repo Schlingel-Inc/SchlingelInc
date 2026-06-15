@@ -109,6 +109,7 @@ function SchlingelInc.Debug:ShowRules()
 	print(SchlingelInc.colorCode .. "Auction House Rule: " .. SchlingelInc.InfoRules.auctionHouseRule .. "|r")
 	print(SchlingelInc.colorCode .. "Trade Rule: " .. SchlingelInc.InfoRules.tradeRule .. "|r")
 	print(SchlingelInc.colorCode .. "Grouping Rule: " .. SchlingelInc.InfoRules.groupingRule .. "|r")
+	print(SchlingelInc.colorCode .. "Blocked Trader Rule: " .. SchlingelInc.InfoRules.blockedTraderRule .. "|r")
 end
 
 -- Enables/Disables debug mode

@@ -243,11 +243,15 @@ end
 
 -- Encodes and writes guild rules into the SchlingelInc block of guild info text.
 -- Returns true on success, false if the player lacks officer permission.
-function SchlingelInc:WriteGuildInfo(mail, ah, trade, group, cap)
+function SchlingelInc:WriteGuildInfo(mail, ah, trade, group, blockedTrader, cap)
     if not CanGuildRemove() then return false end
     local mailRule = tonumber(mail)
     if mailRule ~= 0 and mailRule ~= 1 and mailRule ~= 2 then
         mailRule = mail and 1 or 0
+    end
+    if cap == nil and (type(blockedTrader) == "number" or tonumber(blockedTrader) ~= nil) then
+        cap = tonumber(blockedTrader)
+        blockedTrader = true
     end
     local sep = SchlingelInc.Constants.GUILD_INFO_SEPARATOR
     local current = GetGuildInfoText() or ""
@@ -261,12 +265,13 @@ function SchlingelInc:WriteGuildInfo(mail, ah, trade, group, cap)
         current = current:gsub(SchlingelInc.Constants.RULES_CAP_KEY .. ":%d+", "")
     end
     current = current:gsub("%s+$", "")
-    local block = string.format("%s:%d%d%d%d",
+    local block = string.format("%s:%d%d%d%d%d",
         SchlingelInc.Constants.RULES_KEY,
         mailRule,
         ah    and 1 or 0,
         trade and 1 or 0,
-        group and 1 or 0)
+        group and 1 or 0,
+        blockedTrader and 1 or 0)
     if cap and cap > 0 then
         block = block .. string.format(" %s:%d", SchlingelInc.Constants.RULES_CAP_KEY, cap)
     end

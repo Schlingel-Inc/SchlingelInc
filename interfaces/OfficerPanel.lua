@@ -206,6 +206,7 @@ local function BuildPanel()
         { label = "Auktionshaus sperren",                      dbKey = "auctionHouseRule" },
         { label = "Handel mit Nicht-Mitgliedern sperren",      dbKey = "tradeRule" },
         { label = "Gruppierung mit Nicht-Mitgliedern sperren", dbKey = "groupingRule" },
+        { label = "SoD-Händler sperren",                       dbKey = "blockedTraderRule" },
         { label = "Duelle automatisch ablehnen",               dbKey = nil },
     }
 
@@ -278,6 +279,7 @@ local function BuildPanel()
                 checkboxes["Auktionshaus sperren"]:GetChecked(),
                 checkboxes["Handel mit Nicht-Mitgliedern sperren"]:GetChecked(),
                 checkboxes["Gruppierung mit Nicht-Mitgliedern sperren"]:GetChecked(),
+                checkboxes["SoD-Händler sperren"]:GetChecked(),
                 cap
             )
             SchlingelOptionsDB = SchlingelOptionsDB or {}

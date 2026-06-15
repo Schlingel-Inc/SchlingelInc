@@ -223,6 +223,7 @@ local function RenderInitialRules(frame)
         { label = "Auktionshaus sperren" },
         { label = "Handel mit Nicht-Mitgliedern sperren" },
         { label = "Gruppierung mit Nicht-Mitgliedern sperren" },
+        { label = "SoD-Händler sperren" },
     }
 
     frame._initRuleChecks = {}
@@ -269,6 +270,7 @@ local function OnNextInitialRules(frame)
         checks[1] and checks[1]:GetChecked(),
         checks[2] and checks[2]:GetChecked(),
         checks[3] and checks[3]:GetChecked(),
+        checks[4] and checks[4]:GetChecked(),
         cap
     )
 end

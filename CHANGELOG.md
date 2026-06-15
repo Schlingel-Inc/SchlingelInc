@@ -7,6 +7,7 @@
 - Level-Meilensteine für SoD angepasst (neu: Level 25); für TBC Classic unverändert
 - Juwelierkunst aus dem Berufs-Mapping entfernt (nicht in Classic Era / SoD verfügbar)
 - SoD: Bestimmte Händler (NPC-IDs 233335 und 233428) werden automatisch gesperrt – Gossip- und Händlerfenster werden geschlossen und ein Hinweis-Popup wird angezeigt
+- Offizier-Panel und Offizier-Einrichtungsassistent: Die Sperre für SoD-Händler kann jetzt wie die anderen Gildenregeln ein-/ausgeschaltet und in der Gildeninfo gespeichert werden
 - Dev-Tooltip: Spieler mit dem Rang "Devschlingel" sehen im Tooltip die NPC-ID von Kreaturen sowie eine Spieler-ID für Charaktere
 - Debug: Neuer Befehl `/schlingeldebug events [start|stop]` – trackt alle gefeuerten WoW-Events im Chat
 - Bugfix: `IsActiveBattlefieldArena()` wird in SoD nicht mehr aufgerufen (API existiert nicht in Classic 1.x)

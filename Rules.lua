@@ -5,7 +5,8 @@ SchlingelInc.InfoRules = {
     mailRule = 1,
     auctionHouseRule = 1,
     tradeRule = 1,
-    groupingRule = 1
+    groupingRule = 1,
+    blockedTraderRule = 1
 }
 
 -- Current level cap (fetched from guild info)
@@ -39,11 +40,23 @@ function SchlingelInc.Rules:LoadFromGuildInfo()
     SchlingelInc.Rules:GetRules(function(text)
         if not text then return end
 
-        -- Try new compact format: Schlingel:1111
-        local mailRule, auctionHouseRule, tradeRule, groupingRule =
-            text:match(SchlingelInc.Constants.RULES_KEY .. ":(%d)(%d)(%d)(%d)")
+        -- Try new compact format: Schlingel:11111
+        local mailRule, auctionHouseRule, tradeRule, groupingRule, blockedTraderRule =
+            text:match(SchlingelInc.Constants.RULES_KEY .. ":(%d)(%d)(%d)(%d)(%d)")
+
+        -- Fall back to previous compact format: Schlingel:1111
+        if not mailRule then
+            mailRule, auctionHouseRule, tradeRule, groupingRule =
+                text:match(SchlingelInc.Constants.RULES_KEY .. ":(%d)(%d)(%d)(%d)")
+        end
 
         -- Fall back to legacy format: Schlingel: 1, 1, 1, 1
+        if not mailRule then
+            mailRule, auctionHouseRule, tradeRule, groupingRule, blockedTraderRule =
+                text:match("Schlingel:%s*(%d+)%s*,?%s*(%d+)%s*,?%s*(%d+)%s*,?%s*(%d+)%s*,?%s*(%d+)")
+        end
+
+        -- Fall back to previous legacy format: Schlingel: 1, 1, 1, 1
         if not mailRule then
             mailRule, auctionHouseRule, tradeRule, groupingRule =
                 text:match("Schlingel:%s*(%d+)%s*,?%s*(%d+)%s*,?%s*(%d+)%s*,?%s*(%d+)")
@@ -53,6 +66,7 @@ function SchlingelInc.Rules:LoadFromGuildInfo()
         SchlingelInc.InfoRules.auctionHouseRule = tonumber(auctionHouseRule) or SchlingelInc.InfoRules.auctionHouseRule
         SchlingelInc.InfoRules.tradeRule        = tonumber(tradeRule)        or SchlingelInc.InfoRules.tradeRule
         SchlingelInc.InfoRules.groupingRule     = tonumber(groupingRule)     or SchlingelInc.InfoRules.groupingRule
+        SchlingelInc.InfoRules.blockedTraderRule = tonumber(blockedTraderRule) or SchlingelInc.InfoRules.blockedTraderRule
 
         -- Try new cap format: SchlingelCap:40
         local currentCap = text:match(SchlingelInc.Constants.RULES_CAP_KEY .. ":(%d+)")
@@ -159,6 +173,7 @@ end
 -- so we hide the GossipFrame widget directly instead.
 function SchlingelInc.Rules:ProhibitBlockedTrader()
     if not SchlingelInc.IsClassicEra then return end
+    if tonumber(SchlingelInc.InfoRules.blockedTraderRule) == 0 then return end
 
     local guid = UnitGUID("npc") or UnitGUID("target")
     if not guid then return end

@@ -16,8 +16,8 @@ SchlingelInc.Constants.RULES_CAP_KEY = "SchlingelCap"
 SchlingelInc.Constants.GUILD_INFO_SEPARATOR = "--- SchlingelInc ---"
 
 -- Key used in the guild info text to encode rules.
--- Officers put this in the guild description: e.g. "Schlingel:1111"
--- Each digit (0/1) controls: mail, auction house, trade, grouping rules.
+-- Officers put this in the guild description: e.g. "Schlingel:11111"
+-- Digits control: mail, auction house, trade, grouping, blocked SoD traders.
 SchlingelInc.Constants.RULES_KEY = "Schlingel"
 
 -- Maximum level (TBC Classic = 70, Season of Discovery = 60)
