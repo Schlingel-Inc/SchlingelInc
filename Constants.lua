@@ -82,6 +82,13 @@ SchlingelInc.Constants.OFFICER_RANKS = {
 	"Großschlingel",     -- Officers
 }
 
+SchlingelInc.Constants.OFFICER_RANKS_SOD = {
+	"Oberschlingel",      -- Developer
+	"Lootwichtel",    -- Officers
+	"Devschlingel",     -- Officers
+	"Großschlingel",	 -- Officers
+}
+
 -- Fallback officer character names for players outside the guild
 -- Used when the player is not yet in the guild (Level 1 requests)
 -- This list should contain the main characters of active officers
@@ -109,6 +116,17 @@ SchlingelInc.Constants.FALLBACK_OFFICERS = {
 	"Kurtibrown",
 	"Dörtchen",
 	"Totanka",
+}
+
+SchlingelInc.Constants.FALLBACK_OFFICERS_SOD = {
+	"Hausgeist",
+	"Devschlingel",
+	"Cricksu",
+	"Kurtibrown",
+	"Totanka",
+	"Syluni",
+	"Sylunì",
+	"Tinaswift",
 }
 
 -- UI Backdrop Settings
@@ -147,7 +165,7 @@ SchlingelInc.Constants.ROLES = { "Tank", "Heal", "DPS" }
 -- to German at both save-time (DetectProfessions) and render-time (GuildPanel).
 SchlingelInc.Constants.PROFESSION_NAMES_DE = {
     -- Primary trade professions
-    ["Alchemy"]        = "Alchimie",
+    ["Alchemy"]        = "Alchemie",
     ["Blacksmithing"]  = "Schmiedekunst",
     ["Enchanting"]     = "Verzauberung",
     ["Engineering"]    = "Ingenieurskunst",
