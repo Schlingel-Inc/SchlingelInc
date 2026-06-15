@@ -2,6 +2,20 @@
 SchlingelInc.GuildRecruitment = SchlingelInc.GuildRecruitment or {}
 SchlingelInc.GuildRecruitment.inviteRequests = SchlingelInc.GuildRecruitment.inviteRequests or {}
 
+local function GetDefaultOfficerRanks()
+    if SchlingelInc.IsClassicEra and SchlingelInc.Constants.OFFICER_RANKS_SOD then
+        return SchlingelInc.Constants.OFFICER_RANKS_SOD
+    end
+    return SchlingelInc.Constants.OFFICER_RANKS
+end
+
+local function GetFallbackOfficerNames()
+    if SchlingelInc.IsClassicEra and SchlingelInc.Constants.FALLBACK_OFFICERS_SOD then
+        return SchlingelInc.Constants.FALLBACK_OFFICERS_SOD
+    end
+    return SchlingelInc.Constants.FALLBACK_OFFICERS
+end
+
 -- Returns a list of all officers who have invite permissions
 -- Based on ranks defined in Constants.OFFICER_RANKS
 -- Only works for players who are already in the guild!
@@ -18,7 +32,7 @@ local function GetAuthorizedOfficers()
 	local officerRanks = (SchlingelGuildDB and SchlingelGuildDB.officerRanks
 		and #SchlingelGuildDB.officerRanks > 0)
 		and SchlingelGuildDB.officerRanks
-		or SchlingelInc.Constants.OFFICER_RANKS
+		or GetDefaultOfficerRanks()
 
 	-- Loop through all authorized ranks
 	for _, rankName in ipairs(officerRanks) do
@@ -53,8 +67,8 @@ function SchlingelInc.GuildRecruitment:SendGuildRequest()
     local message = string.format("INVITE_REQUEST:%s:%d:%d:%s", playerName, playerLevel, playerExp, safeZone)
 
     -- Level 1 players are ALWAYS outside the guild
-    -- Use the fallback officer list from Constants
-    local guildOfficers = SchlingelInc.Constants.FALLBACK_OFFICERS
+    -- Use the fallback officer list from Constants (edition-specific)
+    local guildOfficers = GetFallbackOfficerNames()
 
     if #guildOfficers == 0 then
         return

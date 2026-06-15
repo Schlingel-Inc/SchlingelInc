@@ -22,7 +22,7 @@ if LDB then -- Only proceeds if LibDataBroker is available
                 if IsInGuild() then
                     SchlingelInc.OfficerPanel:Toggle()
                 else
-                    SchlingelInc:CheckAndShowGuildJoinPrompt()
+                    SchlingelInc:ShowSetupWizard(true)
                 end
             end
         end,
@@ -37,7 +37,7 @@ if LDB then -- Only proceeds if LibDataBroker is available
             if IsInGuild() then
                 GameTooltip:AddLine("Rechtsklick: Offizier Panel", 0.8, 0.8, 0.8)
             else
-                GameTooltip:AddLine("Rechtsklick: Gilde beitreten", 1, 1, 1)
+                GameTooltip:AddLine("Rechtsklick: Setup-Wizard", 1, 1, 1)
             end
             GameTooltip:Show()
         end,
