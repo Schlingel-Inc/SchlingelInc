@@ -167,10 +167,35 @@ function SchlingelInc.Rules:ProhibitGroupingWithNonGuildMembers()
     end
 end
 
+local function CloseBlockedTraderPanels()
+    if MerchantFrame and MerchantFrame:IsShown() then
+        if HideUIPanel then
+            HideUIPanel(MerchantFrame)
+        else
+            MerchantFrame:Hide()
+        end
+        if CloseMerchant then
+            CloseMerchant()
+        end
+    end
+
+    if GossipFrame and GossipFrame:IsShown() then
+        if HideUIPanel then
+            HideUIPanel(GossipFrame)
+        else
+            GossipFrame:Hide()
+        end
+        if CloseGossip then
+            CloseGossip()
+        elseif C_GossipInfo and C_GossipInfo.CloseGossip then
+            C_GossipInfo.CloseGossip()
+        end
+    end
+end
+
 -- Rule: Block interaction with SoD-specific traders (Classic Era only)
 -- NPC ID is extracted from the target's GUID (format: Creature-0-realm-map-instance-npcID-spawnUID)
--- We block at GOSSIP_SHOW. CloseGossip() is a protected call and cannot be used from a timer,
--- so we hide the GossipFrame widget directly instead.
+-- Use UIPanel closing so Blizzard clears the internal close stack that ESC depends on.
 function SchlingelInc.Rules:ProhibitBlockedTrader()
     if not SchlingelInc.IsClassicEra then return end
     if tonumber(SchlingelInc.InfoRules.blockedTraderRule) == 0 then return end
@@ -180,18 +205,13 @@ function SchlingelInc.Rules:ProhibitBlockedTrader()
 
     local npcID = tonumber(guid:match("Creature%-%d+%-%d+%-%d+%-%d+%-(%d+)"))
     if npcID and SchlingelInc.Constants.SOD_BLOCKED_TRADERS[npcID] then
-        C_Timer.After(0, function()
-            if GossipFrame and GossipFrame:IsShown() then
-                GossipFrame:Hide()
-            end
-            if MerchantFrame and MerchantFrame:IsShown() then
-                MerchantFrame:Hide()
-            end
-            SchlingelInc.Popup:Show({
-                title = "Händler gesperrt!",
-                message = "Der Handel mit diesem Händler ist in der Gilde nicht erlaubt.",
-            })
-        end)
+        CloseBlockedTraderPanels()
+        C_Timer.After(0, CloseBlockedTraderPanels)
+
+        SchlingelInc.Popup:Show({
+            title = "Händler gesperrt!",
+            message = "Der Handel mit diesem Händler ist in der Gilde nicht erlaubt.",
+        })
     end
 end
 

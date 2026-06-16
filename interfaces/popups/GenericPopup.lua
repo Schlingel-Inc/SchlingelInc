@@ -5,6 +5,20 @@ SchlingelInc.Popup = {
 	activePopups = {}
 }
 
+local function RemovePopup(popupFrame)
+	for i, popup in ipairs(SchlingelInc.Popup.activePopups) do
+		if popup == popupFrame then
+			table.remove(SchlingelInc.Popup.activePopups, i)
+			break
+		end
+	end
+	UIFrameFadeRemoveFrame(popupFrame)
+	popupFrame:SetAlpha(1)
+	popupFrame.fadeTimer = nil
+	popupFrame.cleanupTimer = nil
+	popupFrame:StopMovingOrSizing()
+end
+
 -- Creates and shows a generic popup with skull icon, title, and message
 -- @param options table with fields:
 --   - title: title text (required)
@@ -20,7 +34,7 @@ function SchlingelInc.Popup:Show(options)
 	local titleColor = {1, 0.55, 0.73}
 	local messageColor = {1, 1, 1}
 	local borderColor = {1, 0.55, 0.73, 0}
-	local displayTime = 3
+	local displayTime = options.displayTime or 3
 
 	-- Create the frame
 	local frame = CreateFrame("Frame", nil, UIParent, BackdropTemplateMixin and "BackdropTemplate")
@@ -30,11 +44,10 @@ function SchlingelInc.Popup:Show(options)
 	frame:SetBackdropColor(0, 0, 0, 0.50)
 	frame:SetBackdropBorderColor(borderColor[1], borderColor[2], borderColor[3], borderColor[4])
 	frame:SetFrameStrata("DIALOG")
-	frame:SetMovable(true)
-	frame:EnableMouse(true)
-	frame:RegisterForDrag("LeftButton")
-	frame:SetScript("OnDragStart", frame.StartMoving)
-	frame:SetScript("OnDragStop", frame.StopMovingOrSizing)
+	frame:SetToplevel(false)
+	frame:SetMovable(false)
+	frame:EnableMouse(false)
+	frame:SetScript("OnHide", RemovePopup)
 
 	-- Skull icon
 	local iconFrame = CreateFrame("Frame", nil, frame)
@@ -68,16 +81,11 @@ function SchlingelInc.Popup:Show(options)
 	table.insert(self.activePopups, frame)
 
 	-- Schedule fade out and cleanup
-	local fadeTimer = C_Timer.NewTimer(displayTime, function()
+	frame.fadeTimer = C_Timer.NewTimer(displayTime, function()
 		UIFrameFadeOut(frame, 1, 1, 0)
-		C_Timer.After(1, function()
-			frame:Hide()
-			-- Remove from active popups
-			for i, popup in ipairs(SchlingelInc.Popup.activePopups) do
-				if popup == frame then
-					table.remove(SchlingelInc.Popup.activePopups, i)
-					break
-				end
+		frame.cleanupTimer = C_Timer.After(1, function()
+			if frame:IsShown() then
+				frame:Hide()
 			end
 		end)
 	end)
