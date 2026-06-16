@@ -23,6 +23,7 @@ function SchlingelInc.GuildPanel:CreateFilterPanel()
     -- Anchored to main frame's TOPRIGHT so it moves with it
     fp:SetPoint("TOPLEFT", f, "TOPRIGHT", 6, 0)
     fp:Hide()
+    SchlingelInc:RegisterFrameForEscape(fp)
 
     local INNER_W = FP_W - PAD * 2
 

@@ -49,6 +49,25 @@ function SchlingelInc:CountTable(table)
     return count
 end
 
+function SchlingelInc:RegisterFrameForEscape(frame)
+    if not frame or not frame.GetName or not UISpecialFrames then
+        return
+    end
+
+    local frameName = frame:GetName()
+    if not frameName or frameName == "" then
+        return
+    end
+
+    for _, registeredName in ipairs(UISpecialFrames) do
+        if registeredName == frameName then
+            return
+        end
+    end
+
+    table.insert(UISpecialFrames, frameName)
+end
+
 -- Stores the timestamp of the last PvP warning for each player.
 SchlingelInc.lastPvPAlert = {}
 

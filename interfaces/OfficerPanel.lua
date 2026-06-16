@@ -72,6 +72,7 @@ local function BuildPanel()
     end)
     SchlingelInc:RestoreFramePosition(f, "officerpanel_position")
     f:Hide()
+    SchlingelInc:RegisterFrameForEscape(f)
 
     -- ── Title bar ─────────────────────────────────────────────────────────
     local titleBg = f:CreateTexture(nil, "BACKGROUND")

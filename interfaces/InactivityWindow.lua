@@ -7,7 +7,7 @@ SchlingelInc = SchlingelInc or {}
 function SchlingelInc:CreateInactivityWindow()
 	if self.InactivityWindow then return end
 
-	local inactiveFrame = CreateFrame("Frame", nil, UIParent, "BackdropTemplate")
+	local inactiveFrame = CreateFrame("Frame", "SchlingelIncInactivityWindow", UIParent, "BackdropTemplate")
 	inactiveFrame:SetSize(650, 450)
 	inactiveFrame:SetPoint("CENTER")
 	inactiveFrame:SetBackdrop({
@@ -25,6 +25,7 @@ function SchlingelInc:CreateInactivityWindow()
 	inactiveFrame:SetScript("OnDragStart", inactiveFrame.StartMoving)
 	inactiveFrame:SetScript("OnDragStop", inactiveFrame.StopMovingOrSizing)
 	inactiveFrame:Hide()
+	SchlingelInc:RegisterFrameForEscape(inactiveFrame)
 
 	-- Header
 	local header = inactiveFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")

@@ -71,6 +71,7 @@ local function BuildWizFrame()
     f:SetScript("OnDragStart", f.StartMoving)
     f:SetScript("OnDragStop", f.StopMovingOrSizing)
     f:Hide()
+    SchlingelInc:RegisterFrameForEscape(f)
 
     -- Title bar
     local titleBg = f:CreateTexture(nil, "BACKGROUND")

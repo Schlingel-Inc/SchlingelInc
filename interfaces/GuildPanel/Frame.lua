@@ -13,6 +13,11 @@ function SchlingelInc.GuildPanel:Create()
     if self.frame then return end
     ComputeFrameWidth()
 
+    local function HideFilterFrames()
+        if SchlingelInc.GuildPanel.filterPanel then SchlingelInc.GuildPanel.filterPanel:Hide() end
+        if SchlingelInc.GuildPanel.filterProfList then SchlingelInc.GuildPanel.filterProfList:Hide() end
+    end
+
     local f = CreateFrame("Frame", GP.PANEL_NAME, UIParent, "BackdropTemplate")
     f:SetSize(GP.FRAME_W, GP.FRAME_H)
     f:SetFrameStrata("MEDIUM")
@@ -35,6 +40,8 @@ function SchlingelInc.GuildPanel:Create()
         local point, _, relPoint, x, y = self:GetPoint()
         SchlingelOptionsDB.guildpanel_position = { point = point, relPoint = relPoint, x = x, y = y }
     end)
+    f:SetScript("OnHide", HideFilterFrames)
+    SchlingelInc:RegisterFrameForEscape(f)
 
     -- Restore saved position or default to center
     if SchlingelOptionsDB and SchlingelOptionsDB.guildpanel_position then
@@ -97,8 +104,6 @@ function SchlingelInc.GuildPanel:Create()
     closeBtn:SetPoint("TOPRIGHT", f, "TOPRIGHT", -2, -2)
     closeBtn:SetScript("OnClick", function()
         f:Hide()
-        if SchlingelInc.GuildPanel.filterPanel    then SchlingelInc.GuildPanel.filterPanel:Hide()    end
-        if SchlingelInc.GuildPanel.filterProfList then SchlingelInc.GuildPanel.filterProfList:Hide() end
     end)
 
     -- ── Column headers (clickable — sort asc/desc on each click) ──────────
