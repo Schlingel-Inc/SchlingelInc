@@ -21,8 +21,10 @@ if LDB then -- Only proceeds if LibDataBroker is available
             elseif button == "RightButton" then
                 if IsInGuild() then
                     SchlingelInc.OfficerPanel:Toggle()
+                elseif SchlingelInc:IsProfileComplete() then
+                    SchlingelInc:ShowGuildJoinPrompt()
                 else
-                    SchlingelInc:ShowSetupWizard(true)
+                    SchlingelInc:ShowSetupWizard(false)
                 end
             end
         end,
@@ -36,8 +38,10 @@ if LDB then -- Only proceeds if LibDataBroker is available
             GameTooltip:AddLine("Shift+Linksklick: Tode anzeigen", 0.8, 0.8, 0.8)
             if IsInGuild() then
                 GameTooltip:AddLine("Rechtsklick: Offizier Panel", 0.8, 0.8, 0.8)
+            elseif SchlingelInc:IsProfileComplete() then
+                GameTooltip:AddLine("Rechtsklick: Beitrittsanfrage senden", 1, 1, 1)
             else
-                GameTooltip:AddLine("Rechtsklick: Setup-Wizard", 1, 1, 1)
+                GameTooltip:AddLine("Rechtsklick: Profil einrichten", 1, 1, 1)
             end
             GameTooltip:Show()
         end,
