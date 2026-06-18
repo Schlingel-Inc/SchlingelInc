@@ -2,13 +2,35 @@
 SchlingelInc.LevelUps = {}
 SchlingelInc.LevelUps.progressCache = {}  -- shortName -> { level, xpCurrent, xpMax, timestamp }
 
+-- Persists an entry to the officer-only progress DB.
+local function SaveProgressEntry(shortName, entry)
+    if not CanGuildRemove() then return end
+    SchlingelProgressDB = SchlingelProgressDB or {}
+    SchlingelProgressDB[shortName] = entry
+end
+
 local lastBroadcast = 0
+local lastXPBroadcast = 0
 
 local function BroadcastProgress()
     if not IsInGuild() then return end
     local now = time()
     if now - lastBroadcast < 5 then return end
     lastBroadcast = now
+    local name = UnitName("player")
+    if not name then return end
+    C_ChatInfo.SendAddonMessage(SchlingelInc.prefix,
+        string.format("PROGRESS:%s:%d:%d:%d", name, UnitLevel("player"), UnitXP("player"), UnitXPMax("player")),
+        "GUILD")
+end
+
+-- Separate rate-limited broadcast for XP gain events (fires very frequently during play).
+local function BroadcastProgressOnXP()
+    if not IsInGuild() then return end
+    local now = time()
+    if now - lastXPBroadcast < 60 then return end
+    lastXPBroadcast = now
+    lastBroadcast = now  -- prevent the 5s guard from firing right after
     local name = UnitName("player")
     if not name then return end
     C_ChatInfo.SendAddonMessage(SchlingelInc.prefix,
@@ -39,6 +61,16 @@ function SchlingelInc.LevelUps:Initialize()
 
     SchlingelInc.EventManager:RegisterHandler("PLAYER_ENTERING_WORLD",
         function()
+            -- Officers: restore progress cache from persistent storage.
+            C_Timer.After(2, function()
+                if CanGuildRemove() and SchlingelProgressDB then
+                    for k, v in pairs(SchlingelProgressDB) do
+                        if not SchlingelInc.LevelUps.progressCache[k] then
+                            SchlingelInc.LevelUps.progressCache[k] = v
+                        end
+                    end
+                end
+            end)
             C_Timer.After(3, BroadcastProgress)
         end, 0, "LevelUpProgressLogin")
 
@@ -47,18 +79,27 @@ function SchlingelInc.LevelUps:Initialize()
             BroadcastProgress()
         end, 0, "LevelUpProgressZone")
 
+    -- PLAYER_XP_UPDATE fires on every XP gain (kills, quests, etc.).
+    -- Uses a 60s cooldown to avoid flooding the guild channel during active grinding.
+    SchlingelInc.EventManager:RegisterHandler("PLAYER_XP_UPDATE",
+        function()
+            BroadcastProgressOnXP()
+        end, 0, "LevelUpProgressXP")
+
     SchlingelInc.EventManager:RegisterHandler("CHAT_MSG_ADDON",
         function(_, prefix, message, _, sender)
             if prefix ~= SchlingelInc.prefix then return end
             local level, xpCurrent, xpMax = message:match("^PROGRESS:[^:]+:(%d+):(%d+):(%d+)$")
             if level then
                 local shortName = SchlingelInc:RemoveRealmFromName(sender)
-                SchlingelInc.LevelUps.progressCache[shortName] = {
+                local entry = {
                     level     = tonumber(level),
                     xpCurrent = tonumber(xpCurrent),
                     xpMax     = tonumber(xpMax),
                     timestamp = time(),
                 }
+                SchlingelInc.LevelUps.progressCache[shortName] = entry
+                SaveProgressEntry(shortName, entry)
             end
         end, 0, "LevelUpProgressReceive")
 end
