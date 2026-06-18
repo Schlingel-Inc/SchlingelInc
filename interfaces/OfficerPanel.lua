@@ -591,6 +591,7 @@ end
 -- ── Public API ────────────────────────────────────────────────────────────────
 
 function SchlingelInc.OfficerPanel:Toggle()
+    if not CanGuildRemove() then return end
     if not frame then
         frame = BuildPanel()
     end
