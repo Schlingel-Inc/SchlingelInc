@@ -17,7 +17,6 @@ libs\AceGUI-3.0\AceGUI-3.0.xml
 libs\AceConfig-3.0\AceConfig-3.0.xml
 
 # Unsere lua files.
-Compat.lua
 Global.lua
 MiniMapIcon.lua
 Constants.lua

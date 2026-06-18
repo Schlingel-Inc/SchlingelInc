@@ -73,50 +73,16 @@ SchlingelInc.Constants.PRONOUNS = {
 }
 
 -- Guild ranks with invite permissions (for Guild Recruitment)
--- These ranks receive guild invite requests via addon message
 SchlingelInc.Constants.OFFICER_RANKS = {
-	"Devschlingel",      -- Developer
-	"Pfundschlingel",    -- Officers
-	"Großschlingel",     -- Officers
-}
-
-SchlingelInc.Constants.OFFICER_RANKS_SOD = {
-	"Oberschlingel",      -- Developer
-	"Lootwichtel",    -- Officers
-	"Devschlingel",     -- Officers
-	"Großschlingel",	 -- Officers
+	"Oberschlingel",
+	"Lootwichtel",
+	"Devschlingel",
+	"Großschlingel",
 }
 
 -- Fallback officer character names for players outside the guild
 -- Used when the player is not yet in the guild (Level 1 requests)
--- This list should contain the main characters of active officers
 SchlingelInc.Constants.FALLBACK_OFFICERS = {
-	-- Officers
-	"Asperra",
-	"Aevela",
-	"Korvo",
-	"Raixxen",
-	"Cricksudin",
-	"Hvvtronlx",
-	"Hwtrønix",
-	"Mussne",
-	"Bartzmorak",
-	"Pfeilgiftfro",
-	"Atjara",
-	"Asperra",
-	"Jensha",
-	-- Dev-Schlingel
-	"Pudidev",
-	"Cricksumage",
-	"Devschlingel",
-	-- Guild leadership
-	"Syluri",
-	"Kurtibrown",
-	"Dörtchen",
-	"Totanka",
-}
-
-SchlingelInc.Constants.FALLBACK_OFFICERS_SOD = {
 	"Hausgeist",
 	"Devschlingel",
 	"Cricksu",
