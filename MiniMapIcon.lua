@@ -13,18 +13,22 @@ if LDB then -- Only proceeds if LibDataBroker is available
         icon = "Interface\\AddOns\\SchlingelInc\\media\\graphics\\icon-minimap.tga", -- Path to icon
         OnClick = function(clickedFrame, button)
             if button == "LeftButton" then
-                if IsShiftKeyDown() then
-                    SchlingelInc:ToggleDeathLogWindow()
+                if IsInGuild() then
+                    if IsShiftKeyDown() then
+                        SchlingelInc:ToggleDeathLogWindow()
+                    else
+                        SchlingelInc.GuildPanel:Toggle()
+                    end
                 else
-                    SchlingelInc.GuildPanel:Toggle()
+                    if SchlingelInc:IsProfileComplete() then
+                        SchlingelInc:ShowGuildJoinPrompt()
+                    else
+                        SchlingelInc:ShowSetupWizard(false)
+                    end
                 end
             elseif button == "RightButton" then
                 if IsInGuild() and CanGuildRemove() then
                     SchlingelInc.OfficerPanel:Toggle()
-                elseif SchlingelInc:IsProfileComplete() then
-                    SchlingelInc:ShowGuildJoinPrompt()
-                else
-                    SchlingelInc:ShowSetupWizard(false)
                 end
             end
         end,
@@ -34,14 +38,18 @@ if LDB then -- Only proceeds if LibDataBroker is available
             GameTooltip:SetOwner(selfFrame, "ANCHOR_RIGHT")
             GameTooltip:AddLine(SchlingelInc.name, 1, 0.7, 0.9)
             GameTooltip:AddLine("Version: " .. (SchlingelInc.version or "Unknown"), 1, 1, 1)
-            GameTooltip:AddLine("Linksklick: Gilde anzeigen", 1, 1, 1)
-            GameTooltip:AddLine("Shift+Linksklick: Tode anzeigen", 0.8, 0.8, 0.8)
-            if IsInGuild() and CanGuildRemove() then
-                GameTooltip:AddLine("Rechtsklick: Offizier Panel", 0.8, 0.8, 0.8)
-            elseif SchlingelInc:IsProfileComplete() then
-                GameTooltip:AddLine("Rechtsklick: Beitrittsanfrage senden", 1, 1, 1)
+            if IsInGuild() then
+                GameTooltip:AddLine("Linksklick: Gilde anzeigen", 1, 1, 1)
+                GameTooltip:AddLine("Shift+Linksklick: Tode anzeigen", 0.8, 0.8, 0.8)
+                if CanGuildRemove() then
+                    GameTooltip:AddLine("Rechtsklick: Offizier Panel", 0.8, 0.8, 0.8)
+                end
             else
-                GameTooltip:AddLine("Rechtsklick: Profil einrichten", 1, 1, 1)
+                if SchlingelInc:IsProfileComplete() then
+                    GameTooltip:AddLine("Linksklick: Beitrittsanfrage senden", 1, 1, 1)
+                else
+                    GameTooltip:AddLine("Linksklick: Profil anlegen", 1, 1, 1)
+                end
             end
             GameTooltip:Show()
         end,

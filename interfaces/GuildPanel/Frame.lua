@@ -311,6 +311,7 @@ end
 -- ── Toggle / Init ─────────────────────────────────────────────────────────────
 
 function SchlingelInc.GuildPanel:Toggle()
+    if not IsInGuild() then return end
     if not self.frame then self:Create() end
     if self.frame:IsShown() then
         self.frame:Hide()
