@@ -128,6 +128,17 @@ function SchlingelInc.GuildProfiles:Initialize()
             end)
         end, 90, "GuildProfilesBroadcast")
 
+    -- Broadcast profile when joining the guild mid-session.
+    SchlingelInc.EventManager:RegisterHandler("PLAYER_GUILD_UPDATE",
+        function()
+            if IsInGuild() then
+                C_Timer.After(3, function()
+                    SchlingelInc.GuildProfiles:Broadcast()
+                    C_ChatInfo.SendAddonMessage(SchlingelInc.prefix, "PROFILE_REQUEST", "GUILD")
+                end)
+            end
+        end, 0, "GuildProfilesGuildUpdate")
+
     -- Update profession ranks whenever the player skills up anything.
     -- DetectProfessions() filters to primary tradeskills (isAbandonable=true) only,
     -- so weapon/secondary skill-ups produce no change and trigger no broadcast.

@@ -152,4 +152,12 @@ function SchlingelInc.GuildCache:Initialize()
 				SchlingelInc.GuildCache:RequestUpdate()
 			end)
 		end, 90, "GuildCacheInit")
+
+	-- Refresh roster when the player joins or leaves a guild mid-session.
+	SchlingelInc.EventManager:RegisterHandler("PLAYER_GUILD_UPDATE",
+		function()
+			C_Timer.After(1, function()
+				SchlingelInc.GuildCache:RequestUpdate()
+			end)
+		end, 90, "GuildCacheGuildUpdate")
 end
