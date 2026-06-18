@@ -221,10 +221,10 @@ local function RenderInitialRules(frame)
     Track(frame, mailDropdown)
 
     local ruleDefs = {
-        { label = "Auktionshaus sperren" },
-        { label = "Handel mit Nicht-Mitgliedern sperren" },
-        { label = "Gruppierung mit Nicht-Mitgliedern sperren" },
-        { label = "SoD-Händler sperren" },
+        { label = "Auktionshaus sperren",                      dbKey = "auctionHouseRule" },
+        { label = "Handel mit Nicht-Mitgliedern sperren",      dbKey = "tradeRule" },
+        { label = "Gruppierung mit Nicht-Mitgliedern sperren", dbKey = "groupingRule" },
+        { label = "SoD-Händler sperren",                       dbKey = "blockedTraderRule" },
     }
 
     frame._initRuleChecks = {}
@@ -232,7 +232,7 @@ local function RenderInitialRules(frame)
         local cb = CreateFrame("CheckButton", nil, frame, "UICheckButtonTemplate")
         cb:SetPoint("TOPLEFT", lbl, "BOTTOMLEFT", 0, -8 - i * 28)
         cb:SetSize(24, 24)
-        cb:SetChecked(true)
+        cb:SetChecked(SchlingelInc.InfoRules[rule.dbKey] == 1)
 
         local cblbl = cb:CreateFontString(nil, "OVERLAY", "GameFontNormal")
         cblbl:SetPoint("LEFT", cb, "RIGHT", 4, 0)
