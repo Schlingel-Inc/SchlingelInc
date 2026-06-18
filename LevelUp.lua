@@ -1,20 +1,7 @@
 -- LevelUp.lua
--- Handles level-up milestone announcements to guild chat
-
 SchlingelInc.LevelUps = {}
 
--- Registers level-up event handler
--- Announces to guild when player reaches a milestone level
-function SchlingelInc.LevelUps:Initialize()
-	SchlingelInc.EventManager:RegisterHandler("PLAYER_LEVEL_UP",
-		function(_, level)
-			CheckForMilestone(level)
-			SchlingelInc.LevelUps:CheckForCap(level, true)
-		end, 0, "LevelUpEvents")
-
-end
-
-function CheckForMilestone(level)
+local function CheckForMilestone(level)
 	-- Cap level takes priority; the cap announcement handles it instead
 	if level >= SchlingelInc.Rules.CurrentCap then return end
 
@@ -28,6 +15,14 @@ function CheckForMilestone(level)
 			C_ChatInfo.SendAddonMessage(SchlingelInc.prefix, "LEVELUP:" .. player .. ":" .. level, "GUILD")
 		end
 	end
+end
+
+function SchlingelInc.LevelUps:Initialize()
+	SchlingelInc.EventManager:RegisterHandler("PLAYER_LEVEL_UP",
+		function(_, level)
+			CheckForMilestone(level)
+			SchlingelInc.LevelUps:CheckForCap(level, true)
+		end, 0, "LevelUpEvents")
 end
 
 function SchlingelInc.LevelUps:CheckForCap(level, announce)

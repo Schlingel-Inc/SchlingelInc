@@ -91,7 +91,7 @@ function SchlingelInc.Death:Initialize()
 			local level = UnitLevel("player")
 			local sex = UnitSex("player")
 
-			local inPvP = SchlingelInc:IsInBattleground() or SchlingelInc:IsInArena()
+			local inPvP = SchlingelInc:IsInBattleground() or SchlingelInc:IsInRaid() or SchlingelInc:IsInArena()
 			if inPvP and level == SchlingelInc.Rules.CurrentCap then
 				return
 			end
