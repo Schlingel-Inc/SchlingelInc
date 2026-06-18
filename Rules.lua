@@ -199,7 +199,6 @@ local lastBlockedNPCBlock = 0
 -- NPC ID is extracted from the target's GUID (format: Creature-0-realm-map-instance-npcID-spawnUID)
 -- Use UIPanel closing so Blizzard clears the internal close stack that ESC depends on.
 function SchlingelInc.Rules:ProhibitBlockedTrader()
-    if not SchlingelInc.IsSoD then return end
     if tonumber(SchlingelInc.InfoRules.blockedTraderRule) == 0 then return end
 
     local guid = UnitGUID("npc") or UnitGUID("target")

@@ -3,17 +3,11 @@ SchlingelInc.GuildRecruitment = SchlingelInc.GuildRecruitment or {}
 SchlingelInc.GuildRecruitment.inviteRequests = SchlingelInc.GuildRecruitment.inviteRequests or {}
 
 local function GetDefaultOfficerRanks()
-    if SchlingelInc.IsSoD then
-        return SchlingelInc.Constants.OFFICER_RANKS_SOD
-    end
-    return SchlingelInc.Constants.OFFICER_RANKS
+    return SchlingelInc.Constants.OFFICER_RANKS_SOD
 end
 
 local function GetFallbackOfficerNames()
-    if SchlingelInc.IsSoD then
-        return SchlingelInc.Constants.FALLBACK_OFFICERS_SOD
-    end
-    return SchlingelInc.Constants.FALLBACK_OFFICERS
+    return SchlingelInc.Constants.FALLBACK_OFFICERS_SOD
 end
 
 -- Returns a list of all officers who have invite permissions
