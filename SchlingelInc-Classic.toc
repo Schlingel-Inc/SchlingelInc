@@ -30,7 +30,6 @@ Options.lua
 Rules.lua
 GuildRecruitment.lua
 LevelUp.lua
-MailHandler.lua
 AnnouncementQueue.lua
 interfaces\popups\GenericPopup.lua
 interfaces\popups\DeathAnnouncement.lua
