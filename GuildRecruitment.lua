@@ -3,36 +3,30 @@ SchlingelInc.GuildRecruitment = SchlingelInc.GuildRecruitment or {}
 SchlingelInc.GuildRecruitment.inviteRequests = SchlingelInc.GuildRecruitment.inviteRequests or {}
 
 local function GetDefaultOfficerRanks()
-    if SchlingelInc.IsClassicEra and SchlingelInc.Constants.OFFICER_RANKS_SOD then
+    if SchlingelInc.IsSoD then
         return SchlingelInc.Constants.OFFICER_RANKS_SOD
     end
     return SchlingelInc.Constants.OFFICER_RANKS
 end
 
 local function GetFallbackOfficerNames()
-    if SchlingelInc.IsClassicEra and SchlingelInc.Constants.FALLBACK_OFFICERS_SOD then
+    if SchlingelInc.IsSoD then
         return SchlingelInc.Constants.FALLBACK_OFFICERS_SOD
     end
     return SchlingelInc.Constants.FALLBACK_OFFICERS
 end
 
 -- Returns a list of all officers who have invite permissions
--- Based on ranks defined in Constants.OFFICER_RANKS
+-- Based on hardcoded rank names in Constants — this is a dedicated guild addon.
 -- Only works for players who are already in the guild!
 local function GetAuthorizedOfficers()
-	-- Check if player is in a guild
 	if not IsInGuild() then
 		SchlingelInc.Debug:Print("Player is not in a guild - cannot retrieve officers")
 		return {}
 	end
 
 	local officers = {}
-
-	-- Use ranks configured via OfficerWizard; fall back to hardcoded Constants if not set yet
-	local officerRanks = (SchlingelGuildDB and SchlingelGuildDB.officerRanks
-		and #SchlingelGuildDB.officerRanks > 0)
-		and SchlingelGuildDB.officerRanks
-		or GetDefaultOfficerRanks()
+	local officerRanks = GetDefaultOfficerRanks()
 
 	-- Loop through all authorized ranks
 	for _, rankName in ipairs(officerRanks) do
