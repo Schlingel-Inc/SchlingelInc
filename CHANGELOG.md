@@ -1,3 +1,12 @@
+# 4.0.0
+
+- Einrichtungsassistent: Der Berufsschritt erscheint jetzt nicht mehr bei jedem Einloggen – eine einmalige Eingabe genügt. Spieler auf Level 1 ohne Berufe überspringen diesen Schritt automatisch
+- Gildenansicht und Todes-Fenster sind jetzt ausschließlich für Gildenmitglieder sichtbar
+- Nicht-Gildenmitglieder haben am Minimap-Icon einen eigenen Flow: Linksklick öffnet solange den Einrichtungsassistenten, bis das Profil vollständig ist – danach wird direkt die Beitrittsanfrage geöffnet
+- Gilde beigetreten ohne Reload: Das Addon lädt nach dem Annehmen einer Gildeneinladung die Mitgliederliste automatisch nach – die Gildenansicht funktioniert sofort, kein Reload mehr nötig
+- Offizier-Panel → Fortschritt: Level- und XP-Daten der Mitglieder bleiben jetzt über Reloads erhalten und müssen nicht erst neu gesammelt werden. Daten werden außerdem während des aktiven Spielens regelmäßig aktualisiert, nicht nur beim Einloggen oder Zonenchange
+- Bugfix: Einladungs-Popup hatte ein verschobenes Layout – Icon ragte aus dem Fensterrahmen heraus, Buttons waren falsch positioniert. Alles korrekt ausgerichtet
+
 # 3.7.0
 
 - Portierung auf Season of Discovery (Classic 1.x): Interface-Version auf 11508 aktualisiert

@@ -1,7 +1,7 @@
 # Schlingel Inc - WoW Addon
 
 [![CurseForge Downloads](https://img.shields.io/curseforge/dt/1224740?style=for-the-badge&logo=curseforge)](https://www.curseforge.com/wow/addons/schlingel-addon)
-[![WoW Version](https://img.shields.io/badge/WoW-Classic%20TBC%202.5.x-blue?style=for-the-badge&logo=battledotnet)](https://worldofwarcraft.blizzard.com/)
+[![WoW Version](https://img.shields.io/badge/WoW-Season%20of%20Discovery-blue?style=for-the-badge&logo=battledotnet)](https://worldofwarcraft.blizzard.com/)
 [![Discord](https://img.shields.io/badge/Discord-DerHauge-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/KXkyUZW)
 [![Ko-fi Pudi](https://img.shields.io/badge/Ko--fi-Pudi-FF5E5B?style=for-the-badge&logo=ko-fi&logoColor=white)](https://ko-fi.com/einfachpudi)
 [![Ko-fi Cricksu](https://img.shields.io/badge/Ko--fi-Cricksu-FF5E5B?style=for-the-badge&logo=ko-fi&logoColor=white)](https://ko-fi.com/cricksu)
@@ -24,7 +24,7 @@ Spieler können der Gilde direkt über das Addon-Interface beitreten.
 - **Anfragedetails:** Name, Level, XP, Zone, Gold werden automatisch übermittelt
 - **Ein-Klick-Verwaltung:** Offiziere können Anfragen mit einem Klick annehmen oder ablehnen
 
-> **So trittst du bei:** Logge dich ein, klicke auf das rosa "SI"-Symbol an der Minimap und drücke "Beitrittsanfrage senden".
+> **So trittst du bei:** Logge dich ein und klicke auf das rosa "SI"-Symbol an der Minimap. Solange dein Profil noch nicht fertig ist, öffnet sich der Einrichtungsassistent. Sobald er abgeschlossen ist, erscheint beim nächsten Klick direkt der "Beitrittsanfrage senden"-Button.
 
 ### Death Tracking & Announcements
 
@@ -111,13 +111,14 @@ Erweitert Tooltips mit nützlichen Informationen.
 Zentraler Zugriffspunkt für alle Addon-Funktionen.
 
 **Funktionen:**
-- **Linksklick:** Gildenübersicht anzeigen/verstecken
-- **Shift+Linksklick:** Death Log anzeigen/verstecken
-- **Rechtsklick (Gildenmitglieder):** Offizier Panel öffnen
-- **Rechtsklick (Nicht-Mitglieder):** Gildenbeitritts-Prompt öffnen
+- **Linksklick (Gildenmitglieder):** Gildenübersicht anzeigen/verstecken
+- **Shift+Linksklick (Gildenmitglieder):** Death Log anzeigen/verstecken
+- **Rechtsklick (Offiziere):** Offizier Panel öffnen
+- **Linksklick (Nicht-Mitglieder, Profil unvollständig):** Einrichtungsassistenten öffnen
+- **Linksklick (Nicht-Mitglieder, Profil fertig):** Beitrittsanfrage senden
 - **Tooltip zeigt:**
   - Addon Version
-  - Verfügbare Funktionen
+  - Verfügbare Funktionen je nach Status
 
 ### Offiziers-Werkzeuge
 
@@ -127,6 +128,7 @@ Spezielle Funktionen für Gildenoffiziere.
 - **Regeln konfigurieren:** Briefkasten, Auktionshaus, Handel, Gruppierung, Duelle und Level Cap direkt im Spiel ein-/ausschalten
 - **Gildeninfo aktualisieren:** Änderungen werden mit einem Klick in die Gildeninfo geschrieben und sofort von allen Mitgliedern geladen
 - **Inaktive Mitglieder:** Zeigt Mitglieder die 10+ Tage offline sind, mit Name, Level, Rang und Offline-Dauer sowie direktem Entfernen-Button
+- **Fortschritt:** Übersicht über Level und XP-Fortschritt aller Gildenmitglieder – wird automatisch aktualisiert wenn Mitglieder einloggen, die Zone wechseln oder aktiv leveln. Daten bleiben über Reloads hinweg erhalten
 
 **Offizier-Einrichtungsassistent** (automatisch beim ersten Start, oder manuell über das Offizier Panel):
 - **Schritt 1:** Auswahl der Ränge, die Beitrittsanfragen erhalten sollen
@@ -173,15 +175,15 @@ Das Addon hat einige optionale Einstellungen die du im WoW Options-Menü unter "
 - **Death Log Größe:** Ziehe an der unteren rechten Ecke um die Größe anzupassen
 - **Discord Handle:** Wird automatisch beim ersten Login abgefragt und in der Gildennotiz gespeichert
 - **Discord Handle ändern:** `/setHandle <handle>` um den Discord Handle zu ändern
-- **Gildenbeitritt:** Rechtsklick auf Minimap-Icon und "Beitrittsanfrage senden" drücken
+- **Gildenbeitritt:** Linksklick auf Minimap-Icon – erst Profil einrichten, dann Beitrittsanfrage senden
 - **Todeszähler setzen:** `/deathset <nummer>` um den Zähler manuell anzupassen
 
 ---
 
 ## Technische Details
 
-- **Interface-Version:** 20505 (WoW Classic TBC 2.5.x)
-- **Addon-Version:** 3.6.0
+- **Interface-Version:** 11508 (WoW Season of Discovery)
+- **Addon-Version:** 4.0.0
 
 **SavedVariables (per Character):**
 - `SchlingelOptionsDB` - Einstellungen und UI-Positionen
@@ -193,6 +195,7 @@ Das Addon hat einige optionale Einstellungen die du im WoW Options-Menü unter "
 - `Pronouns` - Bevorzugte Pronomen
 - `SchlingelGuildProfileCache` - Profilcache aller Gildenmitglieder
 - `SchlingelGuildDB` - Gilden-Konfiguration (Offiziersränge)
+- `SchlingelProgressDB` - Level- und XP-Fortschritt aller Mitglieder (nur Offiziere)
 
 **Addon Message Prefixes:**
 - `SchlingelInc` - Guild Communication
