@@ -14,9 +14,10 @@ local function RemovePopup(popupFrame)
 	end
 	UIFrameFadeRemoveFrame(popupFrame)
 	popupFrame:SetAlpha(1)
+	if popupFrame.fadeTimer then popupFrame.fadeTimer:Cancel() end
+	if popupFrame.cleanupTimer then popupFrame.cleanupTimer:Cancel() end
 	popupFrame.fadeTimer = nil
 	popupFrame.cleanupTimer = nil
-	popupFrame:StopMovingOrSizing()
 end
 
 -- Creates and shows a generic popup with skull icon, title, and message
@@ -83,7 +84,7 @@ function SchlingelInc.Popup:Show(options)
 	-- Schedule fade out and cleanup
 	frame.fadeTimer = C_Timer.NewTimer(displayTime, function()
 		UIFrameFadeOut(frame, 1, 1, 0)
-		frame.cleanupTimer = C_Timer.After(1, function()
+		frame.cleanupTimer = C_Timer.NewTimer(1, function()
 			if frame:IsShown() then
 				frame:Hide()
 			end

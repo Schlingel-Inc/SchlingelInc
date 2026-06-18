@@ -9,5 +9,7 @@ SchlingelInc = SchlingelInc or {}
 --   WOW_PROJECT_BURNING_CRUSADE_CLASSIC   = 5  (TBC Classic)
 local projectID = WOW_PROJECT_ID or 0
 
-SchlingelInc.IsTBC         = (projectID == (WOW_PROJECT_BURNING_CRUSADE_CLASSIC or 5))
-SchlingelInc.IsClassicEra  = (projectID == (WOW_PROJECT_CLASSIC or 2))
+SchlingelInc.IsTBC        = (projectID == (WOW_PROJECT_BURNING_CRUSADE_CLASSIC or 5))
+SchlingelInc.IsClassicEra = (projectID == (WOW_PROJECT_CLASSIC or 2))
+SchlingelInc.IsSoD        = SchlingelInc.IsClassicEra and
+    (C_Seasons and C_Seasons.GetActiveSeason and C_Seasons.GetActiveSeason() == 2) or false
