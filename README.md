@@ -51,7 +51,7 @@ Alle Tode werden in der Gilde geteilt und angezeigt.
 Das Addon gratuliert automatisch bei wichtigen Level-Meilensteinen.
 
 **Glückwünsche bei:**
-- Level 10, 20, 30, 40, 50, 60, 70
+- Level 10, 20, 25, 30, 40, 50, 60
 
 **Features:**
 - Automatische Guild Chat Benachrichtigung bei Meilensteinen
@@ -67,8 +67,9 @@ Das Addon erzwingt automatisch die Gilden-Regeln (konfiguriert über Gildeninfo)
 - **Handel mit Nicht-Gildenmitgliedern** - Wird automatisch abgebrochen (mit Popup-Meldung)
 - **Gruppen mit Nicht-Gildenmitgliedern** - Du wirst automatisch aus der Gruppe entfernt (mit Popup-Meldung)
 - **Party-Einladungen von Nicht-Gildenmitgliedern** - Werden automatisch abgelehnt
+- **SoD-Händler** - Bestimmte Händler (NPC-IDs 233335, 233428) werden automatisch blockiert (Gossip- und Händlerfenster werden geschlossen)
 
-> **Hinweis:** Die Regeln werden aus der Gildeninfo geladen (Format: `Schlingel:1111`). Jede Ziffer aktiviert/deaktiviert eine Regel.
+> **Hinweis:** Die Regeln werden aus der Gildeninfo geladen (Format: `Schlingel:11111`). Jede Ziffer aktiviert/deaktiviert eine Regel (Briefkasten, Auktionshaus, Handel, Gruppierung, SoD-Händler).
 
 ### PvP-Warnsystem
 
@@ -125,14 +126,11 @@ Zentraler Zugriffspunkt für alle Addon-Funktionen.
 Spezielle Funktionen für Gildenoffiziere.
 
 **Offizier Panel** (Rechtsklick auf Minimap-Icon):
-- **Regeln konfigurieren:** Briefkasten, Auktionshaus, Handel, Gruppierung, Duelle und Level Cap direkt im Spiel ein-/ausschalten
+- **Regeln konfigurieren:** Briefkasten, Auktionshaus, Handel, Gruppierung, SoD-Händler, Duelle und Level Cap direkt im Spiel ein-/ausschalten
 - **Gildeninfo aktualisieren:** Änderungen werden mit einem Klick in die Gildeninfo geschrieben und sofort von allen Mitgliedern geladen
 - **Inaktive Mitglieder:** Zeigt Mitglieder die 10+ Tage offline sind, mit Name, Level, Rang und Offline-Dauer sowie direktem Entfernen-Button
 - **Fortschritt:** Übersicht über Level und XP-Fortschritt aller Gildenmitglieder – wird automatisch aktualisiert wenn Mitglieder einloggen, die Zone wechseln oder aktiv leveln. Daten bleiben über Reloads hinweg erhalten
-
-**Offizier-Einrichtungsassistent** (automatisch beim ersten Start, oder manuell über das Offizier Panel):
-- **Schritt 1:** Auswahl der Ränge, die Beitrittsanfragen erhalten sollen
-- **Schritt 2:** Initiale Regelkonfiguration mit direktem Schreiben in die Gildeninfo
+- **Beitrittsanfragen:** Eingehende Anfragen mit Name, Level, XP, Gold und Zone anzeigen und per Klick annehmen oder ablehnen
 
 ### Automatische Optimierungen
 
@@ -165,13 +163,21 @@ Das Addon hat einige optionale Einstellungen die du im WoW Options-Menü unter "
 | **PVP Warnung Ton** | Aktiviert/Deaktiviert den Warnton bei PvP-Warnungen |
 | **Todesmeldungen** | Aktiviert/Deaktiviert die Todes-Popup-Benachrichtigungen |
 | **Todesmeldungen Ton** | Aktiviert/Deaktiviert den Ton bei Todesmeldungen |
+| **Level-Up Meldungen** | Aktiviert/Deaktiviert Popups bei Meilenstein-Levelups |
+| **Level-Up Ton** | Aktiviert/Deaktiviert den Ton bei Level-Up Meldungen |
+| **Cap-Meldungen** | Aktiviert/Deaktiviert Popups beim Erreichen des Level Caps |
+| **Cap Ton** | Aktiviert/Deaktiviert den Ton bei Cap-Meldungen |
+| **Soundpaket** | Standard WoW Sounds oder Torro Sounds |
+| **Soundkanal** | Wähle den ingame Lautstärkeregler für Schlingel-Sounds |
+| **Duelle ablehnen** | Duell-Anfragen automatisch ablehnen |
+| **Discord Handle im Chat** | Discord Handle in Gildenchat-Nachrichten anzeigen |
 | **Version anzeigen** | Zeigt Addon-Versionen im Gildenchat an |
 
 ---
 
 ## Tipps
 
-- **Death Log:** Linksklick auf Minimap Icon zum Öffnen/Schließen
+- **Death Log:** Shift+Linksklick auf Minimap Icon zum Öffnen/Schließen
 - **Death Log Größe:** Ziehe an der unteren rechten Ecke um die Größe anzupassen
 - **Discord Handle:** Wird automatisch beim ersten Login abgefragt und in der Gildennotiz gespeichert
 - **Discord Handle ändern:** `/setHandle <handle>` um den Discord Handle zu ändern
@@ -211,7 +217,7 @@ Das Addon hat einige optionale Einstellungen die du im WoW Options-Menü unter "
 
 - **Guild Only:** Alle Features funktionieren nur mit Gildenmitgliedern auf dem gleichen Realm
 - **Regel-Konfiguration:** Regeln werden in die Gildeninfo geschrieben und von allen Mitgliedern geladen – Änderungen nur über das Offizier Panel (erfordert Offiziersrechte)
-- **Offiziers-Features:** Inaktivitäts-Tracker nur für Ränge: Devschlingel, Pfundschlingel, Großschlingel
+- **Offiziers-Features:** Erfordern Offiziersrechte (Entfernen-Berechtigung). Berechtigte Ränge: Oberschlingel, Lootwichtel, Devschlingel, Großschlingel
 
 ---
 

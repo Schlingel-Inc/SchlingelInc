@@ -12,28 +12,22 @@ SchlingelInc.InfoRules = {
 -- Current level cap (fetched from guild info)
 SchlingelInc.Rules.CurrentCap = 0
 
-function SchlingelInc.Rules:GetRules(callback)
+function SchlingelInc.Rules:GetRules(callback, retries)
+    retries = (retries or 0) + 1
     local text = GetGuildInfoText()
-    if text == nil or text == "" then
-        if callback then
-            C_Timer.After(2, function()
-                SchlingelInc.Rules:GetRules(callback)
-            end)
-            return nil
-        else
-            C_Timer.After(2, function()
-                SchlingelInc.Rules:GetRules()
-            end)
-            return nil
-        end
-    end
-
-    if callback then
-        callback(text)
+    if (text == nil or text == "") and retries <= 10 then
+        C_Timer.After(2, function()
+            SchlingelInc.Rules:GetRules(callback, retries)
+        end)
         return nil
     end
 
-    return text
+    if callback then
+        callback(text or "")
+        return nil
+    end
+
+    return text or ""
 end
 
 function SchlingelInc.Rules:LoadFromGuildInfo()

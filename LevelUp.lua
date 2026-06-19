@@ -79,6 +79,13 @@ function SchlingelInc.LevelUps:Initialize()
             BroadcastProgress()
         end, 0, "LevelUpProgressZone")
 
+    SchlingelInc.EventManager:RegisterHandler("PLAYER_GUILD_UPDATE",
+        function()
+            if IsInGuild() then
+                C_Timer.After(3, BroadcastProgress)
+            end
+        end, 0, "LevelUpProgressGuildUpdate")
+
     -- PLAYER_XP_UPDATE fires on every XP gain (kills, quests, etc.).
     -- Uses a 60s cooldown to avoid flooding the guild channel during active grinding.
     SchlingelInc.EventManager:RegisterHandler("PLAYER_XP_UPDATE",
@@ -100,8 +107,30 @@ function SchlingelInc.LevelUps:Initialize()
                 }
                 SchlingelInc.LevelUps.progressCache[shortName] = entry
                 SaveProgressEntry(shortName, entry)
+                SchlingelInc.OfficerPanel:RefreshProgress()
             end
         end, 0, "LevelUpProgressReceive")
+
+    local function PruneProgressCache()
+        if not CanGuildRemove() then return end
+        local members = {}
+        local total = GetNumGuildMembers() or 0
+        for i = 1, total do
+            local name = GetGuildRosterInfo(i)
+            if name then
+                members[SchlingelInc:RemoveRealmFromName(name)] = true
+            end
+        end
+        for k in pairs(SchlingelInc.LevelUps.progressCache) do
+            if not members[k] then
+                SchlingelInc.LevelUps.progressCache[k] = nil
+                if SchlingelProgressDB then SchlingelProgressDB[k] = nil end
+            end
+        end
+    end
+
+    SchlingelInc.EventManager:RegisterHandler("GUILD_ROSTER_UPDATE",
+        function() PruneProgressCache() end, 0, "LevelUpProgressPrune")
 end
 
 function SchlingelInc.LevelUps:CheckForCap(level, announce)

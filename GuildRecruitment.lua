@@ -1,6 +1,17 @@
 SchlingelInc.GuildRecruitment = SchlingelInc.GuildRecruitment or {}
 SchlingelInc.GuildRecruitment.inviteRequests = SchlingelInc.GuildRecruitment.inviteRequests or {}
 
+local pendingOfficerFilter = {}
+
+ChatFrame_AddMessageEventFilter("CHAT_MSG_SYSTEM", function(_, _, message)
+    for name in pairs(pendingOfficerFilter) do
+        if message == ERR_CHAT_PLAYER_NOT_FOUND_S:format(name) then
+            return true
+        end
+    end
+    return false
+end)
+
 local function GetDefaultOfficerRanks()
     return SchlingelInc.Constants.OFFICER_RANKS
 end
@@ -17,12 +28,13 @@ local function GetAuthorizedOfficers()
 
 	local officers = {}
 	local officerRanks = GetDefaultOfficerRanks()
+	local self = UnitName("player")
 
 	for _, rankName in ipairs(officerRanks) do
 		local membersWithRank = SchlingelInc.GuildCache:GetMembersByRank(rankName)
 
 		for _, member in ipairs(membersWithRank) do
-			if member.isOnline then
+			if member.isOnline and member.name ~= self then
 				table.insert(officers, member.name)
 			end
 		end
@@ -39,13 +51,14 @@ function SchlingelInc.GuildRecruitment:SendGuildRequest()
     local playerName = UnitName("player")
     local playerLevel = UnitLevel("player")
     local playerExp = UnitXP("player")
+    local playerGold = GetMoney()
 
     local zone = SchlingelInc.GuildRecruitment:GetPlayerZone()
 
     -- colons and pipes in zone names would break message parsing
     local safeZone = zone:gsub(":", "-"):gsub("|", "-")
 
-    local message = string.format("INVITE_REQUEST:%s:%d:%d:%s", playerName, playerLevel, playerExp, safeZone)
+    local message = string.format("INVITE_REQUEST:%s:%d:%d:%d:%s", playerName, playerLevel, playerExp, playerGold, safeZone)
 
     local guildOfficers = GetFallbackOfficerNames()
 
@@ -53,19 +66,22 @@ function SchlingelInc.GuildRecruitment:SendGuildRequest()
         return
     end
 
-    local sentCount = 0
+    wipe(pendingOfficerFilter)
     for _, name in ipairs(guildOfficers) do
+        pendingOfficerFilter[name] = true
         C_ChatInfo.SendAddonMessage(SchlingelInc.prefix, message, "WHISPER", name)
-        sentCount = sentCount + 1
     end
+    SchlingelInc:Print("Anfrage gesendet...")
+    C_Timer.After(3, function() wipe(pendingOfficerFilter) end)
 end
 
 local function HandleAddonMessage(message)
     if message:find("^INVITE_REQUEST:") then
-        local name, level, xp, zone = message:match("^INVITE_REQUEST:([^:]+):(%d+):(%d+):([^:]+)$")
-        if name and level and xp and zone then
+        local name, level, xp, gold, zone = message:match("^INVITE_REQUEST:([^:]+):(%d+):(%d+):(%d+):([^:]+)$")
+        if name and level and xp and gold and zone then
             local levelNum = tonumber(level)
             local xpNum = tonumber(xp)
+            local goldNum = tonumber(gold)
 
             if not levelNum or levelNum < 1 or levelNum > 60 then
                 SchlingelInc.Debug:Print("Invalid level in guild request: " .. tostring(level))
@@ -74,6 +90,11 @@ local function HandleAddonMessage(message)
 
             if not xpNum or xpNum < 0 then
                 SchlingelInc.Debug:Print("Invalid XP in guild request: " .. tostring(xp))
+                return
+            end
+
+            if not goldNum or goldNum < 0 then
+                SchlingelInc.Debug:Print("Invalid gold in guild request: " .. tostring(gold))
                 return
             end
 
@@ -86,20 +107,31 @@ local function HandleAddonMessage(message)
                 name = name,
                 level = level,
                 xp = xpNum,
+                gold = goldNum,
                 zone = zone,
             }
-            local displayMessage = string.format("Neue Anfrage von %s (Level %s) aus %s erhalten.",
-                name, level, zone)
-            SchlingelInc:Print(displayMessage)
-            SchlingelInc.GuildInvites:ShowInviteMessage(displayMessage, requestData)
+            local isNew = not SchlingelInc.GuildRecruitment.inviteRequests[name]
+            SchlingelInc.GuildRecruitment.inviteRequests[name] = requestData
+            if isNew then
+                SchlingelInc:Print(string.format("Neue Anfrage von %s (Level %s) aus %s erhalten.", name, level, zone))
+            end
+            SchlingelInc.GuildInvites:NotifyPendingInvites()
+            SchlingelInc.OfficerPanel:RefreshInvites()
         end
     elseif message:find("^INVITE_SENT:") and CanGuildInvite() then
-        SchlingelInc.GuildInvites:HideInviteMessage()
+        local name = message:match("^INVITE_SENT:(.+)$")
+        if name and name ~= "" then
+            SchlingelInc.GuildRecruitment.inviteRequests[name] = nil
+            SchlingelInc.OfficerPanel:RefreshInvites()
+            SchlingelInc.GuildInvites:NotifyPendingInvites()
+        end
     elseif message:find("^INVITE_DECLINED:") then
         local name = message:match("^INVITE_DECLINED:(.+)$")
         if name and name ~= "" then
             SchlingelInc:Print("Ein Offi hat die Anfrage von " .. name .. " abgelehnt.")
-            SchlingelInc.GuildInvites:HideInviteMessage()
+            SchlingelInc.GuildRecruitment.inviteRequests[name] = nil
+            SchlingelInc.OfficerPanel:RefreshInvites()
+            SchlingelInc.GuildInvites:NotifyPendingInvites()
         end
     end
 end
@@ -110,6 +142,8 @@ function SchlingelInc.GuildRecruitment:HandleAcceptRequest(playerName)
     if CanGuildInvite() then
         SchlingelInc:Print("Versuche " .. playerName .. " in die Gilde einzuladen...")
         C_GuildInfo.Invite(playerName)
+        SchlingelInc.GuildRecruitment.inviteRequests[playerName] = nil
+        SchlingelInc.OfficerPanel:RefreshInvites()
 
         local guildOfficers = GetAuthorizedOfficers()
         for _, name in ipairs(guildOfficers) do
@@ -126,6 +160,8 @@ function SchlingelInc.GuildRecruitment:HandleDeclineRequest(playerName)
         C_ChatInfo.SendAddonMessage(SchlingelInc.prefix, "INVITE_DECLINED:" .. playerName, "WHISPER", name)
     end
 
+    SchlingelInc.GuildRecruitment.inviteRequests[playerName] = nil
+    SchlingelInc.OfficerPanel:RefreshInvites()
     SchlingelInc:Print("Anfrage von " .. playerName .. " wurde abgelehnt.")
 end
 

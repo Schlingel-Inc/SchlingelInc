@@ -72,9 +72,16 @@ SchlingelInc.Death.ProcessDeath = function(data)
 	processDeath(data, false)
 end
 
+local function IsOwnSender(sender)
+	local name = UnitName("player")
+	if not name then return false end
+	return sender == name or sender:match("^" .. name .. "%-") ~= nil
+end
+
 -- Initializes the Death module and registers events
 function SchlingelInc.Death:Initialize()
-	local playerName = UnitName("player")
+	SchlingelInc.EventManager:RegisterHandler("PLAYER_ENTERING_WORLD",
+		function() wipe(seenDeaths) end, 0, "DeathSeenClear")
 
 	-- PLAYER_DEAD event handler
 	SchlingelInc.EventManager:RegisterHandler("PLAYER_DEAD",
@@ -191,28 +198,27 @@ function SchlingelInc.Death:Initialize()
 
 	-- Chat message tracker for last words
 	SchlingelInc.EventManager:RegisterHandler("CHAT_MSG_SAY", function(_, msg, sender)
-		if sender == playerName or sender:match("^" .. playerName .. "%-") then
+		if IsOwnSender(sender) then
 			SchlingelInc.Death.lastChatMessage = msg
 		end
 	end, 0, "LastWordsSay")
 
 	SchlingelInc.EventManager:RegisterHandler("CHAT_MSG_GUILD", function(_, msg, sender)
 		local senderBase = sender:match("^([^-]+)") or sender
-
-		-- Track last words for own messages
-		if senderBase == playerName then
+		local name = UnitName("player")
+		if name and senderBase == name then
 			SchlingelInc.Death.lastChatMessage = msg
 		end
 	end, 0, "LastWordsGuild")
 
 	SchlingelInc.EventManager:RegisterHandler("CHAT_MSG_PARTY", function(_, msg, sender)
-		if sender == playerName or sender:match("^" .. playerName .. "%-") then
+		if IsOwnSender(sender) then
 			SchlingelInc.Death.lastChatMessage = msg
 		end
 	end, 0, "LastWordsParty")
 
 	SchlingelInc.EventManager:RegisterHandler("CHAT_MSG_RAID", function(_, msg, sender)
-		if sender == playerName or sender:match("^" .. playerName .. "%-") then
+		if IsOwnSender(sender) then
 			SchlingelInc.Death.lastChatMessage = msg
 		end
 	end, 0, "LastWordsRaid")

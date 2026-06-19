@@ -4,6 +4,9 @@ SchlingelInc = SchlingelInc or {}
 function SchlingelInc:CreateInactivityWindow()
 	if self.InactivityWindow then return end
 
+	local trashFrame = CreateFrame("Frame")
+	trashFrame:Hide()
+
 	local inactiveFrame = CreateFrame("Frame", "SchlingelIncInactivityWindow", UIParent, "BackdropTemplate")
 	inactiveFrame:SetSize(650, 450)
 	inactiveFrame:SetPoint("CENTER")
@@ -89,7 +92,7 @@ function SchlingelInc:CreateInactivityWindow()
 	local function UpdateInactivityWindow()
 		for _, row in ipairs(inactiveFrame.inactiveRows) do
 			row:Hide()
-			row:SetParent(nil)
+			row:SetParent(trashFrame)
 		end
 		wipe(inactiveFrame.inactiveRows)
 

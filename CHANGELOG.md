@@ -6,6 +6,19 @@
 - Gilde beigetreten ohne Reload: Das Addon lädt nach dem Annehmen einer Gildeneinladung die Mitgliederliste automatisch nach – die Gildenansicht funktioniert sofort, kein Reload mehr nötig
 - Offizier-Panel → Fortschritt: Level- und XP-Daten der Mitglieder bleiben jetzt über Reloads erhalten und müssen nicht erst neu gesammelt werden. Daten werden außerdem während des aktiven Spielens regelmäßig aktualisiert, nicht nur beim Einloggen oder Zonenchange
 - Bugfix: Einladungs-Popup hatte ein verschobenes Layout – Icon ragte aus dem Fensterrahmen heraus, Buttons waren falsch positioniert. Alles korrekt ausgerichtet
+- Anfragen an offline Offiziere: Systemmeldungen werden jetzt unterdrückt; Absender sieht nur "Anfrage gesendet…" im Chat
+- Offizier-Einrichtungsassistent entfernt
+- Bugfix: Offizier-Chat-Spam bei eingehenden Beitrittsanfragen – Duplikate erzeugen keine Chatmeldung mehr
+- Bugfix: Neu eingeladene Mitglieder erscheinen jetzt sofort im Fortschritt-Tab – Fortschrittsdaten werden beim Gilden-Beitritt mid-Session automatisch gesendet
+- Bugfix: Fortschritt-Tab aktualisiert sich jetzt live wenn Mitglieder Daten senden, ohne manuelles Tab-Wechseln
+- Bugfix: Ex-Mitglieder werden aus dem Fortschritt-Cache (Session und SavedVariables) entfernt wenn der Roster aktualisiert wird
+- Bugfix: Decline/Accept-Broadcasts wurden auch an den ausführenden Offizier selbst gesendet – "Ein Offi hat X abgelehnt" erschien als Selbstmeldung
+- Bugfix: Offizier-Status im Panel wurde einmalig beim Öffnen gecacht – Beförderungen und Degradierungen mid-Session wurden ignoriert
+- Bugfix: `SetParent(nil)` in InactivityWindow durch trashFrame-Pattern ersetzt (Absturz in bestimmten Classic-Builds)
+- Bugfix: `UnitName("player")` wurde zu früh gecacht – letzte-Worte-Tracking war dadurch für die gesamte Session kaputt
+- Bugfix: `GuildProfiles:Broadcast` konnte bei nil `UnitName("player")` den Profil-Cache korrumpieren
+- Bugfix: `Rules:GetRules` konnte bei leerer Gildeninfo endlos retries auslösen – jetzt maximal 10 Versuche (20 Sekunden)
+- Bugfix: `seenDeaths` wurde nie geleert – wird jetzt bei jedem Login/Reload zurückgesetzt
 
 # 3.7.0
 
