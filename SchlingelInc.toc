@@ -41,7 +41,6 @@ interfaces\DiscordHandlePrompt.lua
 interfaces\GuildJoinPrompt.lua
 interfaces\SetupWizard.lua
 interfaces\OfficerPanel.lua
-interfaces\OfficerWizard.lua
 interfaces\GuildPanel\init.lua
 interfaces\GuildPanel\Data.lua
 interfaces\GuildPanel\Rows.lua

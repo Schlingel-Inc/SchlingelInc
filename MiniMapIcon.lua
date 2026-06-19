@@ -71,11 +71,11 @@ function SchlingelInc:InitMinimapIcon()
     -- Register the icon only once
     if not SchlingelInc.minimapRegistered then
         -- Initialize the database for minimap settings if not present
-        SchlingelInc.db = SchlingelInc.db or {}
-        SchlingelInc.db.minimap = SchlingelInc.db.minimap or { hide = false } -- Not hidden by default
+        SchlingelOptionsDB = SchlingelOptionsDB or {}
+        SchlingelOptionsDB.minimap = SchlingelOptionsDB.minimap or { hide = false }
 
         -- Register the icon with LibDBIcon
-        DBIcon:Register(SchlingelInc.name, SchlingelInc.minimapDataObject, SchlingelInc.db.minimap)
+        DBIcon:Register(SchlingelInc.name, SchlingelInc.minimapDataObject, SchlingelOptionsDB.minimap)
         SchlingelInc.minimapRegistered = true -- Mark icon as registered
     end
 end
