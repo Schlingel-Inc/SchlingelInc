@@ -459,13 +459,8 @@ local function BuildPanel()
         if not copper then return "—" end
         local g = math.floor(copper / 10000)
         local s = math.floor((copper % 10000) / 100)
-        if g > 0 then
-            return string.format("%dg %ds", g, s)
-        elseif s > 0 then
-            return string.format("%ds", s)
-        else
-            return string.format("%dc", copper % 100)
-        end
+        local c = copper % 100
+        return string.format("%dg %ds %dc", g, s, c)
     end
 
     local function FormatAge(timestamp)
@@ -597,7 +592,7 @@ local function BuildPanel()
         { label = "Level", x = 84,  w = 32 },
         { label = "XP",    x = 120, w = 65 },
         { label = "Gold",  x = 189, w = 68 },
-        { label = "Zone",  x = 261, w = 80 },
+        { label = "Zone",  x = 261, w = 60 },
     }
 
     for _, col in ipairs(VCOLS) do
@@ -679,21 +674,21 @@ local function BuildPanel()
             Cell(tostring(entry.level),          84,  28, 1, 0.82, 0)
             Cell(tostring(entry.xp),             120, 61)
             Cell(FormatGold(entry.gold or 0),    189, 64)
-            Cell(entry.zone,                     261, 76)
+            Cell(entry.zone,                     261, 56)
 
             if IsOfficer() then
                 local entryName = entry.name
                 local acceptBtn = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
-                acceptBtn:SetSize(58, ROW_H - 2)
-                acceptBtn:SetPoint("LEFT", row, "LEFT", 345, 0)
+                acceptBtn:SetSize(78, ROW_H - 2)
+                acceptBtn:SetPoint("LEFT", row, "LEFT", 306, 0)
                 acceptBtn:SetText("Annehmen")
                 acceptBtn:SetScript("OnClick", function()
                     SchlingelInc.GuildRecruitment:HandleAcceptRequest(entryName)
                 end)
 
                 local declineBtn = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
-                declineBtn:SetSize(58, ROW_H - 2)
-                declineBtn:SetPoint("LEFT", row, "LEFT", 405, 0)
+                declineBtn:SetSize(78, ROW_H - 2)
+                declineBtn:SetPoint("LEFT", row, "LEFT", 386, 0)
                 declineBtn:SetText("Ablehnen")
                 declineBtn:SetScript("OnClick", function()
                     SchlingelInc.GuildRecruitment:HandleDeclineRequest(entryName)

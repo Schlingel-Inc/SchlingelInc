@@ -6,11 +6,23 @@ SchlingelInc.GuildInvites = {}
 
 local InviteMessageFrame = CreateFrame("Button", "InviteMessageFrame", UIParent, "BackdropTemplate")
 InviteMessageFrame:SetSize(350, 100)
-InviteMessageFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -60, -200)
+SchlingelInc:RestoreFramePosition(InviteMessageFrame, "guildinvites_popup_position", "TOPRIGHT", -60, -200)
 InviteMessageFrame:SetFrameStrata("FULLSCREEN_DIALOG")
 InviteMessageFrame:SetFrameLevel(1000)
 InviteMessageFrame:RegisterForClicks("LeftButtonUp")
+InviteMessageFrame:RegisterForDrag("LeftButton")
+InviteMessageFrame:SetMovable(true)
+InviteMessageFrame:EnableMouse(true)
 InviteMessageFrame:Hide()
+
+InviteMessageFrame:SetScript("OnDragStart", function(self)
+    self:StartMoving()
+end)
+
+InviteMessageFrame:SetScript("OnDragStop", function(self)
+    self:StopMovingOrSizing()
+    SchlingelInc:SaveFramePosition(self, "guildinvites_popup_position")
+end)
 
 InviteMessageFrame:SetBackdrop(SchlingelInc.Constants.POPUPBACKDROP)
 InviteMessageFrame:SetBackdropColor(0, 0, 0, 0.85)
