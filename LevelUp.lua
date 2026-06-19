@@ -11,6 +11,7 @@ end
 
 local lastBroadcast = 0
 local lastXPBroadcast = 0
+local lastMoneyBroadcast = 0
 
 local function BroadcastProgress()
     if not IsInGuild() then return end
@@ -20,7 +21,7 @@ local function BroadcastProgress()
     local name = UnitName("player")
     if not name then return end
     C_ChatInfo.SendAddonMessage(SchlingelInc.prefix,
-        string.format("PROGRESS:%s:%d:%d:%d", name, UnitLevel("player"), UnitXP("player"), UnitXPMax("player")),
+        string.format("PROGRESS:%s:%d:%d:%d:%d", name, UnitLevel("player"), UnitXP("player"), UnitXPMax("player"), GetMoney()),
         "GUILD")
 end
 
@@ -34,7 +35,20 @@ local function BroadcastProgressOnXP()
     local name = UnitName("player")
     if not name then return end
     C_ChatInfo.SendAddonMessage(SchlingelInc.prefix,
-        string.format("PROGRESS:%s:%d:%d:%d", name, UnitLevel("player"), UnitXP("player"), UnitXPMax("player")),
+        string.format("PROGRESS:%s:%d:%d:%d:%d", name, UnitLevel("player"), UnitXP("player"), UnitXPMax("player"), GetMoney()),
+        "GUILD")
+end
+
+local function BroadcastProgressOnMoney()
+    if not IsInGuild() then return end
+    local now = time()
+    if now - lastMoneyBroadcast < 10 then return end
+    lastMoneyBroadcast = now
+    lastBroadcast = now
+    local name = UnitName("player")
+    if not name then return end
+    C_ChatInfo.SendAddonMessage(SchlingelInc.prefix,
+        string.format("PROGRESS:%s:%d:%d:%d:%d", name, UnitLevel("player"), UnitXP("player"), UnitXPMax("player"), GetMoney()),
         "GUILD")
 end
 
@@ -93,16 +107,23 @@ function SchlingelInc.LevelUps:Initialize()
             BroadcastProgressOnXP()
         end, 0, "LevelUpProgressXP")
 
+    SchlingelInc.EventManager:RegisterHandler("PLAYER_MONEY",
+        function()
+            BroadcastProgressOnMoney()
+        end, 0, "LevelUpProgressMoney")
+
     SchlingelInc.EventManager:RegisterHandler("CHAT_MSG_ADDON",
         function(_, prefix, message, _, sender)
             if prefix ~= SchlingelInc.prefix then return end
-            local level, xpCurrent, xpMax = message:match("^PROGRESS:[^:]+:(%d+):(%d+):(%d+)$")
+            local level, xpCurrent, xpMax = message:match("^PROGRESS:[^:]+:(%d+):(%d+):(%d+)")
             if level then
+                local gold = message:match("^PROGRESS:[^:]+:%d+:%d+:%d+:(%d+)$")
                 local shortName = SchlingelInc:RemoveRealmFromName(sender)
                 local entry = {
                     level     = tonumber(level),
                     xpCurrent = tonumber(xpCurrent),
                     xpMax     = tonumber(xpMax),
+                    gold      = gold and tonumber(gold) or nil,
                     timestamp = time(),
                 }
                 SchlingelInc.LevelUps.progressCache[shortName] = entry
@@ -130,7 +151,7 @@ function SchlingelInc.LevelUps:Initialize()
     end
 
     SchlingelInc.EventManager:RegisterHandler("GUILD_ROSTER_UPDATE",
-        function() PruneProgressCache() end, 0, "LevelUpProgressPrune")
+        function() PruneProgressCache() BroadcastProgress() end, 0, "LevelUpProgressPrune")
 end
 
 function SchlingelInc.LevelUps:CheckForCap(level, announce)

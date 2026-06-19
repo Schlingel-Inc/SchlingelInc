@@ -415,7 +415,8 @@ local function BuildPanel()
         { label = "Level",   x = 124, w = 36  },
         { label = "XP",      x = 164, w = 120 },
         { label = "%",       x = 288, w = 40  },
-        { label = "Aktuell", x = 332, w = 80  },
+        { label = "Aktuell", x = 332, w = 58  },
+        { label = "Gold",    x = 394, w = 70  },
     }
 
     for _, col in ipairs(PCOLS) do
@@ -454,6 +455,19 @@ local function BuildPanel()
     local BAR_W = 110
     local BAR_X = 168
 
+    local function FormatGoldShort(copper)
+        if not copper then return "—" end
+        local g = math.floor(copper / 10000)
+        local s = math.floor((copper % 10000) / 100)
+        if g > 0 then
+            return string.format("%dg %ds", g, s)
+        elseif s > 0 then
+            return string.format("%ds", s)
+        else
+            return string.format("%dc", copper % 100)
+        end
+    end
+
     local function FormatAge(timestamp)
         local age = time() - timestamp
         if age < 60    then return "gerade"
@@ -480,6 +494,7 @@ local function BuildPanel()
                 xpCurrent = data.xpCurrent or 0,
                 xpMax     = data.xpMax or 0,
                 xpPct     = xpPct,
+                gold      = data.gold,
                 timestamp = data.timestamp,
             })
         end
@@ -553,10 +568,17 @@ local function BuildPanel()
 
             local ageFs = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
             ageFs:SetPoint("LEFT", row, "LEFT", BAR_X + BAR_W + 52, 0)
-            ageFs:SetWidth(80)
+            ageFs:SetWidth(58)
             ageFs:SetJustifyH("LEFT")
             ageFs:SetText(FormatAge(entry.timestamp))
             ageFs:SetTextColor(0.5, 0.5, 0.5, 1)
+
+            local goldFs = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+            goldFs:SetPoint("LEFT", row, "LEFT", 394, 0)
+            goldFs:SetWidth(70)
+            goldFs:SetJustifyH("LEFT")
+            goldFs:SetText(FormatGoldShort(entry.gold))
+            goldFs:SetTextColor(1, 0.82, 0, 1)
 
             table.insert(pc.progressRows, row)
         end
