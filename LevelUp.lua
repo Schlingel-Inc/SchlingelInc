@@ -31,7 +31,6 @@ local function BroadcastProgressOnXP()
     local now = time()
     if now - lastXPBroadcast < 60 then return end
     lastXPBroadcast = now
-    lastBroadcast = now  -- prevent the 5s guard from firing right after
     local name = UnitName("player")
     if not name then return end
     C_ChatInfo.SendAddonMessage(SchlingelInc.prefix,
@@ -44,7 +43,6 @@ local function BroadcastProgressOnMoney()
     local now = time()
     if now - lastMoneyBroadcast < 10 then return end
     lastMoneyBroadcast = now
-    lastBroadcast = now
     local name = UnitName("player")
     if not name then return end
     C_ChatInfo.SendAddonMessage(SchlingelInc.prefix,
