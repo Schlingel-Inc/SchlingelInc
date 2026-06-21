@@ -55,8 +55,9 @@ function SchlingelInc.GuildProfiles:Broadcast()
     local payload = Serialize()
     C_ChatInfo.SendAddonMessage(SchlingelInc.prefix, payload, "GUILD")
     local ownProfile = Deserialize(payload:sub(#MSG_PROFILE + 2))
-    if ownProfile then
-        SchlingelGuildProfileCache[UnitName("player")] = ownProfile
+    local selfName = UnitName("player")
+    if ownProfile and selfName then
+        SchlingelGuildProfileCache[selfName] = ownProfile
     end
 end
 
@@ -127,6 +128,17 @@ function SchlingelInc.GuildProfiles:Initialize()
                 end
             end)
         end, 90, "GuildProfilesBroadcast")
+
+    -- Broadcast profile when joining the guild mid-session.
+    SchlingelInc.EventManager:RegisterHandler("PLAYER_GUILD_UPDATE",
+        function()
+            if IsInGuild() then
+                C_Timer.After(3, function()
+                    SchlingelInc.GuildProfiles:Broadcast()
+                    C_ChatInfo.SendAddonMessage(SchlingelInc.prefix, "PROFILE_REQUEST", "GUILD")
+                end)
+            end
+        end, 0, "GuildProfilesGuildUpdate")
 
     -- Update profession ranks whenever the player skills up anything.
     -- DetectProfessions() filters to primary tradeskills (isAbandonable=true) only,

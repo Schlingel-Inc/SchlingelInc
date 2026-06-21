@@ -1,7 +1,4 @@
 -- interfaces/OfficerPanel.lua
--- Tabbed officer panel: Rules tab (read/write for officers, read-only for members)
--- and Inactive Members tab (officers only, embedded list).
-
 SchlingelInc.OfficerPanel = {}
 
 local frame
@@ -55,6 +52,19 @@ end
 
 -- ── Panel construction ────────────────────────────────────────────────────────
 
+local function FormatGold(copper)
+    local g = math.floor(copper / 10000)
+    local s = math.floor((copper % 10000) / 100)
+    local c = copper % 100
+    if g > 0 then
+        return string.format("%dg %ds %dc", g, s, c)
+    elseif s > 0 then
+        return string.format("%ds %dc", s, c)
+    else
+        return string.format("%dc", c)
+    end
+end
+
 local function BuildPanel()
     local f = CreateFrame("Frame", "SchlingelIncOfficerPanel", UIParent, "BackdropTemplate")
     f:SetSize(PANEL_W, PANEL_H)
@@ -100,15 +110,20 @@ local function BuildPanel()
     local tabDefs = {
         { id = "rules",    label = "Regeln" },
         { id = "inactive", label = "Inaktive Mitglieder" },
+        { id = "progress", label = "Fortschritt" },
+        { id = "invites",  label = "Anfragen" },
     }
-    local tabBtns    = {}
+    local tabBtns     = {}
     local tabContents = {}
-    local CONTENT_TOP = -(TITLE_H + TAB_H + 14)  -- top edge of shared content area
+    local CONTENT_TOP = -(TITLE_H + TAB_H + 14)
+
+    local TAB_BTN_W = 115
+    local TAB_STEP  = 123
 
     for i, tab in ipairs(tabDefs) do
         local btn = CreateFrame("Button", nil, f)
-        btn:SetSize(160, TAB_H)
-        btn:SetPoint("TOPLEFT", f, "TOPLEFT", 8 + (i - 1) * 166, -(TITLE_H + 6))
+        btn:SetSize(TAB_BTN_W, TAB_H)
+        btn:SetPoint("TOPLEFT", f, "TOPLEFT", 8 + (i - 1) * TAB_STEP, -(TITLE_H + 6))
         btn:EnableMouse(true)
 
         local tabBg = btn:CreateTexture(nil, "BACKGROUND")
@@ -154,6 +169,8 @@ local function BuildPanel()
             btn.activeLine:SetShown(active)
         end
     end
+
+    local SCROLL_CONTENT_W = PANEL_W - 8 - 8 - 20
 
     -- ── Rules tab ─────────────────────────────────────────────────────────
     local rc      = tabContents["rules"]
@@ -259,16 +276,6 @@ local function BuildPanel()
         notice:SetTextColor(0.55, 0.55, 0.55, 1)
         notice:SetText("Nur lesen — Offiziersrechte erforderlich zum Ändern")
     else
-        -- Wizard button on the left, update button on the right — no overlap
-        local wizBtn = CreateFrame("Button", nil, rc, "UIPanelButtonTemplate")
-        wizBtn:SetSize(130, 26)
-        wizBtn:SetPoint("BOTTOMLEFT", rc, "BOTTOMLEFT", 8, 8)
-        wizBtn:SetText("Offi-Einrichtung")
-        wizBtn:SetScript("OnClick", function()
-            f:Hide()
-            SchlingelInc:ShowOfficerWizard()
-        end)
-
         local updateBtn = CreateFrame("Button", nil, rc, "UIPanelButtonTemplate")
         updateBtn:SetSize(180, 26)
         updateBtn:SetPoint("BOTTOMRIGHT", rc, "BOTTOMRIGHT", -8, 8)
@@ -291,12 +298,11 @@ local function BuildPanel()
     -- ── Inactive Members tab ──────────────────────────────────────────────
     local ic = tabContents["inactive"]
 
-    -- Column definitions: { label, xOffset, width }
     local COLS = {
-        { label = "Name",       x = 0,   w = 140 },
-        { label = "Level",      x = 144, w = 36  },
-        { label = "Rang",       x = 184, w = 120 },
-        { label = "Offline",    x = 308, w = 70  },
+        { label = "Name",    x = 0,   w = 140 },
+        { label = "Level",   x = 144, w = 36  },
+        { label = "Rang",    x = 184, w = 120 },
+        { label = "Offline", x = 308, w = 70  },
     }
 
     for _, col in ipairs(COLS) do
@@ -314,7 +320,6 @@ local function BuildPanel()
     hdrDiv:SetPoint("TOPLEFT",  ic, "TOPLEFT",  4, -22)
     hdrDiv:SetPoint("TOPRIGHT", ic, "TOPRIGHT", -4, -22)
 
-    local SCROLL_CONTENT_W = PANEL_W - 8 - 8 - 20  -- panel inner - scrollbar
     local scrollFrame = CreateFrame("ScrollFrame", nil, ic, "UIPanelScrollFrameTemplate")
     scrollFrame:SetPoint("TOPLEFT",     ic, "TOPLEFT",     4, -26)
     scrollFrame:SetPoint("BOTTOMRIGHT", ic, "BOTTOMRIGHT", -20, 36)
@@ -360,7 +365,6 @@ local function BuildPanel()
             row:SetSize(SCROLL_CONTENT_W, ROW_H)
             row:SetPoint("TOPLEFT", 0, -(idx - 1) * ROW_H)
 
-            -- Alternating row tint
             if idx % 2 == 0 then
                 local bg = row:CreateTexture(nil, "BACKGROUND")
                 bg:SetAllPoints()
@@ -403,10 +407,308 @@ local function BuildPanel()
     ic.Refresh = RefreshInactive
     refreshBtn:SetScript("OnClick", RefreshInactive)
 
+    -- ── Progress tab ──────────────────────────────────────────────────────
+    local pc = tabContents["progress"]
+
+    local PCOLS = {
+        { label = "Name",    x = 0,   w = 120 },
+        { label = "Level",   x = 124, w = 36  },
+        { label = "XP",      x = 164, w = 120 },
+        { label = "%",       x = 288, w = 40  },
+        { label = "Aktuell", x = 332, w = 58  },
+        { label = "Gold",    x = 394, w = 70  },
+    }
+
+    for _, col in ipairs(PCOLS) do
+        local hdr = pc:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+        hdr:SetPoint("TOPLEFT", pc, "TOPLEFT", col.x + 4, -6)
+        hdr:SetWidth(col.w)
+        hdr:SetJustifyH("LEFT")
+        hdr:SetText(col.label)
+        hdr:SetTextColor(1, 0.82, 0, 1)
+    end
+
+    local phdrDiv = pc:CreateTexture(nil, "ARTWORK")
+    phdrDiv:SetHeight(1)
+    phdrDiv:SetColorTexture(0.4, 0.4, 0.4, 0.7)
+    phdrDiv:SetPoint("TOPLEFT",  pc, "TOPLEFT",  4, -22)
+    phdrDiv:SetPoint("TOPRIGHT", pc, "TOPRIGHT", -4, -22)
+
+    local pScrollFrame = CreateFrame("ScrollFrame", nil, pc, "UIPanelScrollFrameTemplate")
+    pScrollFrame:SetPoint("TOPLEFT",     pc, "TOPLEFT",     4, -26)
+    pScrollFrame:SetPoint("BOTTOMRIGHT", pc, "BOTTOMRIGHT", -20, 8)
+    pScrollFrame:EnableMouseWheel(true)
+    pScrollFrame:SetScript("OnMouseWheel", function(sf, delta)
+        sf:SetVerticalScroll(
+            math.max(0, math.min(sf:GetVerticalScrollRange(), sf:GetVerticalScroll() - delta * 20))
+        )
+    end)
+
+    local pScrollChild = CreateFrame("Frame", nil, pScrollFrame)
+    pScrollChild:SetWidth(SCROLL_CONTENT_W)
+    pScrollChild:SetHeight(1)
+    pScrollFrame:SetScrollChild(pScrollChild)
+
+    pc.pScrollChild = pScrollChild
+    pc.progressRows = {}
+
+    local BAR_W = 110
+    local BAR_X = 168
+
+    local function FormatGoldShort(copper)
+        if not copper then return "—" end
+        local g = math.floor(copper / 10000)
+        local s = math.floor((copper % 10000) / 100)
+        local c = copper % 100
+        return string.format("%dg %ds %dc", g, s, c)
+    end
+
+    local function FormatAge(timestamp)
+        local age = time() - timestamp
+        if age < 60    then return "gerade"
+        elseif age < 3600 then return math.floor(age / 60) .. "m"
+        else return math.floor(age / 3600) .. "h"
+        end
+    end
+
+    local function RefreshProgress()
+        for _, row in ipairs(pc.progressRows) do row:Hide() end
+        wipe(pc.progressRows)
+
+        local list = {}
+        for shortName, data in pairs(SchlingelInc.LevelUps.progressCache) do
+            local xpPct = 0
+            if data.xpMax and data.xpMax > 0 then
+                xpPct = math.floor(data.xpCurrent / data.xpMax * 100)
+            elseif data.xpMax == 0 then
+                xpPct = 100
+            end
+            table.insert(list, {
+                name      = shortName,
+                level     = data.level or 0,
+                xpCurrent = data.xpCurrent or 0,
+                xpMax     = data.xpMax or 0,
+                xpPct     = xpPct,
+                gold      = data.gold,
+                timestamp = data.timestamp,
+            })
+        end
+
+        table.sort(list, function(a, b)
+            if a.level ~= b.level then return a.level > b.level end
+            return a.xpPct > b.xpPct
+        end)
+
+        if #list == 0 then
+            local msg = pScrollChild:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+            msg:SetPoint("TOPLEFT", pScrollChild, "TOPLEFT", 4, 0)
+            msg:SetText("Noch keine Daten. Mitglieder schicken diese beim Login oder Zonenchange.")
+            msg:SetTextColor(0.6, 0.6, 0.6, 1)
+            table.insert(pc.progressRows, msg)
+            pScrollChild:SetHeight(20)
+            return
+        end
+
+        local ROW_H = 22
+        local cap   = SchlingelInc.Rules.CurrentCap
+
+        for idx, entry in ipairs(list) do
+            local row = CreateFrame("Frame", nil, pScrollChild)
+            row:SetSize(SCROLL_CONTENT_W, ROW_H)
+            row:SetPoint("TOPLEFT", 0, -(idx - 1) * ROW_H)
+
+            if idx % 2 == 0 then
+                local bg = row:CreateTexture(nil, "BACKGROUND")
+                bg:SetAllPoints()
+                bg:SetColorTexture(1, 1, 1, 0.03)
+            end
+
+            local atCap = cap > 0 and entry.level >= cap
+
+            local nameFs = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+            nameFs:SetPoint("LEFT", row, "LEFT", 4, 0)
+            nameFs:SetWidth(120)
+            nameFs:SetJustifyH("LEFT")
+            nameFs:SetText(entry.name)
+
+            local levelFs = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+            levelFs:SetPoint("LEFT", row, "LEFT", 128, 0)
+            levelFs:SetWidth(36)
+            levelFs:SetJustifyH("LEFT")
+            levelFs:SetText(tostring(entry.level))
+            levelFs:SetTextColor(atCap and 1 or 1, atCap and 0.82 or 1, atCap and 0 or 1, 1)
+
+            local barBg = row:CreateTexture(nil, "BACKGROUND")
+            barBg:SetSize(BAR_W, 8)
+            barBg:SetPoint("LEFT", row, "LEFT", BAR_X, 0)
+            barBg:SetColorTexture(0.15, 0.15, 0.15, 1)
+
+            local fillW = atCap and BAR_W or math.max(1, math.floor(BAR_W * entry.xpPct / 100))
+            local fill = row:CreateTexture(nil, "ARTWORK")
+            fill:SetSize(fillW, 8)
+            fill:SetPoint("LEFT", barBg, "LEFT", 0, 0)
+            fill:SetColorTexture(atCap and 1 or 0.2, atCap and 0.82 or 0.75, atCap and 0 or 0.2, 1)
+
+            local pctFs = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+            pctFs:SetPoint("LEFT", row, "LEFT", BAR_X + BAR_W + 4, 0)
+            pctFs:SetWidth(40)
+            pctFs:SetJustifyH("RIGHT")
+            if atCap then
+                pctFs:SetText("Cap")
+                pctFs:SetTextColor(1, 0.82, 0, 1)
+            else
+                pctFs:SetText(entry.xpPct .. "%")
+                pctFs:SetTextColor(1, 1, 1, 1)
+            end
+
+            local ageFs = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+            ageFs:SetPoint("LEFT", row, "LEFT", BAR_X + BAR_W + 52, 0)
+            ageFs:SetWidth(58)
+            ageFs:SetJustifyH("LEFT")
+            ageFs:SetText(FormatAge(entry.timestamp))
+            ageFs:SetTextColor(0.5, 0.5, 0.5, 1)
+
+            local goldFs = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+            goldFs:SetPoint("LEFT", row, "LEFT", 394, 0)
+            goldFs:SetWidth(70)
+            goldFs:SetJustifyH("LEFT")
+            goldFs:SetText(FormatGoldShort(entry.gold))
+            goldFs:SetTextColor(1, 0.82, 0, 1)
+
+            table.insert(pc.progressRows, row)
+        end
+
+        pScrollChild:SetHeight(math.max(1, #list * ROW_H))
+        pScrollFrame:SetVerticalScroll(0)
+    end
+
+    pc.Refresh = RefreshProgress
+
+    -- ── Anfragen tab ──────────────────────────────────────────────────────
+    local vc = tabContents["invites"]
+
+    local VCOLS = {
+        { label = "Name",  x = 0,   w = 80 },
+        { label = "Level", x = 84,  w = 32 },
+        { label = "XP",    x = 120, w = 65 },
+        { label = "Gold",  x = 189, w = 68 },
+        { label = "Zone",  x = 261, w = 60 },
+    }
+
+    for _, col in ipairs(VCOLS) do
+        local hdr = vc:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+        hdr:SetPoint("TOPLEFT", vc, "TOPLEFT", col.x + 4, -6)
+        hdr:SetWidth(col.w)
+        hdr:SetJustifyH("LEFT")
+        hdr:SetText(col.label)
+        hdr:SetTextColor(1, 0.82, 0, 1)
+    end
+
+    local vhdrDiv = vc:CreateTexture(nil, "ARTWORK")
+    vhdrDiv:SetHeight(1)
+    vhdrDiv:SetColorTexture(0.4, 0.4, 0.4, 0.7)
+    vhdrDiv:SetPoint("TOPLEFT",  vc, "TOPLEFT",  4, -22)
+    vhdrDiv:SetPoint("TOPRIGHT", vc, "TOPRIGHT", -4, -22)
+
+    local vScrollFrame = CreateFrame("ScrollFrame", nil, vc, "UIPanelScrollFrameTemplate")
+    vScrollFrame:SetPoint("TOPLEFT",     vc, "TOPLEFT",     4, -26)
+    vScrollFrame:SetPoint("BOTTOMRIGHT", vc, "BOTTOMRIGHT", -20, 8)
+    vScrollFrame:EnableMouseWheel(true)
+    vScrollFrame:SetScript("OnMouseWheel", function(sf, delta)
+        sf:SetVerticalScroll(
+            math.max(0, math.min(sf:GetVerticalScrollRange(), sf:GetVerticalScroll() - delta * 20))
+        )
+    end)
+
+    local vScrollChild = CreateFrame("Frame", nil, vScrollFrame)
+    vScrollChild:SetWidth(SCROLL_CONTENT_W)
+    vScrollChild:SetHeight(1)
+    vScrollFrame:SetScrollChild(vScrollChild)
+
+    vc.vScrollChild = vScrollChild
+    vc.inviteRows   = {}
+
+    local function RefreshInvites()
+        for _, row in ipairs(vc.inviteRows) do row:Hide() end
+        wipe(vc.inviteRows)
+
+        local list = {}
+        for _, data in pairs(SchlingelInc.GuildRecruitment.inviteRequests) do
+            table.insert(list, data)
+        end
+        table.sort(list, function(a, b) return a.name < b.name end)
+
+        local ROW_H = 22
+
+        if #list == 0 then
+            local msg = vScrollChild:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+            msg:SetPoint("TOPLEFT", vScrollChild, "TOPLEFT", 4, 0)
+            msg:SetText("Keine ausstehenden Anfragen.")
+            msg:SetTextColor(0.6, 0.6, 0.6, 1)
+            table.insert(vc.inviteRows, msg)
+            vScrollChild:SetHeight(20)
+            return
+        end
+
+        for idx, entry in ipairs(list) do
+            local row = CreateFrame("Frame", nil, vScrollChild)
+            row:SetSize(SCROLL_CONTENT_W, ROW_H)
+            row:SetPoint("TOPLEFT", 0, -(idx - 1) * ROW_H)
+
+            if idx % 2 == 0 then
+                local bg = row:CreateTexture(nil, "BACKGROUND")
+                bg:SetAllPoints()
+                bg:SetColorTexture(1, 1, 1, 0.03)
+            end
+
+            local function Cell(text, xPos, w, r, g, b)
+                local fs = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+                fs:SetPoint("LEFT", row, "LEFT", xPos + 4, 0)
+                fs:SetWidth(w)
+                fs:SetJustifyH("LEFT")
+                fs:SetText(text)
+                if r then fs:SetTextColor(r, g, b, 1) end
+            end
+
+            Cell(entry.name,                    0,   76)
+            Cell(tostring(entry.level),          84,  28, 1, 0.82, 0)
+            Cell(tostring(entry.xp),             120, 61)
+            Cell(FormatGold(entry.gold or 0),    189, 64)
+            Cell(entry.zone,                     261, 56)
+
+            if IsOfficer() then
+                local entryName = entry.name
+                local acceptBtn = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
+                acceptBtn:SetSize(78, ROW_H - 2)
+                acceptBtn:SetPoint("LEFT", row, "LEFT", 306, 0)
+                acceptBtn:SetText("Annehmen")
+                acceptBtn:SetScript("OnClick", function()
+                    SchlingelInc.GuildRecruitment:HandleAcceptRequest(entryName)
+                end)
+
+                local declineBtn = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
+                declineBtn:SetSize(78, ROW_H - 2)
+                declineBtn:SetPoint("LEFT", row, "LEFT", 386, 0)
+                declineBtn:SetText("Ablehnen")
+                declineBtn:SetScript("OnClick", function()
+                    SchlingelInc.GuildRecruitment:HandleDeclineRequest(entryName)
+                end)
+            end
+
+            table.insert(vc.inviteRows, row)
+        end
+
+        vScrollChild:SetHeight(math.max(1, #list * ROW_H))
+        vScrollFrame:SetVerticalScroll(0)
+    end
+
+    vc.Refresh = RefreshInvites
+
     -- ── Wire up tab buttons ───────────────────────────────────────────────
     tabBtns["rules"]:SetScript("OnClick", function() SwitchTab("rules") end)
+
     tabBtns["inactive"]:SetScript("OnClick", function()
-        if not officer then
+        if not IsOfficer() then
             SchlingelInc:Print("Inaktive Mitglieder sind nur für Offiziere sichtbar.")
             return
         end
@@ -415,6 +717,31 @@ local function BuildPanel()
         C_Timer.After(0.3, RefreshInactive)
     end)
 
+    tabBtns["progress"]:SetScript("OnClick", function()
+        if not IsOfficer() then
+            SchlingelInc:Print("Fortschritt ist nur für Offiziere sichtbar.")
+            return
+        end
+        SwitchTab("progress")
+        RefreshProgress()
+    end)
+
+    tabBtns["invites"]:SetScript("OnClick", function()
+        if not IsOfficer() then
+            SchlingelInc:Print("Anfragen sind nur für Offiziere sichtbar.")
+            return
+        end
+        SwitchTab("invites")
+        RefreshInvites()
+    end)
+
+    f.RefreshInvites  = RefreshInvites
+    f.RefreshProgress = RefreshProgress
+    f.SwitchToInvites = function()
+        SwitchTab("invites")
+        RefreshInvites()
+    end
+
     SwitchTab("rules")
     return f
 end
@@ -422,6 +749,7 @@ end
 -- ── Public API ────────────────────────────────────────────────────────────────
 
 function SchlingelInc.OfficerPanel:Toggle()
+    if not CanGuildRemove() then return end
     if not frame then
         frame = BuildPanel()
     end
@@ -429,5 +757,24 @@ function SchlingelInc.OfficerPanel:Toggle()
         frame:Hide()
     else
         frame:Show()
+    end
+end
+
+function SchlingelInc.OfficerPanel:ShowInvites()
+    if not CanGuildRemove() then return end
+    if not frame then frame = BuildPanel() end
+    if not frame:IsShown() then frame:Show() end
+    frame.SwitchToInvites()
+end
+
+function SchlingelInc.OfficerPanel:RefreshInvites()
+    if frame and frame.RefreshInvites then
+        frame.RefreshInvites()
+    end
+end
+
+function SchlingelInc.OfficerPanel:RefreshProgress()
+    if frame and frame:IsShown() and frame.RefreshProgress then
+        frame.RefreshProgress()
     end
 end

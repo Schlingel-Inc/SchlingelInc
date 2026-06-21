@@ -1,11 +1,11 @@
 -- InactivityWindow.lua
--- Displays a list of inactive guild members for officers
-
 SchlingelInc = SchlingelInc or {}
 
--- Creates the inactivity window frame
 function SchlingelInc:CreateInactivityWindow()
 	if self.InactivityWindow then return end
+
+	local trashFrame = CreateFrame("Frame")
+	trashFrame:Hide()
 
 	local inactiveFrame = CreateFrame("Frame", "SchlingelIncInactivityWindow", UIParent, "BackdropTemplate")
 	inactiveFrame:SetSize(650, 450)
@@ -89,16 +89,13 @@ function SchlingelInc:CreateInactivityWindow()
 
 	inactiveFrame.inactiveRows = {}
 
-	-- Update function
 	local function UpdateInactivityWindow()
-		-- Clear old rows
 		for _, row in ipairs(inactiveFrame.inactiveRows) do
 			row:Hide()
-			row:SetParent(nil)
+			row:SetParent(trashFrame)
 		end
 		wipe(inactiveFrame.inactiveRows)
 
-		-- Safety check: Ensure player is in a guild
 		if not IsInGuild() then
 			return
 		end
@@ -152,7 +149,6 @@ function SchlingelInc:CreateInactivityWindow()
 			end
 		end
 
-		-- Sort inactive members
 		table.sort(inactiveMembers, function(a, b)
 			if a.sortableDays == b.sortableDays then
 				return (a.level or 0) > (b.level or 0)
@@ -226,7 +222,6 @@ function SchlingelInc:CreateInactivityWindow()
 			inactiveFrame.inactiveContainer:SetHeight(20)
 		end
 
-		-- Set scroll height
 		local totalHeight = math.abs(rowYOffset) + 50
 		scrollChild:SetHeight(math.max(scrollFrame:GetHeight(), totalHeight))
 		scrollFrame:SetVerticalScroll(0)
@@ -237,7 +232,6 @@ function SchlingelInc:CreateInactivityWindow()
 	self.InactivityWindow = inactiveFrame
 end
 
--- Toggles the inactivity window visibility
 function SchlingelInc:ToggleInactivityWindow()
 	if not self.InactivityWindow then
 		self:CreateInactivityWindow()

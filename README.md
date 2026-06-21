@@ -1,7 +1,7 @@
 # Schlingel Inc - WoW Addon
 
 [![CurseForge Downloads](https://img.shields.io/curseforge/dt/1224740?style=for-the-badge&logo=curseforge)](https://www.curseforge.com/wow/addons/schlingel-addon)
-[![WoW Version](https://img.shields.io/badge/WoW-Classic%20TBC%202.5.x-blue?style=for-the-badge&logo=battledotnet)](https://worldofwarcraft.blizzard.com/)
+[![WoW Version](https://img.shields.io/badge/WoW-Season%20of%20Discovery-blue?style=for-the-badge&logo=battledotnet)](https://worldofwarcraft.blizzard.com/)
 [![Discord](https://img.shields.io/badge/Discord-DerHauge-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/KXkyUZW)
 [![Ko-fi Pudi](https://img.shields.io/badge/Ko--fi-Pudi-FF5E5B?style=for-the-badge&logo=ko-fi&logoColor=white)](https://ko-fi.com/einfachpudi)
 [![Ko-fi Cricksu](https://img.shields.io/badge/Ko--fi-Cricksu-FF5E5B?style=for-the-badge&logo=ko-fi&logoColor=white)](https://ko-fi.com/cricksu)
@@ -24,7 +24,7 @@ Spieler können der Gilde direkt über das Addon-Interface beitreten.
 - **Anfragedetails:** Name, Level, XP, Zone, Gold werden automatisch übermittelt
 - **Ein-Klick-Verwaltung:** Offiziere können Anfragen mit einem Klick annehmen oder ablehnen
 
-> **So trittst du bei:** Logge dich ein, klicke auf das rosa "SI"-Symbol an der Minimap und drücke "Beitrittsanfrage senden".
+> **So trittst du bei:** Logge dich ein und klicke auf das rosa "SI"-Symbol an der Minimap. Solange dein Profil noch nicht fertig ist, öffnet sich der Einrichtungsassistent. Sobald er abgeschlossen ist, erscheint beim nächsten Klick direkt der "Beitrittsanfrage senden"-Button.
 
 ### Death Tracking & Announcements
 
@@ -51,7 +51,7 @@ Alle Tode werden in der Gilde geteilt und angezeigt.
 Das Addon gratuliert automatisch bei wichtigen Level-Meilensteinen.
 
 **Glückwünsche bei:**
-- Level 10, 20, 30, 40, 50, 60, 70
+- Level 10, 20, 25, 30, 40, 50, 60
 
 **Features:**
 - Automatische Guild Chat Benachrichtigung bei Meilensteinen
@@ -67,8 +67,9 @@ Das Addon erzwingt automatisch die Gilden-Regeln (konfiguriert über Gildeninfo)
 - **Handel mit Nicht-Gildenmitgliedern** - Wird automatisch abgebrochen (mit Popup-Meldung)
 - **Gruppen mit Nicht-Gildenmitgliedern** - Du wirst automatisch aus der Gruppe entfernt (mit Popup-Meldung)
 - **Party-Einladungen von Nicht-Gildenmitgliedern** - Werden automatisch abgelehnt
+- **SoD-Händler** - Bestimmte Händler (NPC-IDs 233335, 233428) werden automatisch blockiert (Gossip- und Händlerfenster werden geschlossen)
 
-> **Hinweis:** Die Regeln werden aus der Gildeninfo geladen (Format: `Schlingel:1111`). Jede Ziffer aktiviert/deaktiviert eine Regel.
+> **Hinweis:** Die Regeln werden aus der Gildeninfo geladen (Format: `Schlingel:11111`). Jede Ziffer aktiviert/deaktiviert eine Regel (Briefkasten, Auktionshaus, Handel, Gruppierung, SoD-Händler).
 
 ### PvP-Warnsystem
 
@@ -111,26 +112,25 @@ Erweitert Tooltips mit nützlichen Informationen.
 Zentraler Zugriffspunkt für alle Addon-Funktionen.
 
 **Funktionen:**
-- **Linksklick:** Gildenübersicht anzeigen/verstecken
-- **Shift+Linksklick:** Death Log anzeigen/verstecken
-- **Rechtsklick (Gildenmitglieder):** Offizier Panel öffnen
-- **Rechtsklick (Nicht-Mitglieder):** Gildenbeitritts-Prompt öffnen
+- **Linksklick (Gildenmitglieder):** Gildenübersicht anzeigen/verstecken
+- **Shift+Linksklick (Gildenmitglieder):** Death Log anzeigen/verstecken
+- **Rechtsklick (Offiziere):** Offizier Panel öffnen
+- **Linksklick (Nicht-Mitglieder, Profil unvollständig):** Einrichtungsassistenten öffnen
+- **Linksklick (Nicht-Mitglieder, Profil fertig):** Beitrittsanfrage senden
 - **Tooltip zeigt:**
   - Addon Version
-  - Verfügbare Funktionen
+  - Verfügbare Funktionen je nach Status
 
 ### Offiziers-Werkzeuge
 
 Spezielle Funktionen für Gildenoffiziere.
 
 **Offizier Panel** (Rechtsklick auf Minimap-Icon):
-- **Regeln konfigurieren:** Briefkasten, Auktionshaus, Handel, Gruppierung, Duelle und Level Cap direkt im Spiel ein-/ausschalten
+- **Regeln konfigurieren:** Briefkasten, Auktionshaus, Handel, Gruppierung, SoD-Händler, Duelle und Level Cap direkt im Spiel ein-/ausschalten
 - **Gildeninfo aktualisieren:** Änderungen werden mit einem Klick in die Gildeninfo geschrieben und sofort von allen Mitgliedern geladen
 - **Inaktive Mitglieder:** Zeigt Mitglieder die 10+ Tage offline sind, mit Name, Level, Rang und Offline-Dauer sowie direktem Entfernen-Button
-
-**Offizier-Einrichtungsassistent** (automatisch beim ersten Start, oder manuell über das Offizier Panel):
-- **Schritt 1:** Auswahl der Ränge, die Beitrittsanfragen erhalten sollen
-- **Schritt 2:** Initiale Regelkonfiguration mit direktem Schreiben in die Gildeninfo
+- **Fortschritt:** Übersicht über Level und XP-Fortschritt aller Gildenmitglieder – wird automatisch aktualisiert wenn Mitglieder einloggen, die Zone wechseln oder aktiv leveln. Daten bleiben über Reloads hinweg erhalten
+- **Beitrittsanfragen:** Eingehende Anfragen mit Name, Level, XP, Gold und Zone anzeigen und per Klick annehmen oder ablehnen
 
 ### Automatische Optimierungen
 
@@ -163,25 +163,33 @@ Das Addon hat einige optionale Einstellungen die du im WoW Options-Menü unter "
 | **PVP Warnung Ton** | Aktiviert/Deaktiviert den Warnton bei PvP-Warnungen |
 | **Todesmeldungen** | Aktiviert/Deaktiviert die Todes-Popup-Benachrichtigungen |
 | **Todesmeldungen Ton** | Aktiviert/Deaktiviert den Ton bei Todesmeldungen |
+| **Level-Up Meldungen** | Aktiviert/Deaktiviert Popups bei Meilenstein-Levelups |
+| **Level-Up Ton** | Aktiviert/Deaktiviert den Ton bei Level-Up Meldungen |
+| **Cap-Meldungen** | Aktiviert/Deaktiviert Popups beim Erreichen des Level Caps |
+| **Cap Ton** | Aktiviert/Deaktiviert den Ton bei Cap-Meldungen |
+| **Soundpaket** | Standard WoW Sounds oder Torro Sounds |
+| **Soundkanal** | Wähle den ingame Lautstärkeregler für Schlingel-Sounds |
+| **Duelle ablehnen** | Duell-Anfragen automatisch ablehnen |
+| **Discord Handle im Chat** | Discord Handle in Gildenchat-Nachrichten anzeigen |
 | **Version anzeigen** | Zeigt Addon-Versionen im Gildenchat an |
 
 ---
 
 ## Tipps
 
-- **Death Log:** Linksklick auf Minimap Icon zum Öffnen/Schließen
+- **Death Log:** Shift+Linksklick auf Minimap Icon zum Öffnen/Schließen
 - **Death Log Größe:** Ziehe an der unteren rechten Ecke um die Größe anzupassen
 - **Discord Handle:** Wird automatisch beim ersten Login abgefragt und in der Gildennotiz gespeichert
 - **Discord Handle ändern:** `/setHandle <handle>` um den Discord Handle zu ändern
-- **Gildenbeitritt:** Rechtsklick auf Minimap-Icon und "Beitrittsanfrage senden" drücken
+- **Gildenbeitritt:** Linksklick auf Minimap-Icon – erst Profil einrichten, dann Beitrittsanfrage senden
 - **Todeszähler setzen:** `/deathset <nummer>` um den Zähler manuell anzupassen
 
 ---
 
 ## Technische Details
 
-- **Interface-Version:** 20505 (WoW Classic TBC 2.5.x)
-- **Addon-Version:** 3.6.0
+- **Interface-Version:** 11508 (WoW Season of Discovery)
+- **Addon-Version:** 4.0.0
 
 **SavedVariables (per Character):**
 - `SchlingelOptionsDB` - Einstellungen und UI-Positionen
@@ -193,6 +201,7 @@ Das Addon hat einige optionale Einstellungen die du im WoW Options-Menü unter "
 - `Pronouns` - Bevorzugte Pronomen
 - `SchlingelGuildProfileCache` - Profilcache aller Gildenmitglieder
 - `SchlingelGuildDB` - Gilden-Konfiguration (Offiziersränge)
+- `SchlingelProgressDB` - Level- und XP-Fortschritt aller Mitglieder (nur Offiziere)
 
 **Addon Message Prefixes:**
 - `SchlingelInc` - Guild Communication
@@ -208,7 +217,7 @@ Das Addon hat einige optionale Einstellungen die du im WoW Options-Menü unter "
 
 - **Guild Only:** Alle Features funktionieren nur mit Gildenmitgliedern auf dem gleichen Realm
 - **Regel-Konfiguration:** Regeln werden in die Gildeninfo geschrieben und von allen Mitgliedern geladen – Änderungen nur über das Offizier Panel (erfordert Offiziersrechte)
-- **Offiziers-Features:** Inaktivitäts-Tracker nur für Ränge: Devschlingel, Pfundschlingel, Großschlingel
+- **Offiziers-Features:** Erfordern Offiziersrechte (Entfernen-Berechtigung). Berechtigte Ränge: Oberschlingel, Lootwichtel, Devschlingel, Großschlingel
 
 ---
 

@@ -1,27 +1,21 @@
 -- Debug.lua
--- Central debug module for developers
--- All debug commands are only available for players with the guild rank "Devschlingel"
+-- All debug commands are only available to players with rank "Devschlingel"
 
 SchlingelInc.Debug = {}
 
--- Checks if the player has debug permission
 function SchlingelInc.Debug:HasPermission()
 	local _, rank = GetGuildInfo("player")
 	return rank == "DevSchlingel" or rank == "Devschlingel"
 end
 
--- Shows a permission error message
 local function ShowPermissionError()
 	SchlingelInc:Print(SchlingelInc.Constants.COLORS.ERROR ..
 		"Der Debugmodus ist den Devschlingeln vorbehalten.|r")
 end
 
--- Initializes the debug module
 function SchlingelInc.Debug:Initialize()
-	-- Debug mode toggle
 	SchlingelInc.Debug.enabled = false
 
-	-- Main command: /schlingeldebug
 	SLASH_SCHLINGELDEBUG1 = '/schlingeldebug'
 	SlashCmdList["SCHLINGELDEBUG"] = function(msg)
 		if not SchlingelInc.Debug:HasPermission() then
@@ -85,7 +79,6 @@ function SchlingelInc.Debug:Initialize()
 	SlashCmdList["SDEBUG"] = SlashCmdList["SCHLINGELDEBUG"]
 end
 
--- Shows debug help
 function SchlingelInc.Debug:ShowHelp()
 	print(SchlingelInc.Constants.COLORS.INFO .. "=== SchlingelInc Debug Commands ===" .. "|r")
 	print(SchlingelInc.colorCode .. "/schlingeldebug help" .. "|r - Shows this help")
@@ -102,7 +95,6 @@ function SchlingelInc.Debug:ShowHelp()
 	print(SchlingelInc.Constants.COLORS.WARNING .. "Alias: /sdebug <command>" .. "|r")
 end
 
--- Shows active rules
 function SchlingelInc.Debug:ShowRules()
 	print(SchlingelInc.Constants.COLORS.INFO .. "=== SchlingelInc Rules ===" .. "|r")
 	print(SchlingelInc.colorCode .. "Mailbox Rule: " .. SchlingelInc.InfoRules.mailRule .. "|r")
@@ -112,7 +104,6 @@ function SchlingelInc.Debug:ShowRules()
 	print(SchlingelInc.colorCode .. "Blocked Trader Rule: " .. SchlingelInc.InfoRules.blockedTraderRule .. "|r")
 end
 
--- Enables/Disables debug mode
 function SchlingelInc.Debug:ToggleDebugMode()
 	SchlingelInc.Debug.enabled = not SchlingelInc.Debug.enabled
 	local status = SchlingelInc.Debug.enabled and "enabled" or "disabled"
@@ -120,7 +111,6 @@ function SchlingelInc.Debug:ToggleDebugMode()
 		"Debug mode " .. status .. "|r")
 end
 
--- Tests the death announcement frame
 function SchlingelInc.Debug:TestDeathFrame()
 	local testNames = {"Pudidev", "Cricksumage", "Totanka", "Kurtibrown"}
 	local testClasses = {"Krieger", "Magier", "Schamane", "Jäger"}
@@ -134,7 +124,6 @@ function SchlingelInc.Debug:TestDeathFrame()
 	SchlingelInc.DeathAnnouncement:ShowDeathMessage(
 		string.format("%s der %s ist mit Level %s in %s gestorben.", name, class, level, zone))
 
-	-- Add to death log (insert at position 1 so newest is first)
 	SchlingelInc.DeathLogData = SchlingelInc.DeathLogData or {}
 	table.insert(SchlingelInc.DeathLogData, 1, {
 		name = name,
@@ -149,7 +138,6 @@ function SchlingelInc.Debug:TestDeathFrame()
 		"Test death frame shown for " .. name .. "|r")
 end
 
--- Tests the level-up announcement frame
 function SchlingelInc.Debug:TestLevelUpFrame()
 	local testNames = {"Pudidev", "Cricksumage", "Totanka", "Kurtibrown"}
 	local name = testNames[math.random(#testNames)]
@@ -161,7 +149,6 @@ function SchlingelInc.Debug:TestLevelUpFrame()
 		"Test level-up frame shown for " .. name .. " (Level " .. level .. ")|r")
 end
 
--- Tests the cap announcement frame
 function SchlingelInc.Debug:TestCapFrame()
 	local testNames = {"Pudidev", "Cricksumage", "Totanka", "Kurtibrown"}
 	local name = testNames[math.random(#testNames)]
@@ -172,7 +159,6 @@ function SchlingelInc.Debug:TestCapFrame()
 		"Test cap frame shown for " .. name .. "|r")
 end
 
--- Sets the death counter
 function SchlingelInc.Debug:SetDeathCount(value)
 	if value < 0 or value > 999999 then
 		SchlingelInc:Print(SchlingelInc.Constants.COLORS.ERROR ..
@@ -185,7 +171,6 @@ function SchlingelInc.Debug:SetDeathCount(value)
 		"Death counter set to " .. CharacterDeaths .. "|r")
 end
 
--- Tests guild request
 function SchlingelInc.Debug:TestGuildRequest(targetName)
 	if not targetName then
 		SchlingelInc:Print(SchlingelInc.Constants.COLORS.ERROR ..
@@ -207,7 +192,6 @@ function SchlingelInc.Debug:TestGuildRequest(targetName)
 		"Test guild request sent to " .. targetName .. "|r")
 end
 
--- Shows guild cache statistics
 function SchlingelInc.Debug:ShowCacheStats()
 	local stats = SchlingelInc.GuildCache:GetStats()
 
@@ -222,21 +206,18 @@ function SchlingelInc.Debug:ShowCacheStats()
 		print(SchlingelInc.Constants.COLORS.WARNING .. "Cache expired and will be updated on next access" .. "|r")
 	end
 
-	-- Show some online members as example
 	local onlineMembers = SchlingelInc.GuildCache:GetOnlineMembers()
 	print(string.format("Online members: %d", #onlineMembers))
 
 	print("=======================================")
 end
 
--- Debug print function (only when debug mode is enabled)
 function SchlingelInc.Debug:Print(message)
 	if SchlingelInc.Debug.enabled then
 		print(SchlingelInc.Constants.COLORS.WARNING .. "[DEBUG]|r " .. message)
 	end
 end
 
--- Event tracker: hooks all WoW events and prints them to chat
 local eventTrackerFrame
 function SchlingelInc.Debug:StartEventTracking()
 	if eventTrackerFrame then

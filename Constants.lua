@@ -20,13 +20,11 @@ SchlingelInc.Constants.GUILD_INFO_SEPARATOR = "--- SchlingelInc ---"
 -- Digits control: mail, auction house, trade, grouping, blocked SoD traders.
 SchlingelInc.Constants.RULES_KEY = "Schlingel"
 
--- Maximum level (TBC Classic = 70, Season of Discovery = 60)
-SchlingelInc.Constants.MAX_LEVEL = SchlingelInc.IsTBC and 70 or 60
+-- Maximum level for Season of Discovery
+SchlingelInc.Constants.MAX_LEVEL = 60
 
 -- Level milestones for announcements
-SchlingelInc.Constants.LEVEL_MILESTONES = SchlingelInc.IsTBC
-	and {10, 20, 30, 40, 50, 60, 70}
-	or  {10, 20, 25, 30, 40, 50, 60}
+SchlingelInc.Constants.LEVEL_MILESTONES = {10, 20, 25, 30, 40, 50, 60}
 
 -- Instance types
 SchlingelInc.Constants.INSTANCE_TYPES = {
@@ -75,50 +73,16 @@ SchlingelInc.Constants.PRONOUNS = {
 }
 
 -- Guild ranks with invite permissions (for Guild Recruitment)
--- These ranks receive guild invite requests via addon message
 SchlingelInc.Constants.OFFICER_RANKS = {
-	"Devschlingel",      -- Developer
-	"Pfundschlingel",    -- Officers
-	"Großschlingel",     -- Officers
-}
-
-SchlingelInc.Constants.OFFICER_RANKS_SOD = {
-	"Oberschlingel",      -- Developer
-	"Lootwichtel",    -- Officers
-	"Devschlingel",     -- Officers
-	"Großschlingel",	 -- Officers
+	"Oberschlingel",
+	"Lootwichtel",
+	"Devschlingel",
+	"Großschlingel",
 }
 
 -- Fallback officer character names for players outside the guild
 -- Used when the player is not yet in the guild (Level 1 requests)
--- This list should contain the main characters of active officers
 SchlingelInc.Constants.FALLBACK_OFFICERS = {
-	-- Officers
-	"Asperra",
-	"Aevela",
-	"Korvo",
-	"Raixxen",
-	"Cricksudin",
-	"Hvvtronlx",
-	"Hwtrønix",
-	"Mussne",
-	"Bartzmorak",
-	"Pfeilgiftfro",
-	"Atjara",
-	"Asperra",
-	"Jensha",
-	-- Dev-Schlingel
-	"Pudidev",
-	"Cricksumage",
-	"Devschlingel",
-	-- Guild leadership
-	"Syluri",
-	"Kurtibrown",
-	"Dörtchen",
-	"Totanka",
-}
-
-SchlingelInc.Constants.FALLBACK_OFFICERS_SOD = {
 	"Hausgeist",
 	"Devschlingel",
 	"Cricksu",
@@ -170,8 +134,7 @@ SchlingelInc.Constants.PROFESSION_NAMES_DE = {
     ["Enchanting"]     = "Verzauberung",
     ["Engineering"]    = "Ingenieurskunst",
     ["Herbalism"]      = "Kräuterkunde",
-    -- Jewelcrafting only exists in TBC Classic, not in Classic Era / SoD
-    ["Jewelcrafting"]  = SchlingelInc.IsTBC and "Juwelierkunst" or nil,
+    ["Jewelcrafting"]  = nil, -- not available in SoD
     ["Leatherworking"] = "Lederverarbeitung",
     ["Mining"]         = "Bergbau",
     ["Skinning"]       = "Kürschnerei",

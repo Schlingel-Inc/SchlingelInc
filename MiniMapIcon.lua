@@ -13,16 +13,22 @@ if LDB then -- Only proceeds if LibDataBroker is available
         icon = "Interface\\AddOns\\SchlingelInc\\media\\graphics\\icon-minimap.tga", -- Path to icon
         OnClick = function(clickedFrame, button)
             if button == "LeftButton" then
-                if IsShiftKeyDown() then
-                    SchlingelInc:ToggleDeathLogWindow()
+                if IsInGuild() then
+                    if IsShiftKeyDown() then
+                        SchlingelInc:ToggleDeathLogWindow()
+                    else
+                        SchlingelInc.GuildPanel:Toggle()
+                    end
                 else
-                    SchlingelInc.GuildPanel:Toggle()
+                    if SchlingelInc:IsProfileComplete() then
+                        SchlingelInc:ShowGuildJoinPrompt()
+                    else
+                        SchlingelInc:ShowSetupWizard(false)
+                    end
                 end
             elseif button == "RightButton" then
-                if IsInGuild() then
+                if IsInGuild() and CanGuildRemove() then
                     SchlingelInc.OfficerPanel:Toggle()
-                else
-                    SchlingelInc:ShowSetupWizard(true)
                 end
             end
         end,
@@ -32,12 +38,18 @@ if LDB then -- Only proceeds if LibDataBroker is available
             GameTooltip:SetOwner(selfFrame, "ANCHOR_RIGHT")
             GameTooltip:AddLine(SchlingelInc.name, 1, 0.7, 0.9)
             GameTooltip:AddLine("Version: " .. (SchlingelInc.version or "Unknown"), 1, 1, 1)
-            GameTooltip:AddLine("Linksklick: Gilde anzeigen", 1, 1, 1)
-            GameTooltip:AddLine("Shift+Linksklick: Tode anzeigen", 0.8, 0.8, 0.8)
             if IsInGuild() then
-                GameTooltip:AddLine("Rechtsklick: Offizier Panel", 0.8, 0.8, 0.8)
+                GameTooltip:AddLine("Linksklick: Gilde anzeigen", 1, 1, 1)
+                GameTooltip:AddLine("Shift+Linksklick: Tode anzeigen", 0.8, 0.8, 0.8)
+                if CanGuildRemove() then
+                    GameTooltip:AddLine("Rechtsklick: Offizier Panel", 0.8, 0.8, 0.8)
+                end
             else
-                GameTooltip:AddLine("Rechtsklick: Setup-Wizard", 1, 1, 1)
+                if SchlingelInc:IsProfileComplete() then
+                    GameTooltip:AddLine("Linksklick: Beitrittsanfrage senden", 1, 1, 1)
+                else
+                    GameTooltip:AddLine("Linksklick: Profil anlegen", 1, 1, 1)
+                end
             end
             GameTooltip:Show()
         end,
@@ -59,11 +71,11 @@ function SchlingelInc:InitMinimapIcon()
     -- Register the icon only once
     if not SchlingelInc.minimapRegistered then
         -- Initialize the database for minimap settings if not present
-        SchlingelInc.db = SchlingelInc.db or {}
-        SchlingelInc.db.minimap = SchlingelInc.db.minimap or { hide = false } -- Not hidden by default
+        SchlingelOptionsDB = SchlingelOptionsDB or {}
+        SchlingelOptionsDB.minimap = SchlingelOptionsDB.minimap or { hide = false }
 
         -- Register the icon with LibDBIcon
-        DBIcon:Register(SchlingelInc.name, SchlingelInc.minimapDataObject, SchlingelInc.db.minimap)
+        DBIcon:Register(SchlingelInc.name, SchlingelInc.minimapDataObject, SchlingelOptionsDB.minimap)
         SchlingelInc.minimapRegistered = true -- Mark icon as registered
     end
 end

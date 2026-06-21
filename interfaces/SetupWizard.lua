@@ -443,6 +443,7 @@ local function OnNextProfessions(frame)
             SchlingelOwnProfile["prof"..slot.."rank"] = rank
         end
     end
+    SchlingelOwnProfile.profSetupDone = true
     return true
 end
 
@@ -503,16 +504,23 @@ function SchlingelInc:BuildWizardSteps(forceAll)
         })
     end
 
-    if forceAll or not SchlingelOwnProfile or not SchlingelOwnProfile.prof1 then
-        table.insert(steps, {
-            id     = "professions",
-            render = RenderProfessions,
-            onNext = OnNextProfessions,
-            frameH = 315,
-        })
+    if forceAll or not (SchlingelOwnProfile and SchlingelOwnProfile.profSetupDone) then
+        local detected = SchlingelInc.GuildProfiles:DetectProfessions()
+        if forceAll or #detected > 0 then
+            table.insert(steps, {
+                id     = "professions",
+                render = RenderProfessions,
+                onNext = OnNextProfessions,
+                frameH = 315,
+            })
+        else
+            -- No professions available yet (e.g. level 1); mark step as done automatically.
+            SchlingelOwnProfile = SchlingelOwnProfile or {}
+            SchlingelOwnProfile.profSetupDone = true
+        end
     end
 
-    if forceAll and not IsInGuild() then
+    if not IsInGuild() then
         table.insert(steps, {
             id     = "guild",
             render = RenderGuildJoin,
@@ -520,6 +528,14 @@ function SchlingelInc:BuildWizardSteps(forceAll)
             frameH = 255,
         })
     end
+end
+
+function SchlingelInc:IsProfileComplete()
+    if not DiscordHandle or DiscordHandle == "" then return false end
+    if Pronouns == nil then return false end
+    if not SchlingelOwnProfile or not SchlingelOwnProfile.role then return false end
+    if not SchlingelOwnProfile or not SchlingelOwnProfile.profSetupDone then return false end
+    return true
 end
 
 function SchlingelInc:ShowSetupWizard(forceAll)

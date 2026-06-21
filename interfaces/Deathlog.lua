@@ -355,6 +355,7 @@ end
 
 -- Toggles the death log window visibility
 function SchlingelInc:ToggleDeathLogWindow()
+    if not IsInGuild() then return end
     if not self.MiniDeathLogFrame then
         self:CreateMiniDeathLog()
         self:UpdateMiniDeathLog()

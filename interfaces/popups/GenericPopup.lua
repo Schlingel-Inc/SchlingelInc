@@ -1,6 +1,4 @@
 -- GenericPopup.lua
--- Reusable popup framework for displaying notifications
-
 SchlingelInc.Popup = {
 	activePopups = {}
 }
@@ -14,21 +12,17 @@ local function RemovePopup(popupFrame)
 	end
 	UIFrameFadeRemoveFrame(popupFrame)
 	popupFrame:SetAlpha(1)
+	if popupFrame.fadeTimer then popupFrame.fadeTimer:Cancel() end
+	if popupFrame.cleanupTimer then popupFrame.cleanupTimer:Cancel() end
 	popupFrame.fadeTimer = nil
 	popupFrame.cleanupTimer = nil
-	popupFrame:StopMovingOrSizing()
 end
 
--- Creates and shows a generic popup with skull icon, title, and message
--- @param options table with fields:
---   - title: title text (required)
---   - message: message text (required)
 function SchlingelInc.Popup:Show(options)
 	if not options or not options.title or not options.message then
 		return
 	end
 
-	-- Set defaults
 	local title = options.title
 	local message = options.message
 	local titleColor = {1, 0.55, 0.73}
@@ -36,7 +30,6 @@ function SchlingelInc.Popup:Show(options)
 	local borderColor = {1, 0.55, 0.73, 0}
 	local displayTime = options.displayTime or 3
 
-	-- Create the frame
 	local frame = CreateFrame("Frame", nil, UIParent, BackdropTemplateMixin and "BackdropTemplate")
 	frame:SetSize(370, 160)
 	frame:SetPoint("TOP", UIParent, "TOP", 0, -150)
@@ -73,17 +66,14 @@ function SchlingelInc.Popup:Show(options)
 	messageText:SetText(message)
 	messageText:SetTextColor(messageColor[1], messageColor[2], messageColor[3])
 
-	-- Show the frame
 	frame:SetAlpha(1)
 	frame:Show()
 
-	-- Store in active popups
 	table.insert(self.activePopups, frame)
 
-	-- Schedule fade out and cleanup
 	frame.fadeTimer = C_Timer.NewTimer(displayTime, function()
 		UIFrameFadeOut(frame, 1, 1, 0)
-		frame.cleanupTimer = C_Timer.After(1, function()
+		frame.cleanupTimer = C_Timer.NewTimer(1, function()
 			if frame:IsShown() then
 				frame:Hide()
 			end
@@ -93,7 +83,6 @@ function SchlingelInc.Popup:Show(options)
 	return frame
 end
 
--- Hides all active popups
 function SchlingelInc.Popup:HideAll()
 	for _, popup in ipairs(self.activePopups) do
 		if popup then

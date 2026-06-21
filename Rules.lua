@@ -12,28 +12,22 @@ SchlingelInc.InfoRules = {
 -- Current level cap (fetched from guild info)
 SchlingelInc.Rules.CurrentCap = 0
 
-function SchlingelInc.Rules:GetRules(callback)
+function SchlingelInc.Rules:GetRules(callback, retries)
+    retries = (retries or 0) + 1
     local text = GetGuildInfoText()
-    if text == nil or text == "" then
-        if callback then
-            C_Timer.After(2, function()
-                SchlingelInc.Rules:GetRules(callback)
-            end)
-            return nil
-        else
-            C_Timer.After(2, function()
-                SchlingelInc.Rules:GetRules()
-            end)
-            return nil
-        end
-    end
-
-    if callback then
-        callback(text)
+    if (text == nil or text == "") and retries <= 10 then
+        C_Timer.After(2, function()
+            SchlingelInc.Rules:GetRules(callback, retries)
+        end)
         return nil
     end
 
-    return text
+    if callback then
+        callback(text or "")
+        return nil
+    end
+
+    return text or ""
 end
 
 function SchlingelInc.Rules:LoadFromGuildInfo()
@@ -193,11 +187,12 @@ local function CloseBlockedTraderPanels()
     end
 end
 
--- Rule: Block interaction with SoD-specific traders (Classic Era only)
+local lastBlockedNPCBlock = 0
+
+-- Rule: Block interaction with SoD-specific traders (SoD only)
 -- NPC ID is extracted from the target's GUID (format: Creature-0-realm-map-instance-npcID-spawnUID)
 -- Use UIPanel closing so Blizzard clears the internal close stack that ESC depends on.
 function SchlingelInc.Rules:ProhibitBlockedTrader()
-    if not SchlingelInc.IsClassicEra then return end
     if tonumber(SchlingelInc.InfoRules.blockedTraderRule) == 0 then return end
 
     local guid = UnitGUID("npc") or UnitGUID("target")
@@ -205,6 +200,10 @@ function SchlingelInc.Rules:ProhibitBlockedTrader()
 
     local npcID = tonumber(guid:match("Creature%-%d+%-%d+%-%d+%-%d+%-(%d+)"))
     if npcID and SchlingelInc.Constants.SOD_BLOCKED_TRADERS[npcID] then
+        local now = GetTime()
+        if now - lastBlockedNPCBlock < 1 then return end
+        lastBlockedNPCBlock = now
+
         CloseBlockedTraderPanels()
         C_Timer.After(0, CloseBlockedTraderPanels)
 
@@ -233,11 +232,16 @@ function SchlingelInc.Rules:Initialize()
 
     SchlingelInc.Rules:LoadFromGuildInfo()
 
-    -- Hide minimap mail icon once rules are actually known
+    -- Hide minimap mail icon — mail is always blocked
     SchlingelInc.Rules:GetRules(function()
-        if tonumber(SchlingelInc.InfoRules.mailRule) == 1 or #SchlingelInc.MailHandler:MailboxAddonActive() > 0 then
-            SchlingelInc.MailHandler:HideMinimapMail()
-        end
+        local mail = MiniMapMailFrame or MiniMapMailIcon
+        if not mail then return end
+        if mail.UnregisterAllEvents then mail:UnregisterAllEvents() end
+        mail:Hide()
+        mail:SetAlpha(0)
+        mail:SetScript("OnEnter", nil)
+        mail:SetScript("OnLeave", nil)
+        if mail.Show then mail.Show = function() end end
     end)
 
 
