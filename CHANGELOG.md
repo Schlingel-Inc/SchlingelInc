@@ -1,3 +1,7 @@
+# 4.0.1
+
+- Der XPStop Status wird nun an Offis übertragen, damit diese nachvollziehen können wie sehr man die Levelschande provoziert.
+
 # 4.0.0
 
 - Einrichtungsassistent: Der Berufsschritt erscheint jetzt nicht mehr bei jedem Einloggen – eine einmalige Eingabe genügt. Spieler auf Level 1 ohne Berufe überspringen diesen Schritt automatisch
