@@ -88,6 +88,7 @@ SchlingelInc.Constants.FALLBACK_OFFICERS = {
 	"Cricksu",
 	"Kurtibrown",
 	"Totanka",
+	"Twotanka", 
 	"Syluni",
 	"Sylunì",
 	"Tinaswift",
