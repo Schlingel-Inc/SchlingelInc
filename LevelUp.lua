@@ -10,43 +10,28 @@ local function SaveProgressEntry(shortName, entry)
 end
 
 local lastBroadcast = 0
-local lastXPBroadcast = 0
-local lastMoneyBroadcast = 0
+local lastKnownXPStop = nil
+
+local function GetXPStopState()
+    local api = C_PlayerInfo and C_PlayerInfo.IsXPUserDisabled
+    if type(api) ~= "function" then return nil end
+    local ok, result = pcall(api)
+    if not ok or type(result) ~= "boolean" then return nil end
+    return result
+end
 
 local function BroadcastProgress()
     if not IsInGuild() then return end
     local now = time()
-    if now - lastBroadcast < 5 then return end
+    if now - lastBroadcast < 10 then return end
     lastBroadcast = now
     local name = UnitName("player")
     if not name then return end
+    local xpStop = GetXPStopState()
+    local suffix = xpStop ~= nil and (":" .. (xpStop and "1" or "0")) or ""
     C_ChatInfo.SendAddonMessage(SchlingelInc.prefix,
-        string.format("PROGRESS:%s:%d:%d:%d:%d", name, UnitLevel("player"), UnitXP("player"), UnitXPMax("player"), GetMoney()),
-        "GUILD")
-end
-
--- Separate rate-limited broadcast for XP gain events (fires very frequently during play).
-local function BroadcastProgressOnXP()
-    if not IsInGuild() then return end
-    local now = time()
-    if now - lastXPBroadcast < 60 then return end
-    lastXPBroadcast = now
-    local name = UnitName("player")
-    if not name then return end
-    C_ChatInfo.SendAddonMessage(SchlingelInc.prefix,
-        string.format("PROGRESS:%s:%d:%d:%d:%d", name, UnitLevel("player"), UnitXP("player"), UnitXPMax("player"), GetMoney()),
-        "GUILD")
-end
-
-local function BroadcastProgressOnMoney()
-    if not IsInGuild() then return end
-    local now = time()
-    if now - lastMoneyBroadcast < 10 then return end
-    lastMoneyBroadcast = now
-    local name = UnitName("player")
-    if not name then return end
-    C_ChatInfo.SendAddonMessage(SchlingelInc.prefix,
-        string.format("PROGRESS:%s:%d:%d:%d:%d", name, UnitLevel("player"), UnitXP("player"), UnitXPMax("player"), GetMoney()),
+        string.format("PROGRESS:%s:%d:%d:%d:%d%s",
+            name, UnitLevel("player"), UnitXP("player"), UnitXPMax("player"), GetMoney(), suffix),
         "GUILD")
 end
 
@@ -98,30 +83,51 @@ function SchlingelInc.LevelUps:Initialize()
             end
         end, 0, "LevelUpProgressGuildUpdate")
 
-    -- PLAYER_XP_UPDATE fires on every XP gain (kills, quests, etc.).
-    -- Uses a 60s cooldown to avoid flooding the guild channel during active grinding.
     SchlingelInc.EventManager:RegisterHandler("PLAYER_XP_UPDATE",
         function()
-            BroadcastProgressOnXP()
+            BroadcastProgress()
         end, 0, "LevelUpProgressXP")
 
     SchlingelInc.EventManager:RegisterHandler("PLAYER_MONEY",
         function()
-            BroadcastProgressOnMoney()
+            BroadcastProgress()
         end, 0, "LevelUpProgressMoney")
+
+    SchlingelInc.EventManager:RegisterHandler("PLAYER_FLAGS_CHANGED",
+        function(_, unit)
+            if unit ~= "player" then return end
+            local cap = SchlingelInc.Rules.CurrentCap
+            if not cap or cap <= 0 or cap >= SchlingelInc.Constants.MAX_LEVEL then return end
+            if UnitLevel("player") < cap then return end
+            local xpStop = GetXPStopState()
+            if xpStop == lastKnownXPStop then return end
+            lastKnownXPStop = xpStop
+            BroadcastProgress()
+            if xpStop == false then
+                SchlingelInc.Popup:Show({
+                    title   = "XP-Stopp deaktiviert!",
+                    message = string.format("XP-Stopp ist NICHT aktiv auf Level Cap %d!", cap),
+                    displayTime = 10,
+                })
+            end
+        end, 0, "LevelUpFlagsChanged")
 
     SchlingelInc.EventManager:RegisterHandler("CHAT_MSG_ADDON",
         function(_, prefix, message, _, sender)
             if prefix ~= SchlingelInc.prefix then return end
             local level, xpCurrent, xpMax = message:match("^PROGRESS:[^:]+:(%d+):(%d+):(%d+)")
             if level then
-                local gold = message:match("^PROGRESS:[^:]+:%d+:%d+:%d+:(%d+)$")
+                local gold      = message:match("^PROGRESS:[^:]+:%d+:%d+:%d+:(%d+)")
+                local xpStopStr = message:match("^PROGRESS:[^:]+:%d+:%d+:%d+:%d+:([01])$")
+                local xpStop
+                if xpStopStr ~= nil then xpStop = xpStopStr == "1" end
                 local shortName = SchlingelInc:RemoveRealmFromName(sender)
                 local entry = {
                     level     = tonumber(level),
                     xpCurrent = tonumber(xpCurrent),
                     xpMax     = tonumber(xpMax),
                     gold      = gold and tonumber(gold) or nil,
+                    xpStop    = xpStop,
                     timestamp = time(),
                 }
                 SchlingelInc.LevelUps.progressCache[shortName] = entry
@@ -155,14 +161,15 @@ end
 function SchlingelInc.LevelUps:CheckForCap(level, announce)
     if SchlingelInc.Rules.CurrentCap == 0 or level == SchlingelInc.Constants.MAX_LEVEL then return end
     if level >= SchlingelInc.Rules.CurrentCap then
-        local playerExp = UnitXP("player")
-        local levelUpXP = UnitXPMax("player")
-        local currentXPPercent = (levelUpXP > 0) and (playerExp / levelUpXP * 100) or 0
-        SchlingelInc.Popup:Show({
-            title = "Level Cap erreicht",
-            message = string.format("Du bist bei %d%% von Level %d.\nDas aktuelle Cap ist %d.\n Achte auf die Level Schande!", currentXPPercent, level + 1, SchlingelInc.Rules.CurrentCap),
-            displayTime = 8
-        })
+        local xpStop = GetXPStopState()
+        if xpStop == false and lastKnownXPStop == nil then
+            SchlingelInc.Popup:Show({
+                title   = "Level Cap " .. SchlingelInc.Rules.CurrentCap .. " erreicht!",
+                message = "XP-Stopp ist NICHT aktiv!\nBitte jetzt aktivieren!",
+                displayTime = 10,
+            })
+        end
+        lastKnownXPStop = xpStop
 
         if announce then
             local player = UnitName("player")
