@@ -86,11 +86,13 @@ SchlingelInc.Constants.FALLBACK_OFFICERS = {
 	"Hausgeist",
 	"Devschlingel",
 	"Cricksu",
+	"Triplinette",
 	"Kurtibrown",
 	"Totanka",
 	"Syluni",
 	"Sylunì",
 	"Tinaswift",
+	"Wurzelwuppi",
 }
 
 -- UI Backdrop Settings
