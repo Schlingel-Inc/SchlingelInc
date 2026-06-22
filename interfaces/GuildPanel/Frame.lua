@@ -197,7 +197,7 @@ function SchlingelInc.GuildPanel:Refresh()
     local onlineCount = 0
     for _, e in ipairs(allData) do if e.online then onlineCount = onlineCount + 1 end end
     if self.countLabel then
-        self.countLabel:SetText(onlineCount .. " / " .. #allData .. " online")
+        self.countLabel:SetText(#allData .. " (|cff44ff44" .. onlineCount .. " online|r)")
     end
 
     -- Apply offline filter

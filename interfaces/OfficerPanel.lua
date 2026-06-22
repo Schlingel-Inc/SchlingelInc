@@ -411,31 +411,90 @@ local function BuildPanel()
     local pc = tabContents["progress"]
 
     local PCOLS = {
-        { label = "Name",    x = 0,   w = 120 },
-        { label = "Level",   x = 124, w = 36  },
-        { label = "XP",      x = 164, w = 120 },
-        { label = "%",       x = 288, w = 40  },
-        { label = "Aktuell", x = 332, w = 58  },
-        { label = "Gold",    x = 394, w = 70  },
+        { label = "Name",    x = 0,   w = 120, sortKey = "name",      justifyH = "LEFT"  },
+        { label = "Level",   x = 124, w = 36,  sortKey = "level",     justifyH = "LEFT"  },
+        { label = "XP",      x = 164, w = 89,  sortKey = "xpPct",     justifyH = "LEFT"  },
+        { label = "%",       x = 253, w = 52,  sortKey = "xpPct",     justifyH = "RIGHT" },
+        { label = "Aktuell", x = 305, w = 75,  sortKey = "timestamp", justifyH = "LEFT"  },
+        { label = "Gold",    x = 380, w = 80,  sortKey = "gold",      justifyH = "LEFT"  },
     }
 
-    for _, col in ipairs(PCOLS) do
-        local hdr = pc:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-        hdr:SetPoint("TOPLEFT", pc, "TOPLEFT", col.x + 4, -6)
-        hdr:SetWidth(col.w)
-        hdr:SetJustifyH("LEFT")
-        hdr:SetText(col.label)
-        hdr:SetTextColor(1, 0.82, 0, 1)
+    local hideOfflineProgress = false
+
+    local progressSortCol = 2
+    local progressSortAsc = false
+    local progressHdrs    = {}
+
+    for i, col in ipairs(PCOLS) do
+        local btn = CreateFrame("Button", nil, pc)
+        btn:SetPoint("TOPLEFT", pc, "TOPLEFT", col.x + 4, -24)
+        btn:SetSize(col.w, 18)
+        btn:EnableMouse(true)
+        local lbl = btn:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+        lbl:SetAllPoints()
+        lbl:SetJustifyH(col.justifyH or "LEFT")
+        lbl:SetText(col.label)
+        lbl:SetTextColor(1, 0.82, 0, 1)
+        progressHdrs[i] = lbl
+        local colIdx = i
+        btn:SetScript("OnClick", function()
+            if progressSortCol == colIdx then
+                progressSortAsc = not progressSortAsc
+            else
+                progressSortCol = colIdx
+                progressSortAsc = colIdx == 1
+            end
+            if frame and frame:IsShown() and frame.RefreshProgress then
+                frame.RefreshProgress()
+            end
+        end)
+        btn:SetScript("OnEnter", function() lbl:SetTextColor(1, 1, 0.7, 1) end)
+        btn:SetScript("OnLeave", function()
+            lbl:SetTextColor(colIdx == progressSortCol and 1 or 1,
+                             colIdx == progressSortCol and 1 or 0.82,
+                             colIdx == progressSortCol and 0.45 or 0, 1)
+        end)
     end
+
+    local pCountFs = pc:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    pCountFs:SetPoint("RIGHT", pc, "TOPRIGHT", -4, -11)
+    pCountFs:SetJustifyH("RIGHT")
+    pCountFs:SetTextColor(0.6, 0.6, 0.6, 1)
+    pc.pCountFs = pCountFs
+
+    local pOfflineBtn = CreateFrame("Button", nil, pc)
+    pOfflineBtn:SetSize(50, 18)
+    pOfflineBtn:SetPoint("RIGHT", pCountFs, "LEFT", -6, 0)
+    pOfflineBtn:EnableMouse(true)
+    local pOfflineLbl = pOfflineBtn:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    pOfflineLbl:SetAllPoints()
+    pOfflineLbl:SetJustifyH("RIGHT")
+    pOfflineLbl:SetTextColor(0.45, 0.45, 0.45, 1)
+    pOfflineLbl:SetText("Offline")
+    local function UpdateOfflineBtn()
+        pOfflineLbl:SetTextColor(
+            hideOfflineProgress and 1    or 0.45,
+            hideOfflineProgress and 0.82 or 0.45,
+            hideOfflineProgress and 0    or 0.45, 1)
+    end
+    pOfflineBtn:SetScript("OnClick", function()
+        hideOfflineProgress = not hideOfflineProgress
+        UpdateOfflineBtn()
+        if frame and frame:IsShown() and frame.RefreshProgress then
+            frame.RefreshProgress()
+        end
+    end)
+    pOfflineBtn:SetScript("OnEnter", function() pOfflineLbl:SetTextColor(1, 1, 0.7, 1) end)
+    pOfflineBtn:SetScript("OnLeave", UpdateOfflineBtn)
 
     local phdrDiv = pc:CreateTexture(nil, "ARTWORK")
     phdrDiv:SetHeight(1)
     phdrDiv:SetColorTexture(0.4, 0.4, 0.4, 0.7)
-    phdrDiv:SetPoint("TOPLEFT",  pc, "TOPLEFT",  4, -22)
-    phdrDiv:SetPoint("TOPRIGHT", pc, "TOPRIGHT", -4, -22)
+    phdrDiv:SetPoint("TOPLEFT",  pc, "TOPLEFT",  4, -44)
+    phdrDiv:SetPoint("TOPRIGHT", pc, "TOPRIGHT", -4, -44)
 
     local pScrollFrame = CreateFrame("ScrollFrame", nil, pc, "UIPanelScrollFrameTemplate")
-    pScrollFrame:SetPoint("TOPLEFT",     pc, "TOPLEFT",     4, -26)
+    pScrollFrame:SetPoint("TOPLEFT",     pc, "TOPLEFT",     4, -48)
     pScrollFrame:SetPoint("BOTTOMRIGHT", pc, "BOTTOMRIGHT", -20, 8)
     pScrollFrame:EnableMouseWheel(true)
     pScrollFrame:SetScript("OnMouseWheel", function(sf, delta)
@@ -452,7 +511,7 @@ local function BuildPanel()
     pc.pScrollChild = pScrollChild
     pc.progressRows = {}
 
-    local BAR_W = 110
+    local BAR_W = 85
     local BAR_X = 168
 
     local function FormatGoldShort(copper)
@@ -475,6 +534,14 @@ local function BuildPanel()
         for _, row in ipairs(pc.progressRows) do row:Hide() end
         wipe(pc.progressRows)
 
+        local onlineSet = {}
+        for i = 1, GetNumGuildMembers() or 0 do
+            local name, _, _, _, _, _, _, _, isOnline = GetGuildRosterInfo(i)
+            if name and isOnline then
+                onlineSet[SchlingelInc:RemoveRealmFromName(name)] = true
+            end
+        end
+
         local list = {}
         for shortName, data in pairs(SchlingelInc.LevelUps.progressCache) do
             local xpPct = 0
@@ -490,13 +557,46 @@ local function BuildPanel()
                 xpMax     = data.xpMax or 0,
                 xpPct     = xpPct,
                 gold      = data.gold,
+                xpStop    = data.xpStop,
+                isOnline  = onlineSet[shortName] == true,
                 timestamp = data.timestamp,
             })
         end
 
+        local onlineCount = 0
+        for _, e in ipairs(list) do if e.isOnline then onlineCount = onlineCount + 1 end end
+        if pc.pCountFs then
+            pc.pCountFs:SetText(#list .. " (|cff44ff44" .. onlineCount .. " online|r)")
+        end
+
+        if hideOfflineProgress then
+            local filtered = {}
+            for _, e in ipairs(list) do
+                if e.isOnline then table.insert(filtered, e) end
+            end
+            list = filtered
+        end
+
+        for i, col in ipairs(PCOLS) do
+            local active = i == progressSortCol
+            local arrow  = active and (progressSortAsc and " ^" or " v") or ""
+            progressHdrs[i]:SetText(col.label .. arrow)
+            progressHdrs[i]:SetTextColor(active and 1 or 1, active and 1 or 0.82, active and 0.45 or 0, 1)
+        end
+
         table.sort(list, function(a, b)
-            if a.level ~= b.level then return a.level > b.level end
-            return a.xpPct > b.xpPct
+            local key = PCOLS[progressSortCol].sortKey
+            local va, vb = a[key], b[key]
+            if type(va) == "string" then
+                va, vb = va:lower(), (vb or ""):lower()
+            else
+                va, vb = va or 0, vb or 0
+            end
+            if va == vb then
+                if a.level ~= b.level then return a.level > b.level end
+                return a.xpPct > b.xpPct
+            end
+            return progressSortAsc and va < vb or va > vb
         end)
 
         if #list == 0 then
@@ -517,23 +617,29 @@ local function BuildPanel()
             row:SetSize(SCROLL_CONTENT_W, ROW_H)
             row:SetPoint("TOPLEFT", 0, -(idx - 1) * ROW_H)
 
-            if idx % 2 == 0 then
+            local atCap = cap > 0 and entry.level >= cap
+            if atCap and entry.xpStop == false then
+                local bg = row:CreateTexture(nil, "BACKGROUND")
+                bg:SetAllPoints()
+                bg:SetColorTexture(0.4, 0.65, 0.9, 0.55)
+            elseif idx % 2 == 0 then
                 local bg = row:CreateTexture(nil, "BACKGROUND")
                 bg:SetAllPoints()
                 bg:SetColorTexture(1, 1, 1, 0.03)
             end
 
-            local atCap = cap > 0 and entry.level >= cap
-
             local nameFs = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
             nameFs:SetPoint("LEFT", row, "LEFT", 4, 0)
-            nameFs:SetWidth(120)
+            nameFs:SetWidth(116)
             nameFs:SetJustifyH("LEFT")
             nameFs:SetText(entry.name)
+            if not entry.isOnline then
+                nameFs:SetTextColor(0.5, 0.5, 0.5, 1)
+            end
 
             local levelFs = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
             levelFs:SetPoint("LEFT", row, "LEFT", 128, 0)
-            levelFs:SetWidth(36)
+            levelFs:SetWidth(32)
             levelFs:SetJustifyH("LEFT")
             levelFs:SetText(tostring(entry.level))
             levelFs:SetTextColor(atCap and 1 or 1, atCap and 0.82 or 1, atCap and 0 or 1, 1)
@@ -551,7 +657,7 @@ local function BuildPanel()
 
             local pctFs = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
             pctFs:SetPoint("LEFT", row, "LEFT", BAR_X + BAR_W + 4, 0)
-            pctFs:SetWidth(40)
+            pctFs:SetWidth(48)
             pctFs:SetJustifyH("RIGHT")
             if atCap then
                 pctFs:SetText("Cap")
@@ -562,15 +668,15 @@ local function BuildPanel()
             end
 
             local ageFs = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-            ageFs:SetPoint("LEFT", row, "LEFT", BAR_X + BAR_W + 52, 0)
-            ageFs:SetWidth(58)
+            ageFs:SetPoint("LEFT", row, "LEFT", BAR_X + BAR_W + 56, 0)
+            ageFs:SetWidth(71)
             ageFs:SetJustifyH("LEFT")
             ageFs:SetText(FormatAge(entry.timestamp))
-            ageFs:SetTextColor(0.5, 0.5, 0.5, 1)
+            ageFs:SetTextColor(entry.isOnline and 0.5 or 0.8, 0.5, entry.isOnline and 0.5 or 0.2, 1)
 
             local goldFs = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-            goldFs:SetPoint("LEFT", row, "LEFT", 394, 0)
-            goldFs:SetWidth(70)
+            goldFs:SetPoint("LEFT", row, "LEFT", 384, 0)
+            goldFs:SetWidth(76)
             goldFs:SetJustifyH("LEFT")
             goldFs:SetText(FormatGoldShort(entry.gold))
             goldFs:SetTextColor(1, 0.82, 0, 1)
