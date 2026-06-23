@@ -1,3 +1,10 @@
+# 4.0.2
+- Bugfix: Zuverlässigkeit von Addon-Nachrichten verbessert, wenn der Gildenroster kurzzeitig noch nicht vollständig geladen ist
+- Bugfix: Todesmeldungen (DEATH) gehen bei Cache-/Roster-Timingproblemen nicht mehr verloren, sondern werden kurz zwischengespeichert und nach GUILD_ROSTER_UPDATE erneut verarbeitet
+- Bugfix: Meilenstein- und Cap-Meldungen (LEVELUP / CAP) verwenden jetzt denselben Retry-Mechanismus und werden bei temporär fehlgeschlagener Senderprüfung nachgeliefert
+- Bugfix: Milestone-Check korrigiert, damit bei nicht gesetztem Level-Cap (CurrentCap = 0) Level-Up-Meilensteine nicht fälschlich unterdrückt werden
+- Intern: Gildencache-Validierung robuster gemacht (Live-Roster-Fallback bei Cache-Miss)
+
 # 4.0.1
 
 - Der XPStop Status wird nun an Offis übertragen, damit diese nachvollziehen können wie sehr man die Levelschande provoziert.

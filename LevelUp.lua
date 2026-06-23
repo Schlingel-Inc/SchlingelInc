@@ -36,7 +36,7 @@ local function BroadcastProgress()
 end
 
 local function CheckForMilestone(level)
-    if level >= SchlingelInc.Rules.CurrentCap then return end
+    if SchlingelInc.Rules.CurrentCap > 0 and level >= SchlingelInc.Rules.CurrentCap then return end
     for _, lvl in pairs(SchlingelInc.Constants.LEVEL_MILESTONES) do
         if level == lvl then
             local player = UnitName("player")

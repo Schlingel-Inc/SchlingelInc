@@ -24,10 +24,15 @@ function SchlingelInc.GuildCache:RequestUpdate()
 end
 
 function SchlingelInc.GuildCache:ProcessRosterData()
-	wipe(self.members)
-	wipe(self.fullRoster)
+	local numTotalMembers = GetNumGuildMembers() or 0
 
-	local numTotalMembers = GetNumGuildMembers()
+	if IsInGuild() and numTotalMembers == 0 then
+		self.isUpdating = false
+		return
+	end
+
+	local newMembers = {}
+	local newRoster = {}
 
 	for i = 1, numTotalMembers do
 		local name, rankName, rankIndex, level, classDisplayName, zone,
@@ -35,7 +40,7 @@ function SchlingelInc.GuildCache:ProcessRosterData()
 
 		if name then
 			local shortName = SchlingelInc:RemoveRealmFromName(name)
-			self.members[shortName] = true
+			newMembers[shortName] = true
 
 			local yearsOffline, monthsOffline, daysOffline, hoursOffline = GetGuildRosterLastOnline(i)
 			yearsOffline = yearsOffline or 0
@@ -45,7 +50,7 @@ function SchlingelInc.GuildCache:ProcessRosterData()
 
 			local totalDaysOffline = (yearsOffline * 365) + (monthsOffline * 30) + daysOffline + (hoursOffline / 24)
 
-			table.insert(self.fullRoster, {
+			table.insert(newRoster, {
 				name = shortName,
 				fullName = name,
 				rank = rankName,
@@ -67,6 +72,9 @@ function SchlingelInc.GuildCache:ProcessRosterData()
 		end
 	end
 
+	self.members = newMembers
+	self.fullRoster = newRoster
+
 	self.lastUpdate = GetTime()
 	self.isUpdating = false
 end
@@ -78,7 +86,29 @@ end
 function SchlingelInc.GuildCache:IsGuildMember(playerName)
 	if not playerName then return false end
 	local shortName = SchlingelInc:RemoveRealmFromName(playerName)
-	return self.members[shortName] == true
+
+	if self.members[shortName] == true then
+		return true
+	end
+
+	if not IsInGuild() then
+		return false
+	end
+
+	local total = GetNumGuildMembers() or 0
+	if total > 0 then
+		for i = 1, total do
+			local name = GetGuildRosterInfo(i)
+			if name and SchlingelInc:RemoveRealmFromName(name) == shortName then
+				self.members[shortName] = true
+				return true
+			end
+		end
+	elseif not self.isUpdating then
+		self:RequestUpdate()
+	end
+
+	return false
 end
 
 function SchlingelInc.GuildCache:GetMemberInfo(playerName)
