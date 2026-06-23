@@ -21,18 +21,8 @@ local function GetXPStopState()
 end
 
 local function BroadcastProgress()
-    if not IsInGuild() then return end
-    local now = time()
-    if now - lastBroadcast < 10 then return end
-    lastBroadcast = now
-    local name = UnitName("player")
-    if not name then return end
-    local xpStop = GetXPStopState()
-    local suffix = xpStop ~= nil and (":" .. (xpStop and "1" or "0")) or ""
-    C_ChatInfo.SendAddonMessage(SchlingelInc.prefix,
-        string.format("PROGRESS:%s:%d:%d:%d:%d%s",
-            name, UnitLevel("player"), UnitXP("player"), UnitXPMax("player"), GetMoney(), suffix),
-        "GUILD")
+    -- PROGRESS messages disabled due to addon channel spam
+    return
 end
 
 local function CheckForMilestone(level)

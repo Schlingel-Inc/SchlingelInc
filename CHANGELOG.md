@@ -1,4 +1,9 @@
+# 4.0.3
+
+- Bugfix: Progress messages temporary disabled
+
 # 4.0.2
+
 - Bugfix: Zuverlässigkeit von Addon-Nachrichten verbessert, wenn der Gildenroster kurzzeitig noch nicht vollständig geladen ist
 - Bugfix: Todesmeldungen (DEATH) gehen bei Cache-/Roster-Timingproblemen nicht mehr verloren, sondern werden kurz zwischengespeichert und nach GUILD_ROSTER_UPDATE erneut verarbeitet
 - Bugfix: Meilenstein- und Cap-Meldungen (LEVELUP / CAP) verwenden jetzt denselben Retry-Mechanismus und werden bei temporär fehlgeschlagener Senderprüfung nachgeliefert
