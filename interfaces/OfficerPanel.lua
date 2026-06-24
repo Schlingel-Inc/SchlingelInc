@@ -926,7 +926,7 @@ local function BuildPanel()
         { label = "Runen", x = 120, w = 42 },
         { label = "XP",    x = 166, w = 50 },
         { label = "Gold",  x = 220, w = 58 },
-        { label = "Zone",  x = 282, w = 40 },
+        { label = "Zone",  x = 282, w = 126 },
     }
 
     for _, col in ipairs(VCOLS) do
@@ -1004,29 +1004,49 @@ local function BuildPanel()
                 if r then fs:SetTextColor(r, g, b, 1) end
             end
 
-            Cell(entry.name,                    0,   76)
-            Cell(tostring(entry.level),          84,  28, 1, 0.82, 0)
+            Cell(entry.name,                    0,   76, 1, 1, 1)
+            Cell(tostring(entry.level),          84,  28, 1, 1, 1)
             Cell(entry.runesKnown ~= nil and tostring(entry.runesKnown) or "—", 120, 38, 1, 1, 1)
-            Cell(tostring(entry.xp),             166, 46)
-            Cell(FormatGold(entry.gold or 0),    220, 54)
-            Cell(entry.zone,                     282, 36)
+            Cell(tostring(entry.xp),             166, 46, 1, 1, 1)
+            Cell(FormatGold(entry.gold or 0),    220, 54, 1, 1, 1)
+            Cell(entry.zone,                     282, 122, 1, 1, 1)
 
             if IsOfficer() then
                 local entryName = entry.name
-                local acceptBtn = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
-                acceptBtn:SetSize(78, ROW_H - 2)
-                acceptBtn:SetPoint("LEFT", row, "LEFT", 306, 0)
-                acceptBtn:SetText("Annehmen")
+                local acceptBtn = CreateFrame("Button", nil, row)
+                acceptBtn:SetSize(18, 18)
+                acceptBtn:SetPoint("RIGHT", row, "RIGHT", -28, 0)
+                local acceptIcon = acceptBtn:CreateTexture(nil, "ARTWORK")
+                acceptIcon:SetAllPoints()
+                acceptIcon:SetTexture("Interface\\RAIDFRAME\\ReadyCheck-Ready")
                 acceptBtn:SetScript("OnClick", function()
                     SchlingelInc.GuildRecruitment:HandleAcceptRequest(entryName)
                 end)
+                acceptBtn:SetScript("OnEnter", function(self)
+                    GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+                    GameTooltip:SetText("Annehmen", 1, 1, 1)
+                    GameTooltip:Show()
+                end)
+                acceptBtn:SetScript("OnLeave", function()
+                    GameTooltip:Hide()
+                end)
 
-                local declineBtn = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
-                declineBtn:SetSize(78, ROW_H - 2)
-                declineBtn:SetPoint("LEFT", row, "LEFT", 386, 0)
-                declineBtn:SetText("Ablehnen")
+                local declineBtn = CreateFrame("Button", nil, row)
+                declineBtn:SetSize(18, 18)
+                declineBtn:SetPoint("RIGHT", row, "RIGHT", -6, 0)
+                local declineIcon = declineBtn:CreateTexture(nil, "ARTWORK")
+                declineIcon:SetAllPoints()
+                declineIcon:SetTexture("Interface\\RAIDFRAME\\ReadyCheck-NotReady")
                 declineBtn:SetScript("OnClick", function()
                     SchlingelInc.GuildRecruitment:HandleDeclineRequest(entryName)
+                end)
+                declineBtn:SetScript("OnEnter", function(self)
+                    GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+                    GameTooltip:SetText("Ablehnen", 1, 1, 1)
+                    GameTooltip:Show()
+                end)
+                declineBtn:SetScript("OnLeave", function()
+                    GameTooltip:Hide()
                 end)
             end
 
