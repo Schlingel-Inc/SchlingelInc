@@ -923,9 +923,10 @@ local function BuildPanel()
     local VCOLS = {
         { label = "Name",  x = 0,   w = 80 },
         { label = "Level", x = 84,  w = 32 },
-        { label = "XP",    x = 120, w = 65 },
-        { label = "Gold",  x = 189, w = 68 },
-        { label = "Zone",  x = 261, w = 60 },
+        { label = "Runen", x = 120, w = 42 },
+        { label = "XP",    x = 166, w = 50 },
+        { label = "Gold",  x = 220, w = 58 },
+        { label = "Zone",  x = 282, w = 40 },
     }
 
     for _, col in ipairs(VCOLS) do
@@ -1005,9 +1006,10 @@ local function BuildPanel()
 
             Cell(entry.name,                    0,   76)
             Cell(tostring(entry.level),          84,  28, 1, 0.82, 0)
-            Cell(tostring(entry.xp),             120, 61)
-            Cell(FormatGold(entry.gold or 0),    189, 64)
-            Cell(entry.zone,                     261, 56)
+            Cell(entry.runesKnown ~= nil and tostring(entry.runesKnown) or "—", 120, 38, 1, 1, 1)
+            Cell(tostring(entry.xp),             166, 46)
+            Cell(FormatGold(entry.gold or 0),    220, 54)
+            Cell(entry.zone,                     282, 36)
 
             if IsOfficer() then
                 local entryName = entry.name

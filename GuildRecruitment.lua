@@ -20,6 +20,16 @@ local function GetFallbackOfficerNames()
     return SchlingelInc.Constants.FALLBACK_OFFICERS
 end
 
+local function GetRunesKnown()
+    local engraving = C_Engraving
+    if type(engraving) ~= "table" or type(engraving.GetNumRunesKnown) ~= "function" then
+        return nil
+    end
+    local ok, count = pcall(engraving.GetNumRunesKnown)
+    if not ok then return nil end
+    return tonumber(count)
+end
+
 local function GetAuthorizedOfficers()
 	if not IsInGuild() then
 		SchlingelInc.Debug:Print("Player is not in a guild - cannot retrieve officers")
@@ -52,13 +62,14 @@ function SchlingelInc.GuildRecruitment:SendGuildRequest()
     local playerLevel = UnitLevel("player")
     local playerExp = UnitXP("player")
     local playerGold = GetMoney()
+    local runesKnown = GetRunesKnown() or 0
 
     local zone = SchlingelInc.GuildRecruitment:GetPlayerZone()
 
     -- colons and pipes in zone names would break message parsing
     local safeZone = zone:gsub(":", "-"):gsub("|", "-")
 
-    local message = string.format("INVITE_REQUEST:%s:%d:%d:%d:%s", playerName, playerLevel, playerExp, playerGold, safeZone)
+    local message = string.format("INVITE_REQUEST:%s:%d:%d:%d:%d:%s", playerName, playerLevel, playerExp, playerGold, runesKnown, safeZone)
 
     local guildOfficers = GetFallbackOfficerNames()
 
@@ -77,11 +88,17 @@ end
 
 local function HandleAddonMessage(message)
     if message:find("^INVITE_REQUEST:") then
-        local name, level, xp, gold, zone = message:match("^INVITE_REQUEST:([^:]+):(%d+):(%d+):(%d+):([^:]+)$")
+        local name, level, xp, gold, runes, zone = message:match("^INVITE_REQUEST:([^:]+):(%d+):(%d+):(%d+):(%d+):([^:]+)$")
+        if not name then
+            -- Legacy format without runes.
+            name, level, xp, gold, zone = message:match("^INVITE_REQUEST:([^:]+):(%d+):(%d+):(%d+):([^:]+)$")
+        end
+
         if name and level and xp and gold and zone then
             local levelNum = tonumber(level)
             local xpNum = tonumber(xp)
             local goldNum = tonumber(gold)
+            local runesNum = tonumber(runes)
 
             if not levelNum or levelNum < 1 or levelNum > 60 then
                 SchlingelInc.Debug:Print("Invalid level in guild request: " .. tostring(level))
@@ -98,6 +115,11 @@ local function HandleAddonMessage(message)
                 return
             end
 
+            if runesNum ~= nil and runesNum < 0 then
+                SchlingelInc.Debug:Print("Invalid rune count in guild request: " .. tostring(runes))
+                return
+            end
+
             if name == "" or zone == "" then
                 SchlingelInc.Debug:Print("Empty fields received in guild request")
                 return
@@ -108,6 +130,7 @@ local function HandleAddonMessage(message)
                 level = level,
                 xp = xpNum,
                 gold = goldNum,
+                runesKnown = runesNum,
                 zone = zone,
             }
             local isNew = not SchlingelInc.GuildRecruitment.inviteRequests[name]
