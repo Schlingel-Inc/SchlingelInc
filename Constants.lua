@@ -64,7 +64,7 @@ SchlingelInc.Constants.COOLDOWNS = {
 	INVITE_REQUEST = 300,  -- 5 minutes
 	GUILD_ROSTER_CACHE = 60,  -- 1 minute
 	DEATH_ANNOUNCEMENT = 10,
-	PROGRESS_BROADCAST = 60
+	PROGRESS_BROADCAST = 75
 }
 
 -- Pronouns for genders (German articles)
