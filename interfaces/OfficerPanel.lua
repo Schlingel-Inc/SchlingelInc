@@ -415,12 +415,13 @@ local function BuildPanel()
     local pc = tabContents["progress"]
 
     local PCOLS = {
-        { label = "Name",    x = 0,   w = 120, sortKey = "name",      justifyH = "LEFT"  },
-        { label = "Level",   x = 124, w = 36,  sortKey = "level",     justifyH = "LEFT"  },
-        { label = "XP",      x = 164, w = 89,  sortKey = "xpPct",     justifyH = "LEFT"  },
-        { label = "%",       x = 253, w = 52,  sortKey = "xpPct",     justifyH = "RIGHT" },
-        { label = "Aktuell", x = 305, w = 75,  sortKey = "timestamp", justifyH = "LEFT"  },
-        { label = "Gold",    x = 380, w = 80,  sortKey = "gold",      justifyH = "LEFT"  },
+        { label = "Name",    x = 0,   w = 112, sortKey = "name",       justifyH = "LEFT"  },
+        { label = "Level",   x = 116, w = 36,  sortKey = "level",      justifyH = "LEFT"  },
+        { label = "Runen",   x = 156, w = 42,  sortKey = "runesKnown", justifyH = "LEFT"  },
+        { label = "XP",      x = 202, w = 79,  sortKey = "xpPct",      justifyH = "LEFT"  },
+        { label = "%",       x = 281, w = 45,  sortKey = "xpPct",      justifyH = "RIGHT" },
+        { label = "Gold",    x = 330, w = 60,  sortKey = "gold",       justifyH = "LEFT"  },
+        { label = "Aktuell", x = 394, w = 70,  sortKey = "timestamp",  justifyH = "LEFT"  },
     }
 
     local hideOfflineProgress = false
@@ -515,8 +516,8 @@ local function BuildPanel()
     pc.pScrollChild = pScrollChild
     pc.progressRows = {}
 
-    local BAR_W = 85
-    local BAR_X = 168
+    local BAR_W = 75
+    local BAR_X = 206
 
     local function FormatGoldShort(copper)
         if not copper then return "—" end
@@ -548,7 +549,7 @@ local function BuildPanel()
 
                 local level = rosterLevel or 0
                 local xpCurrent, xpMax, xpPct = 0, 0, 0
-                local gold, xpStop, timestamp = nil, nil, 0
+                local gold, runesKnown, xpStop, timestamp = nil, nil, nil, 0
                 local hasProgress = false
 
                 if data then
@@ -562,6 +563,7 @@ local function BuildPanel()
                         xpPct = 100
                     end
                     gold = data.gold
+                    runesKnown = data.runesKnown
                     xpStop = data.xpStop
                     timestamp = data.timestamp or 0
                 end
@@ -573,6 +575,7 @@ local function BuildPanel()
                     xpMax       = xpMax,
                     xpPct       = xpPct,
                     gold        = gold,
+                    runesKnown  = runesKnown,
                     xpStop      = xpStop,
                     isOnline    = isOnline == true,
                     timestamp   = timestamp,
@@ -693,7 +696,7 @@ local function BuildPanel()
 
             local nameFs = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
             nameFs:SetPoint("LEFT", row, "LEFT", 4, 0)
-            nameFs:SetWidth(116)
+            nameFs:SetWidth(108)
             nameFs:SetJustifyH("LEFT")
             nameFs:SetText(entry.name)
             if not entry.isOnline then
@@ -701,11 +704,23 @@ local function BuildPanel()
             end
 
             local levelFs = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-            levelFs:SetPoint("LEFT", row, "LEFT", 128, 0)
+            levelFs:SetPoint("LEFT", row, "LEFT", 120, 0)
             levelFs:SetWidth(32)
             levelFs:SetJustifyH("LEFT")
             levelFs:SetText(tostring(entry.level))
             levelFs:SetTextColor(atCap and 1 or 1, atCap and 0.82 or 1, atCap and 0 or 1, 1)
+
+            local runesFs = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+            runesFs:SetPoint("LEFT", row, "LEFT", 160, 0)
+            runesFs:SetWidth(38)
+            runesFs:SetJustifyH("LEFT")
+            if entry.runesKnown ~= nil then
+                runesFs:SetText(tostring(entry.runesKnown))
+                runesFs:SetTextColor(1, 1, 1, 1)
+            else
+                runesFs:SetText("—")
+                runesFs:SetTextColor(0.55, 0.55, 0.55, 1)
+            end
 
             local barBg = row:CreateTexture(nil, "BACKGROUND")
             barBg:SetSize(BAR_W, 8)
@@ -725,7 +740,7 @@ local function BuildPanel()
 
             local pctFs = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
             pctFs:SetPoint("LEFT", row, "LEFT", BAR_X + BAR_W + 4, 0)
-            pctFs:SetWidth(48)
+            pctFs:SetWidth(41)
             pctFs:SetJustifyH("RIGHT")
             if atCap then
                 pctFs:SetText("Cap")
@@ -738,19 +753,19 @@ local function BuildPanel()
                 pctFs:SetTextColor(1, 1, 1, 1)
             end
 
-            local ageFs = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-            ageFs:SetPoint("LEFT", row, "LEFT", BAR_X + BAR_W + 56, 0)
-            ageFs:SetWidth(71)
-            ageFs:SetJustifyH("LEFT")
-            ageFs:SetText(FormatAge(entry.timestamp))
-            ageFs:SetTextColor(entry.isOnline and 0.5 or 0.8, 0.5, entry.isOnline and 0.5 or 0.2, 1)
-
             local goldFs = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-            goldFs:SetPoint("LEFT", row, "LEFT", 384, 0)
-            goldFs:SetWidth(76)
+            goldFs:SetPoint("LEFT", row, "LEFT", BAR_X + BAR_W + 50, 0)
+            goldFs:SetWidth(56)
             goldFs:SetJustifyH("LEFT")
             goldFs:SetText(FormatGoldShort(entry.gold))
             goldFs:SetTextColor(1, 0.82, 0, 1)
+
+            local ageFs = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+            ageFs:SetPoint("LEFT", row, "LEFT", 398, 0)
+            ageFs:SetWidth(66)
+            ageFs:SetJustifyH("LEFT")
+            ageFs:SetText(FormatAge(entry.timestamp))
+            ageFs:SetTextColor(entry.isOnline and 0.5 or 0.8, 0.5, entry.isOnline and 0.5 or 0.2, 1)
 
             table.insert(pc.progressRows, row)
         end

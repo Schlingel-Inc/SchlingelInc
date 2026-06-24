@@ -20,6 +20,16 @@ local function GetXPStopState()
     return result
 end
 
+local function GetRunesKnown()
+    local engraving = C_Engraving
+    if type(engraving) ~= "table" or type(engraving.GetNumRunesKnown) ~= "function" then
+        return nil
+    end
+    local ok, count = pcall(engraving.GetNumRunesKnown)
+    if not ok then return nil end
+    return tonumber(count)
+end
+
 local function BroadcastProgress()
     if tonumber(SchlingelInc.InfoRules.progressBroadcastRule) == 0 then return end
     if not IsInGuild() then return end
@@ -29,11 +39,12 @@ local function BroadcastProgress()
     lastBroadcast = now
     local name = UnitName("player")
     if not name then return end
+    local runesKnown = GetRunesKnown() or 0
     local xpStop = GetXPStopState()
     local suffix = xpStop ~= nil and (":" .. (xpStop and "1" or "0")) or ""
     C_ChatInfo.SendAddonMessage(SchlingelInc.prefix,
-        string.format("PROGRESS:%s:%d:%d:%d:%d%s",
-            name, UnitLevel("player"), UnitXP("player"), UnitXPMax("player"), GetMoney(), suffix),
+        string.format("PROGRESS:%s:%d:%d:%d:%d:%d%s",
+            name, UnitLevel("player"), UnitXP("player"), UnitXPMax("player"), GetMoney(), runesKnown, suffix),
         "GUILD")
 end
 
@@ -107,20 +118,31 @@ function SchlingelInc.LevelUps:Initialize()
     SchlingelInc.EventManager:RegisterHandler("CHAT_MSG_ADDON",
         function(_, prefix, message, _, sender)
             if prefix ~= SchlingelInc.prefix then return end
-            local level, xpCurrent, xpMax = message:match("^PROGRESS:[^:]+:(%d+):(%d+):(%d+)")
-            if level then
-                local gold      = message:match("^PROGRESS:[^:]+:%d+:%d+:%d+:(%d+)")
-                local xpStopStr = message:match("^PROGRESS:[^:]+:%d+:%d+:%d+:%d+:([01])$")
+            local msgType, _, levelStr, xpCurrentStr, xpMaxStr, goldStr, field7, field8 = strsplit(":", message)
+            if msgType == "PROGRESS" and tonumber(levelStr) and tonumber(xpCurrentStr) and tonumber(xpMaxStr) and tonumber(goldStr) then
+                local runesKnown
                 local xpStop
-                if xpStopStr ~= nil then xpStop = xpStopStr == "1" end
+
+                -- Legacy format: PROGRESS:name:level:xpCurrent:xpMax:gold[:xpStop]
+                if field7 == "0" or field7 == "1" then
+                    xpStop = field7 == "1"
+                else
+                    -- New format: PROGRESS:name:level:xpCurrent:xpMax:gold:runesKnown[:xpStop]
+                    runesKnown = tonumber(field7)
+                    if field8 == "0" or field8 == "1" then
+                        xpStop = field8 == "1"
+                    end
+                end
+
                 local shortName = SchlingelInc:RemoveRealmFromName(sender)
                 local entry = {
-                    level     = tonumber(level),
-                    xpCurrent = tonumber(xpCurrent),
-                    xpMax     = tonumber(xpMax),
-                    gold      = gold and tonumber(gold) or nil,
-                    xpStop    = xpStop,
-                    timestamp = time(),
+                    level      = tonumber(levelStr),
+                    xpCurrent  = tonumber(xpCurrentStr),
+                    xpMax      = tonumber(xpMaxStr),
+                    gold       = tonumber(goldStr),
+                    runesKnown = runesKnown,
+                    xpStop     = xpStop,
+                    timestamp  = time(),
                 }
                 SchlingelInc.LevelUps.progressCache[shortName] = entry
                 SaveProgressEntry(shortName, entry)

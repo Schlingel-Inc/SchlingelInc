@@ -1,3 +1,7 @@
+# 4.0.5
+
+- Fortschritt-Tab zeigt die anzahl der erlernten Runen an
+
 # 4.0.4
 
 - Fortschritt-Broadcast (PROGRESS) wieder aktiviert
