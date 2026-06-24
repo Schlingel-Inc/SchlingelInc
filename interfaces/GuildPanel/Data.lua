@@ -113,6 +113,8 @@ function GP.SortData(data)
             va = bestOrder(a.role)
             vb = bestOrder(b.role)
         elseif GP.sortCol == 6 then
+            va, vb = (a.discord or ""):lower(), (b.discord or ""):lower()
+        elseif GP.sortCol == 7 then
             va = a.deaths or -1
             vb = b.deaths or -1
         else

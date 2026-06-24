@@ -109,16 +109,18 @@ local function BuildPanel()
     -- ── Tab buttons ───────────────────────────────────────────────────────
     local tabDefs = {
         { id = "rules",    label = "Regeln" },
-        { id = "inactive", label = "Inaktive Mitglieder" },
+        { id = "inactive", label = "Inaktiv" },
         { id = "progress", label = "Fortschritt" },
+        { id = "discord",  label = "Discord" },
         { id = "invites",  label = "Anfragen" },
     }
     local tabBtns     = {}
     local tabContents = {}
     local CONTENT_TOP = -(TITLE_H + TAB_H + 14)
 
-    local TAB_BTN_W = 115
-    local TAB_STEP  = 123
+    local TAB_GAP   = 4
+    local TAB_BTN_W = math.floor((PANEL_W - 16 - (TAB_GAP * (#tabDefs - 1))) / #tabDefs)
+    local TAB_STEP  = TAB_BTN_W + TAB_GAP
 
     for i, tab in ipairs(tabDefs) do
         local btn = CreateFrame("Button", nil, f)
@@ -690,6 +692,147 @@ local function BuildPanel()
 
     pc.Refresh = RefreshProgress
 
+    -- ── Discord tab ───────────────────────────────────────────────────────
+    local dc = tabContents["discord"]
+
+    local DCOLS = {
+        { label = "Discord",     x = 0,   w = 150 },
+        { label = "Chars",       x = 154, w = 42  },
+        { label = "Charaktere",  x = 200, w = 250 },
+    }
+
+    for _, col in ipairs(DCOLS) do
+        local hdr = dc:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+        hdr:SetPoint("TOPLEFT", dc, "TOPLEFT", col.x + 4, -6)
+        hdr:SetWidth(col.w)
+        hdr:SetJustifyH("LEFT")
+        hdr:SetText(col.label)
+        hdr:SetTextColor(1, 0.82, 0, 1)
+    end
+
+    local dhdrDiv = dc:CreateTexture(nil, "ARTWORK")
+    dhdrDiv:SetHeight(1)
+    dhdrDiv:SetColorTexture(0.4, 0.4, 0.4, 0.7)
+    dhdrDiv:SetPoint("TOPLEFT",  dc, "TOPLEFT",  4, -22)
+    dhdrDiv:SetPoint("TOPRIGHT", dc, "TOPRIGHT", -4, -22)
+
+    local dScrollFrame = CreateFrame("ScrollFrame", nil, dc, "UIPanelScrollFrameTemplate")
+    dScrollFrame:SetPoint("TOPLEFT",     dc, "TOPLEFT",     4, -26)
+    dScrollFrame:SetPoint("BOTTOMRIGHT", dc, "BOTTOMRIGHT", -20, 8)
+    dScrollFrame:EnableMouseWheel(true)
+    dScrollFrame:SetScript("OnMouseWheel", function(sf, delta)
+        sf:SetVerticalScroll(
+            math.max(0, math.min(sf:GetVerticalScrollRange(), sf:GetVerticalScroll() - delta * 20))
+        )
+    end)
+
+    local dScrollChild = CreateFrame("Frame", nil, dScrollFrame)
+    dScrollChild:SetWidth(SCROLL_CONTENT_W)
+    dScrollChild:SetHeight(1)
+    dScrollFrame:SetScrollChild(dScrollChild)
+
+    dc.dScrollChild = dScrollChild
+    dc.discordRows  = {}
+
+    local function BuildDiscordHandleData()
+        local byHandle = {}
+        local ownName = UnitName("player")
+
+        for i = 1, GetNumGuildMembers() or 0 do
+            local name, _, _, _, _, _, _, _, isOnline = GetGuildRosterInfo(i)
+            if name then
+                local shortName = SchlingelInc:RemoveRealmFromName(name)
+                local handle
+                if shortName == ownName then
+                    handle = DiscordHandle
+                elseif SchlingelGuildProfileCache and SchlingelGuildProfileCache[shortName] then
+                    handle = SchlingelGuildProfileCache[shortName].discord
+                end
+                handle = handle and strtrim(handle) or ""
+
+                if handle ~= "" then
+                    local key = string.lower(handle)
+                    if not byHandle[key] then
+                        byHandle[key] = {
+                            handle  = handle,
+                            chars   = {},
+                            online  = 0,
+                        }
+                    end
+                    table.insert(byHandle[key].chars, shortName)
+                    if isOnline then byHandle[key].online = byHandle[key].online + 1 end
+                end
+            end
+        end
+
+        local list = {}
+        for _, group in pairs(byHandle) do
+            table.sort(group.chars)
+            table.insert(list, {
+                handle = group.handle,
+                count  = #group.chars,
+                names  = table.concat(group.chars, ", "),
+            })
+        end
+
+        table.sort(list, function(a, b)
+            if a.count ~= b.count then return a.count > b.count end
+            return string.lower(a.handle) < string.lower(b.handle)
+        end)
+
+        return list
+    end
+
+    local function RefreshDiscordHandles()
+        for _, row in ipairs(dc.discordRows) do row:Hide() end
+        wipe(dc.discordRows)
+
+        local list = BuildDiscordHandleData()
+        local ROW_H = 22
+
+        if #list == 0 then
+            local msg = dScrollChild:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+            msg:SetPoint("TOPLEFT", dScrollChild, "TOPLEFT", 4, 0)
+            msg:SetText("Keine Discord Handles in den Profilen gefunden.")
+            msg:SetTextColor(0.6, 0.6, 0.6, 1)
+            table.insert(dc.discordRows, msg)
+            dScrollChild:SetHeight(20)
+            return
+        end
+
+        for idx, entry in ipairs(list) do
+            local row = CreateFrame("Frame", nil, dScrollChild)
+            row:SetSize(SCROLL_CONTENT_W, ROW_H)
+            row:SetPoint("TOPLEFT", 0, -(idx - 1) * ROW_H)
+
+            if idx % 2 == 0 then
+                local bg = row:CreateTexture(nil, "BACKGROUND")
+                bg:SetAllPoints()
+                bg:SetColorTexture(1, 1, 1, 0.03)
+            end
+
+            local function Cell(text, xPos, w, r, g, b)
+                local fs = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+                fs:SetPoint("LEFT", row, "LEFT", xPos + 4, 0)
+                fs:SetWidth(w)
+                fs:SetJustifyH("LEFT")
+                fs:SetText(text)
+                if r then fs:SetTextColor(r, g, b, 1) end
+            end
+
+            Cell(entry.handle,           0,   146, 0.65, 0.65, 1)
+            Cell(tostring(entry.count),  154, 38,  1,    0.82, 0)
+            Cell(entry.names,            200, 246)
+
+            table.insert(dc.discordRows, row)
+        end
+
+        dScrollChild:SetHeight(math.max(1, #list * ROW_H))
+        dScrollFrame:SetVerticalScroll(0)
+    end
+
+    dc.Refresh = RefreshDiscordHandles
+
     -- ── Anfragen tab ──────────────────────────────────────────────────────
     local vc = tabContents["invites"]
 
@@ -832,6 +975,16 @@ local function BuildPanel()
         RefreshProgress()
     end)
 
+    tabBtns["discord"]:SetScript("OnClick", function()
+        if not IsOfficer() then
+            SchlingelInc:Print("Discord-Übersicht ist nur für Offiziere sichtbar.")
+            return
+        end
+        SwitchTab("discord")
+        C_GuildInfo.GuildRoster()
+        C_Timer.After(0.3, RefreshDiscordHandles)
+    end)
+
     tabBtns["invites"]:SetScript("OnClick", function()
         if not IsOfficer() then
             SchlingelInc:Print("Anfragen sind nur für Offiziere sichtbar.")
@@ -843,6 +996,7 @@ local function BuildPanel()
 
     f.RefreshInvites  = RefreshInvites
     f.RefreshProgress = RefreshProgress
+    f.RefreshDiscord  = RefreshDiscordHandles
     f.SwitchToInvites = function()
         SwitchTab("invites")
         RefreshInvites()

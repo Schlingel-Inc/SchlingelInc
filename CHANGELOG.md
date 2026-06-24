@@ -1,3 +1,12 @@
+# 4.0.4
+
+- Fortschritt-Broadcast (PROGRESS) wieder aktiviert
+- Fortschritt-Broadcast nutzt jetzt einen konfigurierbaren Schwellenwert aus `Constants.COOLDOWNS.PROGRESS_BROADCAST` statt eines fest verdrahteten Intervalls
+- Fortschritt-Broadcast wird nicht mehr durch XP-Gewinn (`PLAYER_XP_UPDATE`) ausgelöst
+- Fortschritt-Broadcast wird nicht mehr durch Goldänderung (`PLAYER_MONEY`) ausgelöst
+- Gildenansicht: Neue Spalte `Discord` direkt neben `Rolle` hinzugefügt
+- Offizier-Panel: Neuer Tab `Discord` ergänzt, der Charaktere pro Discord-Handle gruppiert anzeigt
+
 # 4.0.3
 
 - Bugfix: Progress messages temporary disabled

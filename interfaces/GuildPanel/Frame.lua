@@ -275,9 +275,10 @@ function SchlingelInc.GuildPanel:Refresh()
             row.cells[3]:SetText(SchlingelInc:SanitizeText(entry.rank))
             row.cells[4]:SetText(SchlingelInc:SanitizeText(entry.zone))
             row.cells[5]:SetText(entry.role)
+            row.cells[6]:SetText(SchlingelInc:SanitizeText(entry.discord or ""))
             -- Deaths: show the number whenever we have data (including 0),
             -- blank only when nil (no profile received yet for this player)
-            row.cells[6]:SetText(entry.deaths ~= nil and tostring(entry.deaths) or "")
+            row.cells[7]:SetText(entry.deaths ~= nil and tostring(entry.deaths) or "")
 
             row:SetScript("OnEnter", function()
                 row.hl:Show()

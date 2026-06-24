@@ -21,8 +21,19 @@ local function GetXPStopState()
 end
 
 local function BroadcastProgress()
-    -- PROGRESS messages disabled due to addon channel spam
-    return
+    if not IsInGuild() then return end
+    local now = time()
+    local threshold = SchlingelInc.Constants.COOLDOWNS.PROGRESS_BROADCAST or 60
+    if now - lastBroadcast < threshold then return end
+    lastBroadcast = now
+    local name = UnitName("player")
+    if not name then return end
+    local xpStop = GetXPStopState()
+    local suffix = xpStop ~= nil and (":" .. (xpStop and "1" or "0")) or ""
+    C_ChatInfo.SendAddonMessage(SchlingelInc.prefix,
+        string.format("PROGRESS:%s:%d:%d:%d:%d%s",
+            name, UnitLevel("player"), UnitXP("player"), UnitXPMax("player"), GetMoney(), suffix),
+        "GUILD")
 end
 
 local function CheckForMilestone(level)
@@ -72,16 +83,6 @@ function SchlingelInc.LevelUps:Initialize()
                 C_Timer.After(3, BroadcastProgress)
             end
         end, 0, "LevelUpProgressGuildUpdate")
-
-    SchlingelInc.EventManager:RegisterHandler("PLAYER_XP_UPDATE",
-        function()
-            BroadcastProgress()
-        end, 0, "LevelUpProgressXP")
-
-    SchlingelInc.EventManager:RegisterHandler("PLAYER_MONEY",
-        function()
-            BroadcastProgress()
-        end, 0, "LevelUpProgressMoney")
 
     SchlingelInc.EventManager:RegisterHandler("PLAYER_FLAGS_CHANGED",
         function(_, unit)

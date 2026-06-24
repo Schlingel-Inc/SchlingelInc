@@ -17,6 +17,7 @@ GP.COLUMNS = {
     { label = "Rang",  width = 84  },
     { label = "Zone",  width = 90  },
     { label = "Rolle", width = 75  },
+    { label = "Discord", width = 95 },
     { label = "Tode",  width = 35  },
 }
 
@@ -25,7 +26,7 @@ GP.FRAME_W = 0    -- computed in Frame.lua before first use
 GP.FRAME_H = 420  -- fixed height (~22 visible rows)
 
 -- ── Sort / filter state (mutable, shared across Data, Frame, FilterPanel) ──────
-GP.sortCol     = 0      -- 0 = default (online+name); 1-6 = COLUMNS index
+GP.sortCol     = 0      -- 0 = default (online+name); 1..#COLUMNS = COLUMNS index
 GP.sortAsc     = true   -- true = ascending
 GP.hideOffline = false
 GP.ROLE_ORDER  = { Tank = 1, Heal = 2, DPS = 3 }
