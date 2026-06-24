@@ -227,6 +227,7 @@ local function BuildPanel()
         { label = "Handel mit Nicht-Mitgliedern sperren",      dbKey = "tradeRule" },
         { label = "Gruppierung mit Nicht-Mitgliedern sperren", dbKey = "groupingRule" },
         { label = "SoD-Händler sperren",                       dbKey = "blockedTraderRule" },
+        { label = "Fortschritt-Broadcast aktivieren",          dbKey = "progressBroadcastRule" },
         { label = "Duelle automatisch ablehnen",               dbKey = nil },
     }
 
@@ -290,6 +291,7 @@ local function BuildPanel()
                 checkboxes["Handel mit Nicht-Mitgliedern sperren"]:GetChecked(),
                 checkboxes["Gruppierung mit Nicht-Mitgliedern sperren"]:GetChecked(),
                 checkboxes["SoD-Händler sperren"]:GetChecked(),
+                checkboxes["Fortschritt-Broadcast aktivieren"]:GetChecked(),
                 cap
             )
             SchlingelOptionsDB = SchlingelOptionsDB or {}

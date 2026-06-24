@@ -21,6 +21,7 @@ local function GetXPStopState()
 end
 
 local function BroadcastProgress()
+    if tonumber(SchlingelInc.InfoRules.progressBroadcastRule) == 0 then return end
     if not IsInGuild() then return end
     local now = time()
     local threshold = SchlingelInc.Constants.COOLDOWNS.PROGRESS_BROADCAST or 60
