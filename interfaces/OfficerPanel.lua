@@ -525,6 +525,7 @@ local function BuildPanel()
     end
 
     local function FormatAge(timestamp)
+        if not timestamp or timestamp <= 0 then return "—" end
         local age = time() - timestamp
         if age < 60    then return "gerade"
         elseif age < 3600 then return math.floor(age / 60) .. "m"
@@ -536,33 +537,46 @@ local function BuildPanel()
         for _, row in ipairs(pc.progressRows) do row:Hide() end
         wipe(pc.progressRows)
 
-        local onlineSet = {}
-        for i = 1, GetNumGuildMembers() or 0 do
-            local name, _, _, _, _, _, _, _, isOnline = GetGuildRosterInfo(i)
-            if name and isOnline then
-                onlineSet[SchlingelInc:RemoveRealmFromName(name)] = true
-            end
-        end
-
         local list = {}
-        for shortName, data in pairs(SchlingelInc.LevelUps.progressCache) do
-            local xpPct = 0
-            if data.xpMax and data.xpMax > 0 then
-                xpPct = math.floor(data.xpCurrent / data.xpMax * 100)
-            elseif data.xpMax == 0 then
-                xpPct = 100
+        for i = 1, GetNumGuildMembers() or 0 do
+            local name, _, _, rosterLevel, _, _, _, _, isOnline = GetGuildRosterInfo(i)
+            if name then
+                local shortName = SchlingelInc:RemoveRealmFromName(name)
+                local data = SchlingelInc.LevelUps.progressCache[shortName]
+
+                local level = rosterLevel or 0
+                local xpCurrent, xpMax, xpPct = 0, 0, 0
+                local gold, xpStop, timestamp = nil, nil, 0
+                local hasProgress = false
+
+                if data then
+                    hasProgress = true
+                    level = data.level or level
+                    xpCurrent = data.xpCurrent or 0
+                    xpMax = data.xpMax or 0
+                    if xpMax > 0 then
+                        xpPct = math.floor(xpCurrent / xpMax * 100)
+                    elseif xpMax == 0 and level >= SchlingelInc.Constants.MAX_LEVEL then
+                        xpPct = 100
+                    end
+                    gold = data.gold
+                    xpStop = data.xpStop
+                    timestamp = data.timestamp or 0
+                end
+
+                table.insert(list, {
+                    name        = shortName,
+                    level       = level,
+                    xpCurrent   = xpCurrent,
+                    xpMax       = xpMax,
+                    xpPct       = xpPct,
+                    gold        = gold,
+                    xpStop      = xpStop,
+                    isOnline    = isOnline == true,
+                    timestamp   = timestamp,
+                    hasProgress = hasProgress,
+                })
             end
-            table.insert(list, {
-                name      = shortName,
-                level     = data.level or 0,
-                xpCurrent = data.xpCurrent or 0,
-                xpMax     = data.xpMax or 0,
-                xpPct     = xpPct,
-                gold      = data.gold,
-                xpStop    = data.xpStop,
-                isOnline  = onlineSet[shortName] == true,
-                timestamp = data.timestamp,
-            })
         end
 
         local onlineCount = 0
@@ -586,20 +600,65 @@ local function BuildPanel()
             progressHdrs[i]:SetTextColor(active and 1 or 1, active and 1 or 0.82, active and 0.45 or 0, 1)
         end
 
-        table.sort(list, function(a, b)
-            local key = PCOLS[progressSortCol].sortKey
-            local va, vb = a[key], b[key]
-            if type(va) == "string" then
-                va, vb = va:lower(), (vb or ""):lower()
+        local compact = {}
+        for _, e in ipairs(list) do
+            if type(e) == "table" then
+                table.insert(compact, e)
+            end
+        end
+        list = compact
+
+        local sortCol = PCOLS[progressSortCol] or PCOLS[1]
+        local key = sortCol and sortCol.sortKey or "name"
+        local ascending = progressSortAsc == true
+
+        local function IsLess(a, b)
+            if a == b then return false end
+            if type(a) ~= "table" then return false end
+            if type(b) ~= "table" then return true end
+
+            local va, vb
+            if key == "name" then
+                va = tostring(a.name or ""):lower()
+                vb = tostring(b.name or ""):lower()
             else
-                va, vb = va or 0, vb or 0
+                va = tonumber(a[key]) or 0
+                vb = tonumber(b[key]) or 0
             end
-            if va == vb then
-                if a.level ~= b.level then return a.level > b.level end
-                return a.xpPct > b.xpPct
+
+            if va ~= vb then
+                return ascending and va < vb or va > vb
             end
-            return progressSortAsc and va < vb or va > vb
-        end)
+
+            local na = tostring(a.name or ""):lower()
+            local nb = tostring(b.name or ""):lower()
+            if na ~= nb then return na < nb end
+
+            local la, lb = tonumber(a.level) or 0, tonumber(b.level) or 0
+            if la ~= lb then return la > lb end
+
+            local xa, xb = tonumber(a.xpPct) or 0, tonumber(b.xpPct) or 0
+            if xa ~= xb then return xa > xb end
+
+            local ta, tb = tonumber(a.timestamp) or 0, tonumber(b.timestamp) or 0
+            if ta ~= tb then return ta > tb end
+
+            return false
+        end
+
+        -- Manual selection sort avoids Lua's table.sort edge-cases with malformed input.
+        local n = #list
+        for i = 1, n - 1 do
+            local best = i
+            for j = i + 1, n do
+                if IsLess(list[j], list[best]) then
+                    best = j
+                end
+            end
+            if best ~= i then
+                list[i], list[best] = list[best], list[i]
+            end
+        end
 
         if #list == 0 then
             local msg = pScrollChild:CreateFontString(nil, "OVERLAY", "GameFontNormal")
@@ -651,11 +710,16 @@ local function BuildPanel()
             barBg:SetPoint("LEFT", row, "LEFT", BAR_X, 0)
             barBg:SetColorTexture(0.15, 0.15, 0.15, 1)
 
-            local fillW = atCap and BAR_W or math.max(1, math.floor(BAR_W * entry.xpPct / 100))
+            local fillW = 0
+            if atCap then
+                fillW = BAR_W
+            elseif entry.hasProgress then
+                fillW = math.max(1, math.floor(BAR_W * entry.xpPct / 100))
+            end
             local fill = row:CreateTexture(nil, "ARTWORK")
             fill:SetSize(fillW, 8)
             fill:SetPoint("LEFT", barBg, "LEFT", 0, 0)
-            fill:SetColorTexture(atCap and 1 or 0.2, atCap and 0.82 or 0.75, atCap and 0 or 0.2, 1)
+            fill:SetColorTexture(atCap and 1 or 0.2, atCap and 0.82 or 0.75, atCap and 0 or 0.2, entry.hasProgress and 1 or 0)
 
             local pctFs = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
             pctFs:SetPoint("LEFT", row, "LEFT", BAR_X + BAR_W + 4, 0)
@@ -664,6 +728,9 @@ local function BuildPanel()
             if atCap then
                 pctFs:SetText("Cap")
                 pctFs:SetTextColor(1, 0.82, 0, 1)
+            elseif not entry.hasProgress then
+                pctFs:SetText("—")
+                pctFs:SetTextColor(0.55, 0.55, 0.55, 1)
             else
                 pctFs:SetText(entry.xpPct .. "%")
                 pctFs:SetTextColor(1, 1, 1, 1)
