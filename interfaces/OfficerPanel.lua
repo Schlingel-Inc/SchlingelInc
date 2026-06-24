@@ -415,13 +415,13 @@ local function BuildPanel()
     local pc = tabContents["progress"]
 
     local PCOLS = {
-        { label = "Name",    x = 0,   w = 112, sortKey = "name",       justifyH = "LEFT"  },
-        { label = "Level",   x = 116, w = 36,  sortKey = "level",      justifyH = "LEFT"  },
-        { label = "Runen",   x = 156, w = 42,  sortKey = "runesKnown", justifyH = "LEFT"  },
-        { label = "XP",      x = 202, w = 79,  sortKey = "xpPct",      justifyH = "LEFT"  },
-        { label = "%",       x = 281, w = 45,  sortKey = "xpPct",      justifyH = "RIGHT" },
-        { label = "Gold",    x = 330, w = 60,  sortKey = "gold",       justifyH = "LEFT"  },
-        { label = "Aktuell", x = 394, w = 70,  sortKey = "timestamp",  justifyH = "LEFT"  },
+        { label = "Name",    x = 0,   w = 88,  sortKey = "name",       justifyH = "LEFT"  },
+        { label = "Level",   x = 92,  w = 44,  sortKey = "level",      justifyH = "CENTER" },
+        { label = "Runen",   x = 140, w = 42,  sortKey = "runesKnown", justifyH = "CENTER" },
+        { label = "XP",      x = 186, w = 79,  sortKey = "xpPct",      justifyH = "CENTER" },
+        { label = "%",       x = 265, w = 45,  sortKey = "xpPct",      justifyH = "CENTER" },
+        { label = "Gold",    x = 314, w = 88,  sortKey = "gold",       justifyH = "RIGHT" },
+        { label = "Aktuell", x = 398, w = 62,  sortKey = "timestamp",  justifyH = "RIGHT" },
     }
 
     local hideOfflineProgress = false
@@ -517,7 +517,7 @@ local function BuildPanel()
     pc.progressRows = {}
 
     local BAR_W = 75
-    local BAR_X = 206
+    local BAR_X = 190
 
     local function FormatGoldShort(copper)
         if not copper then return "—" end
@@ -696,7 +696,7 @@ local function BuildPanel()
 
             local nameFs = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
             nameFs:SetPoint("LEFT", row, "LEFT", 4, 0)
-            nameFs:SetWidth(108)
+            nameFs:SetWidth(84)
             nameFs:SetJustifyH("LEFT")
             nameFs:SetText(entry.name)
             if not entry.isOnline then
@@ -704,16 +704,16 @@ local function BuildPanel()
             end
 
             local levelFs = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-            levelFs:SetPoint("LEFT", row, "LEFT", 120, 0)
-            levelFs:SetWidth(32)
-            levelFs:SetJustifyH("LEFT")
+            levelFs:SetPoint("LEFT", row, "LEFT", 96, 0)
+            levelFs:SetWidth(40)
+            levelFs:SetJustifyH("CENTER")
             levelFs:SetText(tostring(entry.level))
             levelFs:SetTextColor(atCap and 1 or 1, atCap and 0.82 or 1, atCap and 0 or 1, 1)
 
             local runesFs = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-            runesFs:SetPoint("LEFT", row, "LEFT", 160, 0)
+            runesFs:SetPoint("LEFT", row, "LEFT", 144, 0)
             runesFs:SetWidth(38)
-            runesFs:SetJustifyH("LEFT")
+            runesFs:SetJustifyH("CENTER")
             if entry.runesKnown ~= nil then
                 runesFs:SetText(tostring(entry.runesKnown))
                 runesFs:SetTextColor(1, 1, 1, 1)
@@ -741,7 +741,7 @@ local function BuildPanel()
             local pctFs = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
             pctFs:SetPoint("LEFT", row, "LEFT", BAR_X + BAR_W + 4, 0)
             pctFs:SetWidth(41)
-            pctFs:SetJustifyH("RIGHT")
+            pctFs:SetJustifyH("CENTER")
             if atCap then
                 pctFs:SetText("Cap")
                 pctFs:SetTextColor(1, 0.82, 0, 1)
@@ -755,15 +755,16 @@ local function BuildPanel()
 
             local goldFs = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
             goldFs:SetPoint("LEFT", row, "LEFT", BAR_X + BAR_W + 50, 0)
-            goldFs:SetWidth(56)
-            goldFs:SetJustifyH("LEFT")
+            goldFs:SetWidth(86)
+            goldFs:SetJustifyH("RIGHT")
+            goldFs:SetWordWrap(false)
             goldFs:SetText(FormatGoldShort(entry.gold))
             goldFs:SetTextColor(1, 0.82, 0, 1)
 
             local ageFs = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-            ageFs:SetPoint("LEFT", row, "LEFT", 398, 0)
-            ageFs:SetWidth(66)
-            ageFs:SetJustifyH("LEFT")
+            ageFs:SetPoint("LEFT", row, "LEFT", 402, 0)
+            ageFs:SetWidth(58)
+            ageFs:SetJustifyH("RIGHT")
             ageFs:SetText(FormatAge(entry.timestamp))
             ageFs:SetTextColor(entry.isOnline and 0.5 or 0.8, 0.5, entry.isOnline and 0.5 or 0.2, 1)
 
