@@ -98,7 +98,9 @@ SchlingelInc.Constants.FALLBACK_OFFICERS = {
 	"Siegdirty",
 	"Rohanta",
 	"Pennga",
-	"Tinazwift"
+	"Tinazwift",
+	"Untanka",
+	"Kurti"
 }
 
 -- UI Backdrop Settings

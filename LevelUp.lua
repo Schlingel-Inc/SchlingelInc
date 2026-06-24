@@ -12,6 +12,11 @@ end
 local lastBroadcast = 0
 local lastKnownXPStop = nil
 
+local function IsProgressBroadcastEnabled()
+    local rule = SchlingelInc.InfoRules and SchlingelInc.InfoRules.progressBroadcastRule
+    return rule ~= 0 and rule ~= "0" and rule ~= false
+end
+
 local function GetXPStopState()
     local api = C_PlayerInfo and C_PlayerInfo.IsXPUserDisabled
     if type(api) ~= "function" then return nil end
@@ -31,7 +36,7 @@ local function GetRunesKnown()
 end
 
 local function BroadcastProgress()
-    if tonumber(SchlingelInc.InfoRules.progressBroadcastRule) == 0 then return end
+    if not IsProgressBroadcastEnabled() then return end
     if not IsInGuild() then return end
     local now = time()
     local threshold = SchlingelInc.Constants.COOLDOWNS.PROGRESS_BROADCAST or 60
@@ -49,6 +54,7 @@ local function BroadcastProgress()
 end
 
 local function CheckForMilestone(level)
+    if not IsProgressBroadcastEnabled() then return end
     if SchlingelInc.Rules.CurrentCap > 0 and level >= SchlingelInc.Rules.CurrentCap then return end
     for _, lvl in pairs(SchlingelInc.Constants.LEVEL_MILESTONES) do
         if level == lvl then
@@ -185,7 +191,7 @@ function SchlingelInc.LevelUps:CheckForCap(level, announce)
         end
         lastKnownXPStop = xpStop
 
-        if announce then
+        if announce and IsProgressBroadcastEnabled() then
             local player = UnitName("player")
             local handle = SchlingelInc:GetDiscordHandle()
             local playerDisplay = (handle and handle ~= "") and (player .. " (" .. handle .. ")") or player
