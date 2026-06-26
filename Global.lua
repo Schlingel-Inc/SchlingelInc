@@ -196,6 +196,10 @@ function SchlingelInc.Global:Initialize()
 					end
 				elseif message == "VERSION_REQUEST" and IsInGuild() then
 					C_ChatInfo.SendAddonMessage(SchlingelInc.prefix, "VERSION:" .. SchlingelInc.version, "GUILD")
+                elseif message == "RULES_UPDATE" then
+                    C_Timer.After(2, function()
+                        SchlingelInc.Rules:LoadFromGuildInfo()
+                    end)
 				else
                     HandleMilestoneAddonMessage(message, sender)
 
@@ -374,6 +378,7 @@ function SchlingelInc:WriteGuildInfo(mail, ah, trade, group, blockedTrader, prog
     SetGuildInfoText(newText)
     SchlingelInc:Print("Gildeninfo mit neuen Regeln aktualisiert.")
     SchlingelInc.Rules:LoadFromGuildInfo()
+    C_ChatInfo.SendAddonMessage(SchlingelInc.prefix, "RULES_UPDATE", "GUILD")
     return true
 end
 
