@@ -102,7 +102,6 @@ function SchlingelInc.Debug:ShowRules()
 	print(SchlingelInc.colorCode .. "Trade Rule: " .. SchlingelInc.InfoRules.tradeRule .. "|r")
 	print(SchlingelInc.colorCode .. "Grouping Rule: " .. SchlingelInc.InfoRules.groupingRule .. "|r")
 	print(SchlingelInc.colorCode .. "Blocked Trader Rule: " .. SchlingelInc.InfoRules.blockedTraderRule .. "|r")
-	print(SchlingelInc.colorCode .. "Progress Broadcast Rule: " .. SchlingelInc.InfoRules.progressBroadcastRule .. "|r")
 end
 
 function SchlingelInc.Debug:ToggleDebugMode()

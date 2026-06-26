@@ -9,13 +9,7 @@ local function SaveProgressEntry(shortName, entry)
     SchlingelProgressDB[shortName] = entry
 end
 
-local lastBroadcast = 0
 local lastKnownXPStop = nil
-
-local function IsProgressBroadcastEnabled()
-    local rule = SchlingelInc.InfoRules and SchlingelInc.InfoRules.progressBroadcastRule
-    return rule ~= 0 and rule ~= "0" and rule ~= false
-end
 
 local function GetXPStopState()
     local api = C_PlayerInfo and C_PlayerInfo.IsXPUserDisabled
@@ -35,26 +29,50 @@ local function GetRunesKnown()
     return tonumber(count)
 end
 
-local function BroadcastProgress()
-    if not IsProgressBroadcastEnabled() then return end
-    if not IsInGuild() then return end
-    local now = time()
-    local threshold = SchlingelInc.Constants.COOLDOWNS.PROGRESS_BROADCAST or 60
-    if now - lastBroadcast < threshold then return end
-    lastBroadcast = now
+local function BuildProgressEntry()
     local name = UnitName("player")
-    if not name then return end
-    local runesKnown = GetRunesKnown() or 0
-    local xpStop = GetXPStopState()
-    local suffix = xpStop ~= nil and (":" .. (xpStop and "1" or "0")) or ""
-    C_ChatInfo.SendAddonMessage(SchlingelInc.prefix,
+    if not name then return nil end
+
+    return {
+        name       = name,
+        level      = UnitLevel("player"),
+        xpCurrent  = UnitXP("player") or 0,
+        xpMax      = UnitXPMax("player") or 0,
+        gold       = GetMoney() or 0,
+        runesKnown = GetRunesKnown() or 0,
+        xpStop     = GetXPStopState(),
+        timestamp  = time(),
+    }
+end
+
+local function CacheOwnProgress()
+    local entry = BuildProgressEntry()
+    if not entry then return nil end
+
+    local shortName = SchlingelInc:RemoveRealmFromName(entry.name)
+    SchlingelInc.LevelUps.progressCache[shortName] = entry
+    SaveProgressEntry(shortName, entry)
+    return entry
+end
+
+local function SendProgressTo(targetName)
+    if not IsInGuild() then return end
+    if not targetName or targetName == "" then return end
+
+    local entry = BuildProgressEntry()
+    if not entry then return end
+
+    local xpStopSuffix = entry.xpStop ~= nil and (":" .. (entry.xpStop and "1" or "0")) or ""
+    C_ChatInfo.SendAddonMessage(
+        SchlingelInc.prefix,
         string.format("PROGRESS:%s:%d:%d:%d:%d:%d%s",
-            name, UnitLevel("player"), UnitXP("player"), UnitXPMax("player"), GetMoney(), runesKnown, suffix),
-        "GUILD")
+            entry.name, entry.level, entry.xpCurrent, entry.xpMax, entry.gold, entry.runesKnown, xpStopSuffix),
+        "WHISPER",
+        targetName
+    )
 end
 
 local function CheckForMilestone(level)
-    if not IsProgressBroadcastEnabled() then return end
     if SchlingelInc.Rules.CurrentCap > 0 and level >= SchlingelInc.Rules.CurrentCap then return end
     for _, lvl in pairs(SchlingelInc.Constants.LEVEL_MILESTONES) do
         if level == lvl then
@@ -72,7 +90,7 @@ function SchlingelInc.LevelUps:Initialize()
         function(_, level)
             CheckForMilestone(level)
             SchlingelInc.LevelUps:CheckForCap(level, true)
-            BroadcastProgress()
+            CacheOwnProgress()
         end, 0, "LevelUpEvents")
 
     SchlingelInc.EventManager:RegisterHandler("PLAYER_ENTERING_WORLD",
@@ -87,18 +105,18 @@ function SchlingelInc.LevelUps:Initialize()
                     end
                 end
             end)
-            C_Timer.After(3, BroadcastProgress)
+            C_Timer.After(3, CacheOwnProgress)
         end, 0, "LevelUpProgressLogin")
 
     SchlingelInc.EventManager:RegisterHandler("ZONE_CHANGED_NEW_AREA",
         function()
-            BroadcastProgress()
+            CacheOwnProgress()
         end, 0, "LevelUpProgressZone")
 
     SchlingelInc.EventManager:RegisterHandler("PLAYER_GUILD_UPDATE",
         function()
             if IsInGuild() then
-                C_Timer.After(3, BroadcastProgress)
+                C_Timer.After(3, CacheOwnProgress)
             end
         end, 0, "LevelUpProgressGuildUpdate")
 
@@ -111,7 +129,7 @@ function SchlingelInc.LevelUps:Initialize()
             local xpStop = GetXPStopState()
             if xpStop == lastKnownXPStop then return end
             lastKnownXPStop = xpStop
-            BroadcastProgress()
+            CacheOwnProgress()
             if xpStop == false then
                 SchlingelInc.Popup:Show({
                     title   = "XP-Stopp deaktiviert!",
@@ -124,6 +142,12 @@ function SchlingelInc.LevelUps:Initialize()
     SchlingelInc.EventManager:RegisterHandler("CHAT_MSG_ADDON",
         function(_, prefix, message, _, sender)
             if prefix ~= SchlingelInc.prefix then return end
+            if message == "PROGRESS_REQUEST" then
+                if sender and sender ~= UnitName("player") then
+                    SendProgressTo(sender)
+                end
+                return
+            end
             local msgType, _, levelStr, xpCurrentStr, xpMaxStr, goldStr, field7, field8 = strsplit(":", message)
             if msgType == "PROGRESS" and tonumber(levelStr) and tonumber(xpCurrentStr) and tonumber(xpMaxStr) and tonumber(goldStr) then
                 local runesKnown
@@ -175,7 +199,14 @@ function SchlingelInc.LevelUps:Initialize()
     end
 
     SchlingelInc.EventManager:RegisterHandler("GUILD_ROSTER_UPDATE",
-        function() PruneProgressCache() BroadcastProgress() end, 0, "LevelUpProgressPrune")
+        function() PruneProgressCache() CacheOwnProgress() end, 0, "LevelUpProgressPrune")
+end
+
+function SchlingelInc.LevelUps:RequestProgress()
+    if not IsInGuild() then return end
+
+    CacheOwnProgress()
+    C_ChatInfo.SendAddonMessage(SchlingelInc.prefix, "PROGRESS_REQUEST", "GUILD")
 end
 
 function SchlingelInc.LevelUps:CheckForCap(level, announce)
@@ -191,7 +222,7 @@ function SchlingelInc.LevelUps:CheckForCap(level, announce)
         end
         lastKnownXPStop = xpStop
 
-        if announce and IsProgressBroadcastEnabled() then
+        if announce then
             local player = UnitName("player")
             local handle = SchlingelInc:GetDiscordHandle()
             local playerDisplay = (handle and handle ~= "") and (player .. " (" .. handle .. ")") or player

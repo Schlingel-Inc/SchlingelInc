@@ -1,3 +1,10 @@
+# 4.0.6
+
+- Fortschritt-Broadcast-Regel vollständig entfernt: Kein `progressBroadcastRule` mehr in Regeln, Gildeninfo-Encoding und Debug-Ausgabe
+- Fortschritt-Sync auf Anfrage umgestellt: Es wird ein `PROGRESS_REQUEST` in die Gilde gesendet, Antworten kommen gezielt per Whisper als `PROGRESS` zurück
+- Lokaler Fortschritts-Cache wird weiter bei relevanten Events aktualisiert (Login, Zonenwechsel, Gildenupdate, XP-Stop-Wechsel, Roster-Update)
+- Regelparser bleibt kompatibel zu älteren Gildeninfo-Formaten mit zusätzlichem historischem Progress-Flag
+
 # 4.0.5
 
 - Fortschritt-Tab zeigt die anzahl der erlernten Runen an

@@ -227,7 +227,6 @@ local function BuildPanel()
         { label = "Handel mit Nicht-Mitgliedern sperren",      dbKey = "tradeRule" },
         { label = "Gruppierung mit Nicht-Mitgliedern sperren", dbKey = "groupingRule" },
         { label = "SoD-Händler sperren",                       dbKey = "blockedTraderRule" },
-        { label = "Fortschritt-Broadcast aktivieren",          dbKey = "progressBroadcastRule" },
         { label = "Duelle automatisch ablehnen",               dbKey = nil },
     }
 
@@ -291,7 +290,6 @@ local function BuildPanel()
                 checkboxes["Handel mit Nicht-Mitgliedern sperren"]:GetChecked(),
                 checkboxes["Gruppierung mit Nicht-Mitgliedern sperren"]:GetChecked(),
                 checkboxes["SoD-Händler sperren"]:GetChecked(),
-                checkboxes["Fortschritt-Broadcast aktivieren"]:GetChecked(),
                 cap
             )
             SchlingelOptionsDB = SchlingelOptionsDB or {}
@@ -492,6 +490,17 @@ local function BuildPanel()
     pOfflineBtn:SetScript("OnEnter", function() pOfflineLbl:SetTextColor(1, 1, 0.7, 1) end)
     pOfflineBtn:SetScript("OnLeave", UpdateOfflineBtn)
 
+    local pRequestBtn = CreateFrame("Button", nil, pc, "UIPanelButtonTemplate")
+    pRequestBtn:SetSize(96, 18)
+    pRequestBtn:SetPoint("RIGHT", pOfflineBtn, "LEFT", -6, 0)
+    pRequestBtn:SetText("Anfordern")
+    pRequestBtn:SetScript("OnClick", function()
+        SchlingelInc.LevelUps:RequestProgress()
+        if frame and frame:IsShown() and frame.RefreshProgress then
+            frame.RefreshProgress()
+        end
+    end)
+
     local phdrDiv = pc:CreateTexture(nil, "ARTWORK")
     phdrDiv:SetHeight(1)
     phdrDiv:SetColorTexture(0.4, 0.4, 0.4, 0.7)
@@ -668,7 +677,7 @@ local function BuildPanel()
         if #list == 0 then
             local msg = pScrollChild:CreateFontString(nil, "OVERLAY", "GameFontNormal")
             msg:SetPoint("TOPLEFT", pScrollChild, "TOPLEFT", 4, 0)
-            msg:SetText("Noch keine Daten. Mitglieder schicken diese beim Login oder Zonenchange.")
+            msg:SetText("Noch keine Daten. Klicke auf Anfordern, um alle Online-Mitglieder um ihre Fortschritte zu bitten.")
             msg:SetTextColor(0.6, 0.6, 0.6, 1)
             table.insert(pc.progressRows, msg)
             pScrollChild:SetHeight(20)

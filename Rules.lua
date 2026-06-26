@@ -6,8 +6,7 @@ SchlingelInc.InfoRules = {
     auctionHouseRule = 1,
     tradeRule = 1,
     groupingRule = 1,
-    blockedTraderRule = 1,
-    progressBroadcastRule = 1
+    blockedTraderRule = 1
 }
 
 -- Current level cap (fetched from guild info)
@@ -36,25 +35,19 @@ function SchlingelInc.Rules:LoadFromGuildInfo()
         if not text then return end
 
         -- Try new compact format: Schlingel:11111
-        local mailRule, auctionHouseRule, tradeRule, groupingRule, blockedTraderRule, progressBroadcastRule =
-            text:match(SchlingelInc.Constants.RULES_KEY .. ":(%d)(%d)(%d)(%d)(%d)(%d)")
+        local mailRule, auctionHouseRule, tradeRule, groupingRule, blockedTraderRule =
+            text:match(SchlingelInc.Constants.RULES_KEY .. ":(%d)(%d)(%d)(%d)(%d)")
 
-        -- Fall back to previous compact format: Schlingel:11111
+        -- Fall back to older compact format that included a sixth progress flag.
         if not mailRule then
             mailRule, auctionHouseRule, tradeRule, groupingRule, blockedTraderRule =
-                text:match(SchlingelInc.Constants.RULES_KEY .. ":(%d)(%d)(%d)(%d)(%d)")
+                text:match(SchlingelInc.Constants.RULES_KEY .. ":(%d)(%d)(%d)(%d)(%d)(%d)")
         end
 
         -- Fall back to previous compact format: Schlingel:1111
         if not mailRule then
             mailRule, auctionHouseRule, tradeRule, groupingRule =
                 text:match(SchlingelInc.Constants.RULES_KEY .. ":(%d)(%d)(%d)(%d)")
-        end
-
-        -- Legacy format with 6 values: Schlingel: 1, 1, 1, 1, 1, 1
-        if not mailRule then
-            mailRule, auctionHouseRule, tradeRule, groupingRule, blockedTraderRule, progressBroadcastRule =
-                text:match("Schlingel:%s*(%d+)%s*,?%s*(%d+)%s*,?%s*(%d+)%s*,?%s*(%d+)%s*,?%s*(%d+)%s*,?%s*(%d+)")
         end
 
         -- Fall back to legacy format: Schlingel: 1, 1, 1, 1
@@ -74,7 +67,6 @@ function SchlingelInc.Rules:LoadFromGuildInfo()
         SchlingelInc.InfoRules.tradeRule        = tonumber(tradeRule)        or SchlingelInc.InfoRules.tradeRule
         SchlingelInc.InfoRules.groupingRule     = tonumber(groupingRule)     or SchlingelInc.InfoRules.groupingRule
         SchlingelInc.InfoRules.blockedTraderRule = tonumber(blockedTraderRule) or SchlingelInc.InfoRules.blockedTraderRule
-        SchlingelInc.InfoRules.progressBroadcastRule = tonumber(progressBroadcastRule) or SchlingelInc.InfoRules.progressBroadcastRule
 
         -- Try new cap format: SchlingelCap:40
         local currentCap = text:match(SchlingelInc.Constants.RULES_CAP_KEY .. ":(%d+)")
