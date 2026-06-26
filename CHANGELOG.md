@@ -1,5 +1,7 @@
 # 4.0.6
 
+- Offizier-Panel: Per-Tab-Filterleisten hinzugefügt: Inaktiv filtert nach Name, Fortschritt nach Name / Level (mit </> Umschalter) / Nur Cap / Gold (mit ≤/≥ Umschalter), Discord nach Name und minimaler Charakteranzahl; Anfragen- und Regeln-Tab haben keinen Filter
+- Beitrittsanfragen: Einladungen von Spielern die gegen eine aktive Gildenregel verstoßen werden blockiert
 - Fortschritt-Broadcast-Regel vollständig entfernt: Kein `progressBroadcastRule` mehr in Regeln, Gildeninfo-Encoding und Debug-Ausgabe
 - Fortschritt-Sync auf Anfrage umgestellt: Es wird ein `PROGRESS_REQUEST` in die Gilde gesendet, Antworten kommen gezielt per Whisper als `PROGRESS` zurück
 - Lokaler Fortschritts-Cache wird weiter bei relevanten Events aktualisiert (Login, Zonenwechsel, Gildenupdate, XP-Stop-Wechsel, Roster-Update)
