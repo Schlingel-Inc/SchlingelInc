@@ -40,7 +40,15 @@ interfaces\popups\PvPFrame.lua
 interfaces\DiscordHandlePrompt.lua
 interfaces\GuildJoinPrompt.lua
 interfaces\SetupWizard.lua
-interfaces\OfficerPanel.lua
+interfaces\FilterPanel.lua
+interfaces\OfficerPanel\init.lua
+interfaces\OfficerPanel\Frame.lua
+interfaces\OfficerPanel\TabRules.lua
+interfaces\OfficerPanel\TabInactive.lua
+interfaces\OfficerPanel\TabProgress.lua
+interfaces\OfficerPanel\TabDiscord.lua
+interfaces\OfficerPanel\TabInvites.lua
+interfaces\OfficerPanel\Filters.lua
 interfaces\GuildPanel\init.lua
 interfaces\GuildPanel\Data.lua
 interfaces\GuildPanel\Rows.lua
