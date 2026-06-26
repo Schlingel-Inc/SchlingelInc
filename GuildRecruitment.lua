@@ -72,8 +72,9 @@ function SchlingelInc.GuildRecruitment:SendGuildRequest()
     if playerLevel > 1 or playerExp > 0 or playerGold > 0 then
         SchlingelInc.Popup:Show({
         title = "Anfrage abgebrochen",
-        message = "Neue Charaktere müssen Level 1 mit 0% XP und keinem Gold sein. Bitte lies dir die Regeln im Faq Channel des Discords durch."
-        }) 
+        message = "Neue Charaktere müssen Level 1 mit 0% XP ohne Gold sein. Bitte lies dir die Regeln im Discord durch."
+        })
+        SchlingelInc:Print("Anfrage abgebrochen!")
         return
     end
 
