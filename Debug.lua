@@ -181,10 +181,12 @@ function SchlingelInc.Debug:TestGuildRequest(targetName)
 	local playerName = UnitName("player")
 	local playerLevel = UnitLevel("player")
 	local playerExp = UnitXP("player")
+	local playerGold = GetMoney()
+	local runesKnown = 0
 	local zone = SchlingelInc.GuildRecruitment:GetPlayerZone()
 
-	local message = string.format("INVITE_REQUEST:%s:%d:%d:%s",
-		playerName, playerLevel, playerExp, zone)
+	local message = string.format("INVITE_REQUEST:%s:%d:%d:%d:%d:%s",
+		playerName, playerLevel, playerExp, playerGold, runesKnown, zone)
 
 	C_ChatInfo.SendAddonMessage(SchlingelInc.prefix, message, "WHISPER", targetName)
 

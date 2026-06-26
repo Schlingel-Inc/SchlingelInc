@@ -69,6 +69,14 @@ function SchlingelInc.GuildRecruitment:SendGuildRequest()
     -- colons and pipes in zone names would break message parsing
     local safeZone = zone:gsub(":", "-"):gsub("|", "-")
 
+    if playerLevel > 1 or playerExp > 0 or playerGold > 0 then
+        SchlingelInc.Popup:Show({
+        title = "Anfrage abgebrochen",
+        message = "Neue Charaktere müssen Level 1 mit 0% XP und keinem Gold sein. Bitte lies dir die Regeln im Faq Channel des Discords durch."
+        }) 
+        return
+    end
+
     local message = string.format("INVITE_REQUEST:%s:%d:%d:%d:%d:%s", playerName, playerLevel, playerExp, playerGold, runesKnown, safeZone)
 
     local guildOfficers = GetFallbackOfficerNames()
