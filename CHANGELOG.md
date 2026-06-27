@@ -1,3 +1,7 @@
+# 4.0.7
+
+- Tode in Instanzen und Raids werden wieder korrekt angekündigt und gezählt.
+
 # 4.0.6
 
 - Offizier-Panel: Per-Tab-Filterleisten hinzugefügt: Inaktiv filtert nach Name, Fortschritt nach Name / Level (mit </> Umschalter) / Nur Cap / Gold (mit ≤/≥ Umschalter), Discord nach Name und minimaler Charakteranzahl; Anfragen- und Regeln-Tab haben keinen Filter

@@ -89,10 +89,6 @@ function SchlingelInc.Death:Initialize()
 			local name = UnitName("player")
 			if not name then return end
 
-			-- Don't announce deaths inside dungeons or raid instances
-			local inInstance, instanceType = IsInInstance()
-			if inInstance and (instanceType == "party" or instanceType == "raid") then return end
-
 			local _, rank = GetGuildInfo("player")
 			local class = UnitClass("player")
 			local level = UnitLevel("player")
