@@ -1,3 +1,7 @@
+# 4.0.8
+
+- Gildenansicht: Namensfilter berücksichtigt jetzt auch Discord-Handles
+
 # 4.0.7
 
 - Tode in Instanzen und Raids werden wieder korrekt angekündigt und gezählt.
