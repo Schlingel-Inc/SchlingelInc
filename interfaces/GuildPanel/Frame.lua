@@ -209,12 +209,13 @@ function SchlingelInc.GuildPanel:Refresh()
         end
     end
 
-    -- Apply name search (case-insensitive substring)
+    -- Apply name search (case-insensitive substring, also matches Discord handle)
     if GP.filterName ~= "" then
         local search = GP.filterName:lower()
         local filtered = {}
         for _, e in ipairs(data) do
-            if (e.name or ""):lower():find(search, 1, true) then
+            if (e.name    or ""):lower():find(search, 1, true) or
+               (e.discord or ""):lower():find(search, 1, true) then
                 table.insert(filtered, e)
             end
         end
