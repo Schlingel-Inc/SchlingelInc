@@ -1,6 +1,10 @@
+# 4.0.9
+
+- Noch mehr Offis hinzugefügt um der Flut an Invite Requests gerecht zu werden.
+
 # 4.0.8
 
-- Gildenansicht: Namensfilter berücksichtigt jetzt auch Discord-Handles
+- Gildenansicht: Namensfilter berücksichtigt jetzt auch Discord-Handles.
 
 # 4.0.7
 
