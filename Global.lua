@@ -205,6 +205,15 @@ function SchlingelInc.Global:Initialize()
 
                     HandleDeathAddonMessage(message, sender)
 
+                    if message:match("^DEATHSET|") and SchlingelInc:IsValidGuildSender(sender) then
+                        local valueStr = message:match("^DEATHSET|(.+)$")
+                        local value = tonumber(valueStr)
+                        if value and value >= 0 and value <= 999999 then
+                            CharacterDeaths = value
+                            SchlingelInc:Print(SchlingelInc.Constants.COLORS.SUCCESS .. "Deathcounter auf " .. CharacterDeaths .. " gesetzt.|r")
+                        end
+                    end
+
 					SchlingelInc.GuildProfiles:HandleMessage(sender, message)
 				end
 			end
