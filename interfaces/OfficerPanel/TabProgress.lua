@@ -68,6 +68,7 @@ function OfficerPanel.BuildProgressTab(pc)
         end)
     end
 
+    -- Right side: Offline toggle + member count
     local pCountFs = pc:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     pCountFs:SetPoint("RIGHT", pc, "TOPRIGHT", -4, -11)
     pCountFs:SetJustifyH("RIGHT")
@@ -99,20 +100,48 @@ function OfficerPanel.BuildProgressTab(pc)
     pOfflineBtn:SetScript("OnEnter", function() pOfflineLbl:SetTextColor(1, 1, 0.7, 1) end)
     pOfflineBtn:SetScript("OnLeave", UpdateOfflineBtn)
 
+    -- Left side: Lade-Indikator | Anfordern | Versionen | Filter
+    local pLoadFs = pc:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    pLoadFs:SetPoint("LEFT", pc, "TOPLEFT", 4, -11)
+    pLoadFs:SetWidth(72)
+    pLoadFs:SetJustifyH("LEFT")
+    pLoadFs:SetTextColor(0.6, 0.82, 1, 1)
+    pLoadFs:Hide()
+
     local pRequestBtn = CreateFrame("Button", nil, pc, "UIPanelButtonTemplate")
-    pRequestBtn:SetSize(96, 18)
-    pRequestBtn:SetPoint("RIGHT", pOfflineBtn, "LEFT", -6, 0)
+    pRequestBtn:SetSize(90, 18)
+    pRequestBtn:SetPoint("TOPLEFT", pc, "TOPLEFT", 80, -4)
     pRequestBtn:SetText("Anfordern")
     pRequestBtn:SetScript("OnClick", function()
         SchlingelInc.LevelUps:RequestProgress()
-        if OfficerPanel.frame and OfficerPanel.frame:IsShown() then
-            OfficerPanel.RefreshProgress()
+    end)
+
+    local pVersionBtn = CreateFrame("Button", nil, pc, "UIPanelButtonTemplate")
+    pVersionBtn:SetSize(80, 18)
+    pVersionBtn:SetPoint("LEFT", pRequestBtn, "RIGHT", 4, 0)
+    pVersionBtn:SetText("Versionen")
+    pVersionBtn:SetScript("OnClick", function()
+        if IsInGuild() then
+            C_ChatInfo.SendAddonMessage(SchlingelInc.prefix, "VERSION_REQUEST", "GUILD")
         end
     end)
 
+    OfficerPanel.StartProgressLoad = function(total)
+        pLoadFs:SetText("Lade 0/" .. total)
+        pLoadFs:Show()
+    end
+
+    OfficerPanel.UpdateProgressLoad = function(received, total)
+        pLoadFs:SetText("Lade " .. received .. "/" .. total)
+    end
+
+    OfficerPanel.EndProgressLoad = function()
+        pLoadFs:Hide()
+    end
+
     local pfFilterBtn = CreateFrame("Button", nil, pc, "UIPanelButtonTemplate")
-    pfFilterBtn:SetSize(70, 18)
-    pfFilterBtn:SetPoint("RIGHT", pRequestBtn, "LEFT", -6, 0)
+    pfFilterBtn:SetSize(60, 18)
+    pfFilterBtn:SetPoint("LEFT", pVersionBtn, "RIGHT", 4, 0)
     pfFilterBtn:SetText("Filter")
     pfFilterBtn:SetScript("OnClick", function()
         local fp = OfficerPanel.tabFilterPanels.progress
@@ -155,6 +184,7 @@ function OfficerPanel.BuildProgressTab(pc)
     end
 
     local function RefreshProgress()
+        if not pc:IsShown() then return end
         for _, row in ipairs(pc.progressRows) do row:Hide() end
         wipe(pc.progressRows)
 
@@ -326,6 +356,12 @@ function OfficerPanel.BuildProgressTab(pc)
             local row = CreateFrame("Frame", nil, pScrollChild)
             row:SetSize(SCROLL_W, ROW_H)
             row:SetPoint("TOPLEFT", 0, -(idx - 1) * ROW_H)
+            row:EnableMouse(true)
+            row:SetScript("OnMouseUp", function(_, btn)
+                if btn == "LeftButton" then
+                    SchlingelInc.LevelUps:RequestProgress(entry.name)
+                end
+            end)
 
             local atCap = cap > 0 and entry.level >= cap
             if atCap and entry.xpStop == false then
@@ -337,6 +373,12 @@ function OfficerPanel.BuildProgressTab(pc)
                 bg:SetAllPoints()
                 bg:SetColorTexture(1, 1, 1, 0.03)
             end
+
+            local hoverTex = row:CreateTexture(nil, "BACKGROUND")
+            hoverTex:SetAllPoints()
+            hoverTex:SetColorTexture(1, 1, 1, 0)
+            row:SetScript("OnEnter", function() hoverTex:SetColorTexture(1, 1, 1, 0.06) end)
+            row:SetScript("OnLeave", function() hoverTex:SetColorTexture(1, 1, 1, 0) end)
 
             local nameFs = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
             nameFs:SetPoint("LEFT", row, "LEFT", 4, 0)

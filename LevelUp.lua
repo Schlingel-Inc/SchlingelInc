@@ -86,6 +86,39 @@ local function CheckForMilestone(level)
 end
 
 function SchlingelInc.LevelUps:Initialize()
+    local progressLoadTotal    = 0
+    local progressLoadReceived = 0
+    local progressLoadTimer    = nil
+
+    local function EndProgressLoad()
+        if progressLoadTimer then progressLoadTimer:Cancel() progressLoadTimer = nil end
+        progressLoadTotal    = 0
+        progressLoadReceived = 0
+        if OfficerPanel and OfficerPanel.EndProgressLoad then OfficerPanel.EndProgressLoad() end
+        SchlingelInc.OfficerPanel:RefreshProgress()
+    end
+
+    SchlingelInc.LevelUps.StartLoad = function(total)
+        progressLoadTotal    = total
+        progressLoadReceived = 0
+        if progressLoadTimer then progressLoadTimer:Cancel() end
+        progressLoadTimer = C_Timer.NewTimer(math.max(5, total * 0.5 + 5), EndProgressLoad)
+        local panel = SchlingelInc.OfficerPanel
+        if panel and panel.StartProgressLoad then panel.StartProgressLoad(total) end
+    end
+
+    SchlingelInc.LevelUps.OnProgressReceived = function()
+        if progressLoadTotal == 0 then return end
+        progressLoadReceived = progressLoadReceived + 1
+        local panel = SchlingelInc.OfficerPanel
+        if panel and panel.UpdateProgressLoad then
+            panel.UpdateProgressLoad(progressLoadReceived, progressLoadTotal)
+        end
+        if progressLoadReceived >= progressLoadTotal then
+            EndProgressLoad()
+        end
+    end
+
     SchlingelInc.EventManager:RegisterHandler("PLAYER_LEVEL_UP",
         function(_, level)
             CheckForMilestone(level)
@@ -176,7 +209,7 @@ function SchlingelInc.LevelUps:Initialize()
                 }
                 SchlingelInc.LevelUps.progressCache[shortName] = entry
                 SaveProgressEntry(shortName, entry)
-                SchlingelInc.OfficerPanel:RefreshProgress()
+                SchlingelInc.LevelUps.OnProgressReceived()
             end
         end, 0, "LevelUpProgressReceive")
 
@@ -202,12 +235,35 @@ function SchlingelInc.LevelUps:Initialize()
         function() PruneProgressCache() CacheOwnProgress() end, 0, "LevelUpProgressPrune")
 end
 
-function SchlingelInc.LevelUps:RequestProgress()
+function SchlingelInc.LevelUps:RequestProgress(targetName)
     if not IsInGuild() then return end
 
     CacheOwnProgress()
-    C_ChatInfo.SendAddonMessage(SchlingelInc.prefix, "PROGRESS_REQUEST", "GUILD")
-    C_ChatInfo.SendAddonMessage(SchlingelInc.prefix, "VERSION_REQUEST", "GUILD")
+
+    if targetName then
+        SchlingelInc.LevelUps.StartLoad(1)
+        C_ChatInfo.SendAddonMessage(SchlingelInc.prefix, "PROGRESS_REQUEST", "WHISPER", targetName)
+        return
+    end
+
+    -- Staggered whispers to avoid simultaneous response flood
+    local online = {}
+    local selfName = UnitName("player")
+    for i = 1, GetNumGuildMembers() or 0 do
+        local name, _, _, _, _, _, _, _, isOnline = GetGuildRosterInfo(i)
+        if name and isOnline then
+            local short = SchlingelInc:RemoveRealmFromName(name)
+            if short ~= selfName then
+                table.insert(online, short)
+            end
+        end
+    end
+    SchlingelInc.LevelUps.StartLoad(#online)
+    for i, name in ipairs(online) do
+        C_Timer.After((i - 1) * 0.5, function()
+            C_ChatInfo.SendAddonMessage(SchlingelInc.prefix, "PROGRESS_REQUEST", "WHISPER", name)
+        end)
+    end
 end
 
 function SchlingelInc.LevelUps:CheckForCap(level, announce)
