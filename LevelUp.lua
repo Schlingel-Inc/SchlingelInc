@@ -207,6 +207,7 @@ function SchlingelInc.LevelUps:RequestProgress()
 
     CacheOwnProgress()
     C_ChatInfo.SendAddonMessage(SchlingelInc.prefix, "PROGRESS_REQUEST", "GUILD")
+    C_ChatInfo.SendAddonMessage(SchlingelInc.prefix, "VERSION_REQUEST", "GUILD")
 end
 
 function SchlingelInc.LevelUps:CheckForCap(level, announce)

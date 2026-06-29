@@ -24,10 +24,11 @@ function OfficerPanel.BuildProgressTab(pc)
         { label = "Name",    x = 0,   w = 88,  sortKey = "name",       justifyH = "LEFT"   },
         { label = "Level",   x = 92,  w = 44,  sortKey = "level",      justifyH = "CENTER" },
         { label = "Runen",   x = 140, w = 42,  sortKey = "runesKnown", justifyH = "CENTER" },
-        { label = "XP",      x = 186, w = 79,  sortKey = "xpPct",      justifyH = "CENTER" },
-        { label = "%",       x = 265, w = 45,  sortKey = "xpPct",      justifyH = "CENTER" },
-        { label = "Gold",    x = 314, w = 88,  sortKey = "gold",       justifyH = "RIGHT"  },
-        { label = "Aktuell", x = 398, w = 62,  sortKey = "timestamp",  justifyH = "RIGHT"  },
+        { label = "XP",      x = 186, w = 59,  sortKey = "xpPct",      justifyH = "CENTER" },
+        { label = "%",       x = 249, w = 41,  sortKey = "xpPct",      justifyH = "CENTER" },
+        { label = "Gold",    x = 292, w = 68,  sortKey = "gold",       justifyH = "RIGHT"  },
+        { label = "Version", x = 362, w = 42,  sortKey = "version",    justifyH = "RIGHT"  },
+        { label = "Aktuell", x = 406, w = 42,  sortKey = "timestamp",  justifyH = "RIGHT"  },
     }
 
     local hideOfflineProgress = false
@@ -142,8 +143,16 @@ function OfficerPanel.BuildProgressTab(pc)
     pc.pScrollChild = pScrollChild
     pc.progressRows = {}
 
-    local BAR_W = 75
+    local BAR_W = 55
     local BAR_X = 190
+
+    local function GetMemberVersion(shortName)
+        local v = SchlingelInc.guildMemberVersions[shortName]
+        if v then return v end
+        for k, ver in pairs(SchlingelInc.guildMemberVersions) do
+            if SchlingelInc:RemoveRealmFromName(k) == shortName then return ver end
+        end
+    end
 
     local function RefreshProgress()
         for _, row in ipairs(pc.progressRows) do row:Hide() end
@@ -188,6 +197,7 @@ function OfficerPanel.BuildProgressTab(pc)
                     isOnline    = isOnline == true,
                     timestamp   = timestamp,
                     hasProgress = hasProgress,
+                    version     = GetMemberVersion(shortName),
                 })
             end
         end
@@ -388,16 +398,29 @@ function OfficerPanel.BuildProgressTab(pc)
             end
 
             local goldFs = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-            goldFs:SetPoint("LEFT", row, "LEFT", BAR_X + BAR_W + 50, 0)
-            goldFs:SetWidth(86)
+            goldFs:SetPoint("LEFT", row, "LEFT", 294, 0)
+            goldFs:SetWidth(64)
             goldFs:SetJustifyH("RIGHT")
             goldFs:SetWordWrap(false)
             goldFs:SetText(FormatGoldShort(entry.gold))
             goldFs:SetTextColor(1, 0.82, 0, 1)
 
+            local versionFs = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+            versionFs:SetPoint("LEFT", row, "LEFT", 362, 0)
+            versionFs:SetWidth(38)
+            versionFs:SetJustifyH("RIGHT")
+            versionFs:SetWordWrap(false)
+            if entry.version then
+                versionFs:SetText(entry.version)
+                versionFs:SetTextColor(1, 1, 1, 1)
+            else
+                versionFs:SetText("\226\128\148")
+                versionFs:SetTextColor(0.55, 0.55, 0.55, 1)
+            end
+
             local ageFs = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-            ageFs:SetPoint("LEFT", row, "LEFT", 402, 0)
-            ageFs:SetWidth(58)
+            ageFs:SetPoint("LEFT", row, "LEFT", 408, 0)
+            ageFs:SetWidth(38)
             ageFs:SetJustifyH("RIGHT")
             ageFs:SetText(FormatAge(entry.timestamp))
             ageFs:SetTextColor(entry.isOnline and 0.5 or 0.8, 0.5, entry.isOnline and 0.5 or 0.2, 1)
