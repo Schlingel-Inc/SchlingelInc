@@ -1,3 +1,8 @@
+# 4.1.0
+
+- Großschlingel haben jetzt Zugriff auf das Offizier-Panel
+- `/deathset` ist jetzt ein Officer-Kommando und wird per Addon-Whisper an den Zielspieler übermittelt
+
 # 4.0.9
 
 - Noch mehr Offis hinzugefügt um der Flut an Invite Requests gerecht zu werden.
