@@ -4,7 +4,7 @@ SchlingelInc.LevelUps.progressCache = {}  -- shortName -> { level, xpCurrent, xp
 
 -- Persists an entry to the officer-only progress DB.
 local function SaveProgressEntry(shortName, entry)
-    if not CanGuildRemove() then return end
+    if not CanGuildInvite() then return end
     SchlingelProgressDB = SchlingelProgressDB or {}
     SchlingelProgressDB[shortName] = entry
 end
@@ -97,7 +97,7 @@ function SchlingelInc.LevelUps:Initialize()
         function()
             -- Officers: restore progress cache from persistent storage.
             C_Timer.After(2, function()
-                if CanGuildRemove() and SchlingelProgressDB then
+                if CanGuildInvite() and SchlingelProgressDB then
                     for k, v in pairs(SchlingelProgressDB) do
                         if not SchlingelInc.LevelUps.progressCache[k] then
                             SchlingelInc.LevelUps.progressCache[k] = v
@@ -181,7 +181,7 @@ function SchlingelInc.LevelUps:Initialize()
         end, 0, "LevelUpProgressReceive")
 
     local function PruneProgressCache()
-        if not CanGuildRemove() then return end
+        if not CanGuildInvite() then return end
         local members = {}
         local total = GetNumGuildMembers() or 0
         for i = 1, total do

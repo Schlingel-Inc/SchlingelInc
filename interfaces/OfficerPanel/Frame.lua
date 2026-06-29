@@ -189,7 +189,7 @@ end
 -- ── Public API ────────────────────────────────────────────────────────────────
 
 function SchlingelInc.OfficerPanel:Toggle()
-    if not CanGuildRemove() then return end
+    if not CanGuildInvite() then return end
     if not OfficerPanel.frame then
         OfficerPanel.frame = BuildPanel()
     end
@@ -201,7 +201,7 @@ function SchlingelInc.OfficerPanel:Toggle()
 end
 
 function SchlingelInc.OfficerPanel:ShowInvites()
-    if not CanGuildRemove() then return end
+    if not CanGuildInvite() then return end
     if not OfficerPanel.frame then OfficerPanel.frame = BuildPanel() end
     if not OfficerPanel.frame:IsShown() then OfficerPanel.frame:Show() end
     OfficerPanel.frame.SwitchToInvites()
