@@ -146,7 +146,7 @@ function OfficerPanel.BuildInactiveTab(ic)
                 kickBtn:SetText("Entfernen")
                 local fullName = member.fullName
                 kickBtn:SetScript("OnClick", function()
-                    if not CanGuildRemove() then return end
+                    if not CanGuildInvite() then return end
                     StaticPopup_Show("CONFIRM_GUILD_KICK", fullName, nil, { memberName = fullName })
                 end)
             end

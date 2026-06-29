@@ -21,5 +21,5 @@ OfficerPanel.progressFilter = {
 OfficerPanel.discordFilter  = { filterName = "", minCount = nil }
 
 function OfficerPanel.IsOfficer()
-    return CanGuildRemove()
+    return CanGuildInvite()
 end

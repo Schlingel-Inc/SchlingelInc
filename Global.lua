@@ -345,7 +345,7 @@ end
 -- Encodes and writes guild rules into the SchlingelInc block of guild info text.
 -- Returns true on success, false if the player lacks officer permission.
 function SchlingelInc:WriteGuildInfo(mail, ah, trade, group, blockedTrader, cap)
-    if not CanGuildRemove() then return false end
+    if not CanGuildInvite() then return false end
     local mailRule = tonumber(mail)
     if mailRule ~= 0 and mailRule ~= 1 and mailRule ~= 2 then
         mailRule = mail and 1 or 0

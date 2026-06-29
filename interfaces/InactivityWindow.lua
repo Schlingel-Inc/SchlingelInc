@@ -194,14 +194,14 @@ function SchlingelInc:CreateInactivityWindow()
 				durationText:SetText(member.displayDuration)
 
 				-- Kick button (if player has permission)
-				if CanGuildRemove() then
+				if CanGuildInvite() then
 					local kickBtn = CreateFrame("Button", nil, rowFrame, "UIPanelButtonTemplate")
 					kickBtn:SetSize(80, rowHeight - 2)
 					kickBtn:SetPoint("TOPLEFT", rowFrame, "TOPLEFT", 430, 0)
 					kickBtn:SetText("Entfernen")
 					kickBtn:SetScript("OnClick", function()
 						-- Recheck permission at click time in case it changed
-						if not CanGuildRemove() then
+						if not CanGuildInvite() then
 							SchlingelInc:Print(SchlingelInc.Constants.COLORS.ERROR ..
 								"Du hast keine Berechtigung mehr, Spieler zu entfernen.|r")
 							return
