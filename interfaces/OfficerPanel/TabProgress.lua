@@ -1,4 +1,5 @@
 local OfficerPanel = SchlingelInc.OfficerPanel
+local MI = SchlingelInc.MemberInspector
 
 local function FormatGoldShort(copper)
     if not copper then return "\226\128\148" end
@@ -190,7 +191,7 @@ function OfficerPanel.BuildProgressTab(pc)
 
         local list = {}
         for i = 1, GetNumGuildMembers() or 0 do
-            local name, _, _, rosterLevel, _, _, _, _, isOnline = GetGuildRosterInfo(i)
+            local name, rankName, _, rosterLevel, classDisplay, zone, note, _, isOnline, _, classToken = GetGuildRosterInfo(i)
             if name then
                 local shortName   = SchlingelInc:RemoveRealmFromName(name)
                 local data        = SchlingelInc.LevelUps.progressCache[shortName]
@@ -215,19 +216,31 @@ function OfficerPanel.BuildProgressTab(pc)
                     timestamp  = data.timestamp or 0
                 end
 
+                local mi = MI.GetProfileEntry(shortName)
+
                 table.insert(list, {
-                    name        = shortName,
-                    level       = level,
-                    xpCurrent   = xpCurrent,
-                    xpMax       = xpMax,
-                    xpPct       = xpPct,
-                    gold        = gold,
-                    runesKnown  = runesKnown,
-                    xpStop      = xpStop,
-                    isOnline    = isOnline == true,
-                    timestamp   = timestamp,
-                    hasProgress = hasProgress,
-                    version     = GetMemberVersion(shortName),
+                    name         = shortName,
+                    level        = level,
+                    xpCurrent    = xpCurrent,
+                    xpMax        = xpMax,
+                    xpPct        = xpPct,
+                    gold         = gold,
+                    runesKnown   = runesKnown,
+                    xpStop       = xpStop,
+                    isOnline     = isOnline == true,
+                    timestamp    = timestamp,
+                    hasProgress  = hasProgress,
+                    version      = GetMemberVersion(shortName),
+                    rank         = rankName     or "",
+                    classDisplay = classDisplay or "",
+                    classToken   = classToken   or "",
+                    zone         = zone         or "",
+                    note         = note         or "",
+                    role         = mi.role,
+                    prof1        = mi.prof1,
+                    prof2        = mi.prof2,
+                    discord      = mi.discord,
+                    deaths       = mi.deaths,
                 })
             end
         end
@@ -377,8 +390,14 @@ function OfficerPanel.BuildProgressTab(pc)
             local hoverTex = row:CreateTexture(nil, "BACKGROUND")
             hoverTex:SetAllPoints()
             hoverTex:SetColorTexture(1, 1, 1, 0)
-            row:SetScript("OnEnter", function() hoverTex:SetColorTexture(1, 1, 1, 0.06) end)
-            row:SetScript("OnLeave", function() hoverTex:SetColorTexture(1, 1, 1, 0) end)
+            row:SetScript("OnEnter", function()
+                hoverTex:SetColorTexture(1, 1, 1, 0.06)
+                MI.ShowTooltip(row, entry)
+            end)
+            row:SetScript("OnLeave", function()
+                hoverTex:SetColorTexture(1, 1, 1, 0)
+                GameTooltip:Hide()
+            end)
 
             local nameFs = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
             nameFs:SetPoint("LEFT", row, "LEFT", 4, 0)

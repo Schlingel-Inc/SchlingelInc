@@ -283,7 +283,7 @@ function SchlingelInc.GuildPanel:Refresh()
 
             row:SetScript("OnEnter", function()
                 row.hl:Show()
-                GP.ShowMemberTooltip(row, entry)
+                SchlingelInc.MemberInspector.ShowTooltip(row, entry)
             end)
             row:SetScript("OnLeave", function()
                 row.hl:Hide()
