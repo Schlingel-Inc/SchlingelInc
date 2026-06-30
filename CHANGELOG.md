@@ -2,6 +2,10 @@
 
 - Großschlingel haben jetzt Zugriff auf das Offizier-Panel
 - `/deathset` ist jetzt ein Officer-Kommando und wird per Addon-Whisper an den Zielspieler übermittelt
+- Fortschritt-Tab: Hover über einen Spieler zeigt jetzt dasselbe Info-Menü wie im Gilden-Panel (Klasse, Rang, Zone, Notiz, Rolle, Discord, Berufe, Tode)
+- Pronomen werden jetzt korrekt an andere Spieler übertragen und im Hover-Menü angezeigt
+- Todesmeldungen im Raid werden nicht mehr an die Gilde gesendet, nur noch gezählt (verhindert Spam bei Wipes)
+- Wenn man selbst in einer Instanz ist, werden Todesmeldungen anderer kompakt und oben rechts am Bildschirmrand angezeigt
 
 # 4.0.9
 

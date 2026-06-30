@@ -54,7 +54,8 @@ local function processDeath(data, isOwnDeath)
 	-- Update UI
 	SchlingelInc:UpdateMiniDeathLog()
 
-	-- Show death announcement popup
+	if isOwnDeath then return end
+
 	local pronoun = data.pronoun or "der"
 	local messageString
 	if data.discordHandle and data.discordHandle ~= "" then
@@ -64,7 +65,12 @@ local function processDeath(data, isOwnDeath)
 		messageString = string.format("%s %s %s ist mit Level %s in %s gestorben.",
 			data.name, pronoun, data.class, data.level, data.zone)
 	end
-	SchlingelInc.DeathAnnouncement:ShowDeathMessage(messageString)
+
+	if IsInInstance() then
+		SchlingelInc.DeathAnnouncement:ShowSmallDeathMessage(data.name)
+	else
+		SchlingelInc.DeathAnnouncement:ShowDeathMessage(messageString)
+	end
 end
 
 -- Public wrapper for use from other modules (e.g. Global.lua addon message handler)
@@ -154,11 +160,14 @@ function SchlingelInc.Death:Initialize()
 				SchlingelInc.Death.lastChatMessage = ""
 			end
 
-			-- Enforce cooldown: only send own death every OWN_DEATH_COOLDOWN seconds
+			-- Always count the death.
+			CharacterDeaths = CharacterDeaths + 1
+
+			-- Broadcast to guild unless in a raid (avoid wipe spam).
 			local now = time()
-			if (now - lastOwnDeathSendTime) >= SchlingelInc.Constants.COOLDOWNS.DEATH_ANNOUNCEMENT then
+			local inRaid = SchlingelInc:IsInRaid()
+			if not inRaid and (now - lastOwnDeathSendTime) >= SchlingelInc.Constants.COOLDOWNS.DEATH_ANNOUNCEMENT then
 				SendChatMessage(messageString, "GUILD")
-				CharacterDeaths = CharacterDeaths + 1
 				lastOwnDeathSendTime = now
 
 				-- Structured addon message for other addon users (chat parsing stays as fallback)
