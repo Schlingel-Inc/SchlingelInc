@@ -13,7 +13,7 @@ SchlingelOwnProfile        = SchlingelOwnProfile        or {}
 local MSG_PROFILE = "PROFILE2"
 
 -- Serialise own profile into a single addon message string.
--- Format: PROFILE2|role|prof1name|prof1rank|prof2name|prof2rank|discord|deaths
+-- Format: PROFILE2|role|prof1name|prof1rank|prof2name|prof2rank|discord|deaths|pronouns
 local function Serialize()
     local p      = SchlingelOwnProfile
     local handle = DiscordHandle or ""
@@ -27,6 +27,7 @@ local function Serialize()
         p.prof2rank and tostring(p.prof2rank) or "",
         handle,
         deaths,
+        Pronouns or "",
     }, "|")
 end
 
@@ -43,6 +44,7 @@ local function Deserialize(payload)
         prof2rank = parts[5] ~= "" and tonumber(parts[5]) or nil,
         discord   = parts[6] ~= "" and parts[6] or nil,
         deaths    = parts[7] ~= "" and tonumber(parts[7]) or nil,
+        pronouns  = parts[8] and parts[8] ~= "" and parts[8] or nil,
         lastSeen  = time(),
     }
 end

@@ -18,6 +18,7 @@ end
 function SchlingelInc:SetPreferredPronouns(pronouns)
     Pronouns = pronouns
     SchlingelInc:ClearGuildNote()
+    SchlingelInc.GuildProfiles:Broadcast()
 end
 
 -- Returns handle with pronouns appended if present: "myhandle (he/him)" or "myhandle"
