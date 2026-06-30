@@ -29,17 +29,19 @@ function MI.GetProfileEntry(shortName)
             profName2 = ProfName(p, 2),
             discord   = DiscordHandle or "",
             deaths    = CharacterDeaths or 0,
+            pronouns  = Pronouns or "",
         }
     else
         local profile = SchlingelGuildProfileCache and SchlingelGuildProfileCache[shortName]
         return {
-            role      = profile and profile.role    or "",
+            role      = profile and profile.role     or "",
             prof1     = ProfString(profile, 1),
             prof2     = ProfString(profile, 2),
             profName1 = ProfName(profile, 1),
             profName2 = ProfName(profile, 2),
-            discord   = profile and profile.discord or "",
+            discord   = profile and profile.discord  or "",
             deaths    = profile and profile.deaths,
+            pronouns  = profile and profile.pronouns or "",
         }
     end
 end
@@ -71,20 +73,23 @@ function MI.ShowTooltip(anchor, entry)
         GameTooltip:AddDoubleLine("Notiz:", safeNote, 0.65, 0.65, 0.65, 1, 0.9, 0.5, true)
     end
 
-    local hasProfile = entry.role ~= "" or entry.discord ~= "" or entry.prof1 or entry.prof2
+    local hasProfile = entry.role ~= "" or entry.pronouns ~= "" or entry.discord ~= "" or entry.prof1 or entry.prof2
     if hasProfile then
         GameTooltip:AddLine(" ")
         if entry.role ~= "" then
-            GameTooltip:AddDoubleLine("Rolle:",   entry.role,    0.65, 0.65, 0.65, 1,    1,    1)
+            GameTooltip:AddDoubleLine("Rolle:",    entry.role,    0.65, 0.65, 0.65, 1,    1,    1)
+        end
+        if entry.pronouns ~= "" then
+            GameTooltip:AddDoubleLine("Pronomen:", entry.pronouns, 0.65, 0.65, 0.65, 1,   1,    1)
         end
         if entry.discord ~= "" then
-            GameTooltip:AddDoubleLine("Discord:", entry.discord, 0.65, 0.65, 0.65, 0.55, 0.55, 0.9)
+            GameTooltip:AddDoubleLine("Discord:",  entry.discord, 0.65, 0.65, 0.65, 0.55, 0.55, 0.9)
         end
         if entry.prof1 then
-            GameTooltip:AddDoubleLine("Beruf 1:", entry.prof1, 0.65, 0.65, 0.65, 0.9, 0.75, 0.4)
+            GameTooltip:AddDoubleLine("Beruf 1:",  entry.prof1,   0.65, 0.65, 0.65, 0.9, 0.75, 0.4)
         end
         if entry.prof2 then
-            GameTooltip:AddDoubleLine("Beruf 2:", entry.prof2, 0.65, 0.65, 0.65, 0.9, 0.75, 0.4)
+            GameTooltip:AddDoubleLine("Beruf 2:",  entry.prof2,   0.65, 0.65, 0.65, 0.9, 0.75, 0.4)
         end
     end
 
