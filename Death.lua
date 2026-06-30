@@ -163,24 +163,25 @@ function SchlingelInc.Death:Initialize()
 			-- Always count the death.
 			CharacterDeaths = CharacterDeaths + 1
 
-			-- Broadcast to guild unless in a raid (avoid wipe spam).
 			local now = time()
-			local inRaid = SchlingelInc:IsInRaid()
-			if not inRaid and (now - lastOwnDeathSendTime) >= SchlingelInc.Constants.COOLDOWNS.DEATH_ANNOUNCEMENT then
+			if (now - lastOwnDeathSendTime) >= SchlingelInc.Constants.COOLDOWNS.DEATH_ANNOUNCEMENT then
 				SendChatMessage(messageString, "GUILD")
 				lastOwnDeathSendTime = now
 
-				-- Structured addon message for other addon users (chat parsing stays as fallback)
+				-- Addon message triggers the popup alert for others.
+				-- Suppress during raids to avoid wipe spam; chat message still goes through.
 				-- Format: DEATH|name|class|level|zone|cause
-				local addonDeathMsg = table.concat({
-					"DEATH",
-					name,
-					class,
-					tostring(level),
-					zone,
-					deathCause or "",
-				}, "|")
-				C_ChatInfo.SendAddonMessage(SchlingelInc.prefix, addonDeathMsg, "GUILD")
+				if not SchlingelInc:IsInRaid() then
+					local addonDeathMsg = table.concat({
+						"DEATH",
+						name,
+						class,
+						tostring(level),
+						zone,
+						deathCause or "",
+					}, "|")
+					C_ChatInfo.SendAddonMessage(SchlingelInc.prefix, addonDeathMsg, "GUILD")
+				end
 			end
 
 			-- Process own death immediately (add to log with cause, last words, and handle)
