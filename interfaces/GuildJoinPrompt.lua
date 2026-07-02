@@ -7,7 +7,6 @@ local promptFrame
 local function BuildPrompt()
     local f = CreateFrame("Frame", "SchlingelGuildJoinPrompt", UIParent, "BackdropTemplate")
     f:SetSize(300, 110)
-    f:SetPoint("CENTER")
     f:SetBackdrop(SchlingelInc.Constants.BACKDROP)
     f:SetBackdropColor(0, 0, 0, 0.85)
     f:SetBackdropBorderColor(1, 0.55, 0.73, 1)
@@ -16,7 +15,11 @@ local function BuildPrompt()
     f:EnableMouse(true)
     f:RegisterForDrag("LeftButton")
     f:SetScript("OnDragStart", f.StartMoving)
-    f:SetScript("OnDragStop", f.StopMovingOrSizing)
+    f:SetScript("OnDragStop", function(self)
+        self:StopMovingOrSizing()
+        SchlingelInc:SaveFramePosition(self, "guildjoinprompt_position")
+    end)
+    SchlingelInc:RestoreFramePosition(f, "guildjoinprompt_position", "CENTER", 0, 0)
     SchlingelInc:RegisterFrameForEscape(f)
 
     local lbl = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
@@ -43,7 +46,6 @@ end
 function SchlingelInc:ShowGuildJoinPrompt()
     promptFrame = promptFrame or BuildPrompt()
     if not promptFrame:IsShown() then
-        promptFrame:SetPoint("CENTER")
         promptFrame:Show()
     end
 end

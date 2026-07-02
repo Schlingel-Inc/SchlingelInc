@@ -40,6 +40,8 @@ function SchlingelInc.Debug:Initialize()
 			SchlingelInc.EventManager:DebugInfo()
 		elseif command == "deathframe" then
 			SchlingelInc.Debug:TestDeathFrame()
+		elseif command == "smalldeathframe" then
+			SchlingelInc.Debug:TestSmallDeathFrame()
 		elseif command == "levelup" then
 			SchlingelInc.Debug:TestLevelUpFrame()
 		elseif command == "cap" then
@@ -85,6 +87,7 @@ function SchlingelInc.Debug:ShowHelp()
 	print(SchlingelInc.colorCode .. "/schlingeldebug toggle" .. "|r - Enables/Disables debug mode")
 	print(SchlingelInc.colorCode .. "/schlingeldebug eventdebug" .. "|r - Shows EventManager debug info")
 	print(SchlingelInc.colorCode .. "/schlingeldebug deathframe" .. "|r - Test death announcement frame")
+	print(SchlingelInc.colorCode .. "/schlingeldebug smalldeathframe" .. "|r - Test compact death notification (Instanz-Modus)")
 	print(SchlingelInc.colorCode .. "/schlingeldebug levelup" .. "|r - Test level-up announcement frame")
 	print(SchlingelInc.colorCode .. "/schlingeldebug cap" .. "|r - Test cap announcement frame")
 	print(SchlingelInc.colorCode .. "/schlingeldebug deathset <number>" .. "|r - Sets the death counter")
@@ -136,6 +139,16 @@ function SchlingelInc.Debug:TestDeathFrame()
 
 	SchlingelInc:Print(SchlingelInc.Constants.COLORS.SUCCESS ..
 		"Test death frame shown for " .. name .. "|r")
+end
+
+function SchlingelInc.Debug:TestSmallDeathFrame()
+	local testNames = {"Pudidev", "Cricksumage", "Totanka", "Kurtibrown"}
+	local name = testNames[math.random(#testNames)]
+
+	SchlingelInc.DeathAnnouncement:ShowSmallDeathMessage(name)
+
+	SchlingelInc:Print(SchlingelInc.Constants.COLORS.SUCCESS ..
+		"Test small death frame shown for " .. name .. "|r")
 end
 
 function SchlingelInc.Debug:TestLevelUpFrame()

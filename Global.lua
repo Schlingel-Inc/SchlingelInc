@@ -393,7 +393,7 @@ end
 
 function SchlingelInc:RestoreFramePosition(frame, dbKey, defaultPoint, defaultX, defaultY)
     local p = SchlingelOptionsDB and SchlingelOptionsDB[dbKey]
-    if p then
+    if p and p.point and p.relPoint then
         frame:ClearAllPoints()
         frame:SetPoint(p.point, UIParent, p.relPoint, p.x, p.y)
     else

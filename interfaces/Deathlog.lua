@@ -115,14 +115,7 @@ function SchlingelInc:CreateMiniDeathLog()
     end
     frame:SetSize(savedWidth, savedHeight)
 
-    -- Load saved position or use default
-    if SchlingelOptionsDB and SchlingelOptionsDB["deathlog_position"] then
-        local pos = SchlingelOptionsDB["deathlog_position"]
-        frame:ClearAllPoints()
-        frame:SetPoint(pos.point, UIParent, pos.relativePoint, pos.xOfs, pos.yOfs)
-    else
-        frame:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", 40, 60)
-    end
+    SchlingelInc:RestoreFramePosition(frame, "deathlog_position", "BOTTOMLEFT", 40, 60)
 
     frame:SetBackdrop({
         bgFile = "Interface\\BUTTONS\\WHITE8X8",
@@ -141,15 +134,7 @@ function SchlingelInc:CreateMiniDeathLog()
     frame:SetScript("OnDragStart", frame.StartMoving)
     frame:SetScript("OnDragStop", function(self)
         self:StopMovingOrSizing()
-        -- Save position
-        local point, _, relativePoint, xOfs, yOfs = self:GetPoint()
-        SchlingelOptionsDB = SchlingelOptionsDB or {}
-        SchlingelOptionsDB["deathlog_position"] = {
-            point = point,
-            relativePoint = relativePoint,
-            xOfs = xOfs,
-            yOfs = yOfs
-        }
+        SchlingelInc:SaveFramePosition(self, "deathlog_position")
     end)
     frame:SetFrameStrata("MEDIUM")
     frame:SetResizeBounds(MIN_WIDTH, MIN_HEIGHT, MAX_WIDTH, MAX_HEIGHT)

@@ -5,9 +5,17 @@ SchlingelInc.DeathAnnouncement = {}
 
 local DeathMessageFrame = CreateFrame("Frame", "DeathMessageFrame", UIParent, "BackdropTemplate")
 DeathMessageFrame:SetSize(380, 200)
-DeathMessageFrame:SetPoint("TOP", UIParent, "TOP", 0, 0)
 DeathMessageFrame:SetFrameStrata("FULLSCREEN_DIALOG")
 DeathMessageFrame:SetFrameLevel(1000)
+DeathMessageFrame:SetMovable(true)
+DeathMessageFrame:EnableMouse(true)
+DeathMessageFrame:RegisterForDrag("LeftButton")
+DeathMessageFrame:SetScript("OnDragStart", DeathMessageFrame.StartMoving)
+DeathMessageFrame:SetScript("OnDragStop", function(self)
+	self:StopMovingOrSizing()
+	SchlingelInc:SaveFramePosition(self, "deathannouncement_position")
+end)
+SchlingelInc:RestoreFramePosition(DeathMessageFrame, "deathannouncement_position", "TOP", 0, 0)
 DeathMessageFrame:Hide()
 
 DeathMessageFrame:SetBackdrop(SchlingelInc.Constants.POPUPBACKDROP)
@@ -85,5 +93,64 @@ function SchlingelInc.DeathAnnouncement:ShowDeathMessage(message)
 			SchlingelInc:PlayAnnouncementSound(SchlingelInc.Constants.SOUNDS.DEATH_ANNOUNCEMENT,
 				SchlingelInc.Constants.SOUNDS.TORRO_DEATH)
 		end
+	end)
+end
+
+-- Compact death notification for when the local player is in an instance.
+-- Shown top-right, small frame, short text: "NAME ist gestorben."
+local SmallDeathFrame = CreateFrame("Frame", "SchlingelSmallDeathFrame", UIParent, "BackdropTemplate")
+SmallDeathFrame:SetSize(220, 40)
+SmallDeathFrame:SetFrameStrata("FULLSCREEN_DIALOG")
+SmallDeathFrame:SetFrameLevel(1000)
+SmallDeathFrame:SetMovable(true)
+SmallDeathFrame:EnableMouse(true)
+SmallDeathFrame:RegisterForDrag("LeftButton")
+SmallDeathFrame:SetScript("OnDragStart", SmallDeathFrame.StartMoving)
+SmallDeathFrame:SetScript("OnDragStop", function(self)
+	self:StopMovingOrSizing()
+	SchlingelInc:SaveFramePosition(self, "smalldeathannouncement_position")
+end)
+SchlingelInc:RestoreFramePosition(SmallDeathFrame, "smalldeathannouncement_position", "TOPRIGHT", -20, -200)
+SmallDeathFrame:Hide()
+
+SmallDeathFrame:SetBackdrop(SchlingelInc.Constants.POPUPBACKDROP)
+SmallDeathFrame:SetBackdropColor(0.12, 0, 0, 0.85)
+SmallDeathFrame:SetBackdropBorderColor(1, 0.15, 0.15, 1)
+
+SmallDeathFrame.text = SmallDeathFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+SmallDeathFrame.text:SetPoint("TOPLEFT",     SmallDeathFrame, "TOPLEFT",     8, -6)
+SmallDeathFrame.text:SetPoint("BOTTOMRIGHT", SmallDeathFrame, "BOTTOMRIGHT", -8,  6)
+SmallDeathFrame.text:SetJustifyH("CENTER")
+SmallDeathFrame.text:SetJustifyV("MIDDLE")
+SmallDeathFrame.text:SetTextColor(1, 0.3, 0.3, 1)
+
+local smallAnimGroup = SmallDeathFrame:CreateAnimationGroup()
+
+local smallFadeIn = smallAnimGroup:CreateAnimation("Alpha")
+smallFadeIn:SetDuration(0.3)
+smallFadeIn:SetFromAlpha(0)
+smallFadeIn:SetToAlpha(1)
+
+local smallFadeOut = smallAnimGroup:CreateAnimation("Alpha")
+smallFadeOut:SetStartDelay(2.5)
+smallFadeOut:SetDuration(0.7)
+smallFadeOut:SetFromAlpha(1)
+smallFadeOut:SetToAlpha(0)
+
+smallAnimGroup:SetScript("OnFinished", function()
+	SmallDeathFrame:Hide()
+	SchlingelInc.AnnouncementQueue:Finished()
+end)
+
+function SchlingelInc.DeathAnnouncement:ShowSmallDeathMessage(name)
+	if not SchlingelOptionsDB["deathmessages"] then
+		return
+	end
+	SchlingelInc.AnnouncementQueue:Push(function()
+		SmallDeathFrame.text:SetText(SchlingelInc:SanitizeText(name) .. " ist gestorben.")
+		SmallDeathFrame:SetAlpha(0)
+		SmallDeathFrame:Show()
+		smallAnimGroup:Stop()
+		smallAnimGroup:Play()
 	end)
 end
