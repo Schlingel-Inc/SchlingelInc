@@ -26,6 +26,11 @@ SchlingelInc.Constants.MAX_LEVEL = 60
 -- Level milestones for announcements
 SchlingelInc.Constants.LEVEL_MILESTONES = {10, 20, 25, 30, 40, 50, 60}
 
+-- Max length for the Discord handle. Keeps guild-chat announcements that embed
+-- the handle (death/levelup messages) safely under WoW's ~255 byte chat message
+-- limit, which errors instead of truncating when exceeded.
+SchlingelInc.Constants.DISCORD_HANDLE_MAX_LENGTH = 50
+
 -- Instance types
 SchlingelInc.Constants.INSTANCE_TYPES = {
 	PVP = "pvp",

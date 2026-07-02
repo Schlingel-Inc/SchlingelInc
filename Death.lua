@@ -165,7 +165,7 @@ function SchlingelInc.Death:Initialize()
 
 			local now = time()
 			if (now - lastOwnDeathSendTime) >= SchlingelInc.Constants.COOLDOWNS.DEATH_ANNOUNCEMENT then
-				SendChatMessage(messageString, "GUILD")
+				SchlingelInc:SendGuildChatMessage(messageString)
 				lastOwnDeathSendTime = now
 
 				-- Addon message triggers the popup alert for others.
