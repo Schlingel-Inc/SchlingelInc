@@ -7,8 +7,13 @@ function SchlingelInc:GetDiscordHandle()
     return DiscordHandle
 end
 
--- Set the account-wide Discord handle and clear the guild note
+-- Set the account-wide Discord handle and clear the guild note.
+-- Truncated to DISCORD_HANDLE_MAX_LENGTH so it can't blow guild-chat
+-- announcements (death/levelup) past WoW's chat message length limit.
 function SchlingelInc:SetDiscordHandle(handle)
+    if handle then
+        handle = handle:sub(1, SchlingelInc.Constants.DISCORD_HANDLE_MAX_LENGTH)
+    end
     DiscordHandle = handle
     SchlingelInc:ClearGuildNote()
     SchlingelInc.GuildProfiles:Broadcast()
@@ -109,7 +114,7 @@ function SchlingelInc:InitializeDiscordHandlePrompt()
         if handle and handle ~= "" then
             SchlingelInc:SetDiscordHandle(handle)
             SchlingelInc:Print(SchlingelInc.Constants.COLORS.SUCCESS ..
-                "Discord Handle gesetzt: " .. handle .. "|r")
+                "Discord Handle gesetzt: " .. SchlingelInc:GetDiscordHandle() .. "|r")
         else
             local current = SchlingelInc:GetDiscordHandle()
             if current and current ~= "" then

@@ -406,6 +406,15 @@ function SchlingelInc:RemoveRealmFromName(fullName)
     return Ambiguate(fullName, "short")
 end
 
+-- Sends a GUILD chat message, hard-truncated to stay under WoW's ~255 byte
+-- SendChatMessage limit (which errors instead of truncating when exceeded).
+-- Wrapped in pcall so any remaining edge case degrades to "message not sent"
+-- rather than silently aborting the rest of the calling event handler.
+function SchlingelInc:SendGuildChatMessage(text)
+    if not text then return end
+    pcall(SendChatMessage, text:sub(1, 250), "GUILD")
+end
+
 -- Sanitizes text to prevent UI injection via escape codes.
 function SchlingelInc:SanitizeText(text)
     if not text or type(text) ~= "string" then

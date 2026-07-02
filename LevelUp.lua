@@ -79,7 +79,7 @@ local function CheckForMilestone(level)
             local player = UnitName("player")
             local handle = SchlingelInc:GetDiscordHandle()
             local playerDisplay = (handle and handle ~= "") and (player .. " (" .. handle .. ")") or player
-            SendChatMessage(playerDisplay .. " hat Level " .. level .. " erreicht! Schlingel! Schlingel! Schlingel!", "GUILD")
+            SchlingelInc:SendGuildChatMessage(playerDisplay .. " hat Level " .. level .. " erreicht! Schlingel! Schlingel! Schlingel!")
             C_ChatInfo.SendAddonMessage(SchlingelInc.prefix, "LEVELUP:" .. player .. ":" .. level, "GUILD")
         end
     end
@@ -283,7 +283,7 @@ function SchlingelInc.LevelUps:CheckForCap(level, announce)
             local player = UnitName("player")
             local handle = SchlingelInc:GetDiscordHandle()
             local playerDisplay = (handle and handle ~= "") and (player .. " (" .. handle .. ")") or player
-            SendChatMessage(playerDisplay .. " hat das Level Cap von " .. level .. " erreicht! Herzlichen Glückwunsch!", "GUILD")
+            SchlingelInc:SendGuildChatMessage(playerDisplay .. " hat das Level Cap von " .. level .. " erreicht! Herzlichen Glückwunsch!")
             C_ChatInfo.SendAddonMessage(SchlingelInc.prefix, "CAP:" .. player .. ":" .. level, "GUILD")
         end
     end

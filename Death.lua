@@ -156,7 +156,6 @@ function SchlingelInc.Death:Initialize()
 
 			if SchlingelInc.Death.lastChatMessage and SchlingelInc.Death.lastChatMessage ~= "" then
 				deathLastWords = SchlingelInc.Death.lastChatMessage
-				messageString = string.format('%s. Die letzten Worte: "%s"', messageString, SchlingelInc.Death.lastChatMessage)
 				SchlingelInc.Death.lastChatMessage = ""
 			end
 
@@ -165,7 +164,10 @@ function SchlingelInc.Death:Initialize()
 
 			local now = time()
 			if (now - lastOwnDeathSendTime) >= SchlingelInc.Constants.COOLDOWNS.DEATH_ANNOUNCEMENT then
-				SendChatMessage(messageString, "GUILD")
+				SchlingelInc:SendGuildChatMessage(messageString)
+				if deathLastWords then
+					SchlingelInc:SendGuildChatMessage(string.format('Die letzten Worte: "%s"', deathLastWords))
+				end
 				lastOwnDeathSendTime = now
 
 				-- Addon message triggers the popup alert for others.
