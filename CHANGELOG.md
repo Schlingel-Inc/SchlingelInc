@@ -10,6 +10,7 @@
 - Ungenutztes Inaktivitätsfenster entfernt (Funktion wurde vom Inaktiv-Tab im Offizier-Panel abgelöst)
 - Bugfix: Ein langes Discord Handle konnte eigene Todes- und Levelup-Meldungen komplett blockieren (Gildenchat-Nachricht überschritt WoWs Zeichenlimit); Discord Handle jetzt auf 50 Zeichen begrenzt, Gildenchat-Ankündigungen werden zusätzlich vor dem Senden auf eine sichere Länge gekürzt
 - Letzte Worte werden jetzt als eigene Gildennachricht verschickt, damit sie die Todesmeldung nicht mehr über das Zeichenlimit drücken können
+- Neue Option "Kompakte Ansicht" bei den Todesmeldungen: zeigt Todesmeldungen anderer immer im kompakten Format an, nicht nur in Instanzen
 
 # 4.0.9
 
