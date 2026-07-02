@@ -100,6 +100,14 @@ local options = {
                             get   = get,
                             set   = set,
                         },
+                        deathframe_always_small = {
+                            type  = "toggle",
+                            name  = "Kompakte Ansicht",
+                            desc  = "Zeigt Todesmeldungen anderer immer als kompaktes Fenster an, nicht nur in Instanzen",
+                            order = 3,
+                            get   = get,
+                            set   = set,
+                        },
                     },
                 },
                 levelup = {
@@ -203,6 +211,7 @@ function SchlingelInc:InitializeOptionsDB()
         pvp_alert_sound     = true,
         deathmessages       = true,
         deathmessages_sound = true,
+        deathframe_always_small = false,
         levelmessages       = true,
         levelmessages_sound = true,
         capmessages         = true,

@@ -66,7 +66,7 @@ local function processDeath(data, isOwnDeath)
 			data.name, pronoun, data.class, data.level, data.zone)
 	end
 
-	if IsInInstance() then
+	if SchlingelOptionsDB["deathframe_always_small"] or IsInInstance() then
 		SchlingelInc.DeathAnnouncement:ShowSmallDeathMessage(data.name)
 	else
 		SchlingelInc.DeathAnnouncement:ShowDeathMessage(messageString)

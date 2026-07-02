@@ -8,6 +8,8 @@
 - Wenn man selbst in einer Instanz ist, werden Todesmeldungen anderer kompakt und oben rechts am Bildschirmrand angezeigt
 - Alle Fenster und Popups (u.a. Tode-, Levelup- und PvP-Meldungen sowie Beitrittsanfrage) sind jetzt verschiebbar und merken sich ihre Position
 - Ungenutztes Inaktivitätsfenster entfernt (Funktion wurde vom Inaktiv-Tab im Offizier-Panel abgelöst)
+- Bugfix: Ein langes Discord Handle konnte eigene Todes- und Levelup-Meldungen komplett blockieren (Gildenchat-Nachricht überschritt WoWs Zeichenlimit); Discord Handle jetzt auf 50 Zeichen begrenzt, Gildenchat-Ankündigungen werden zusätzlich vor dem Senden auf eine sichere Länge gekürzt
+- Letzte Worte werden jetzt als eigene Gildennachricht verschickt, damit sie die Todesmeldung nicht mehr über das Zeichenlimit drücken können
 
 # 4.0.9
 
