@@ -36,21 +36,12 @@ function SchlingelInc.GuildPanel:Create()
     f:SetScript("OnDragStart", f.StartMoving)
     f:SetScript("OnDragStop", function(self)
         self:StopMovingOrSizing()
-        SchlingelOptionsDB = SchlingelOptionsDB or {}
-        local point, _, relPoint, x, y = self:GetPoint()
-        SchlingelOptionsDB.guildpanel_position = { point = point, relPoint = relPoint, x = x, y = y }
+        SchlingelInc:SaveFramePosition(self, "guildpanel_position")
     end)
     f:SetScript("OnHide", HideFilterFrames)
     SchlingelInc:RegisterFrameForEscape(f)
 
-    -- Restore saved position or default to center
-    if SchlingelOptionsDB and SchlingelOptionsDB.guildpanel_position then
-        local p = SchlingelOptionsDB.guildpanel_position
-        f:ClearAllPoints()
-        f:SetPoint(p.point, UIParent, p.relPoint, p.x, p.y)
-    else
-        f:SetPoint("CENTER")
-    end
+    SchlingelInc:RestoreFramePosition(f, "guildpanel_position", "CENTER", 0, 0)
 
     -- ── Title bar ──────────────────────────────────────────────────────────
     local titleBg = f:CreateTexture(nil, "BACKGROUND")

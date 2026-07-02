@@ -66,7 +66,6 @@ function SchlingelInc:CreatePvPWarningFrame()
 
     local pvpFrame = CreateFrame("Frame", nil, UIParent, "BackdropTemplate")
     pvpFrame:SetSize(320, 110)
-    pvpFrame:SetPoint("CENTER")
     pvpFrame:SetBackdrop({
         bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background-Dark",
         edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
@@ -81,7 +80,11 @@ function SchlingelInc:CreatePvPWarningFrame()
     pvpFrame:EnableMouse(true)
     pvpFrame:RegisterForDrag("LeftButton")
     pvpFrame:SetScript("OnDragStart", pvpFrame.StartMoving)
-    pvpFrame:SetScript("OnDragStop", pvpFrame.StopMovingOrSizing)
+    pvpFrame:SetScript("OnDragStop", function(self)
+        self:StopMovingOrSizing()
+        SchlingelInc:SaveFramePosition(self, "pvpwarning_position")
+    end)
+    SchlingelInc:RestoreFramePosition(pvpFrame, "pvpwarning_position", "CENTER", 0, 0)
     pvpFrame:Hide()
 
     local text = pvpFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")

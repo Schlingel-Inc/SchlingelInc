@@ -6,9 +6,17 @@ SchlingelInc.LevelUpAnnouncement = {}
 
 local LevelUpFrame = CreateFrame("Frame", "LevelUpFrame", UIParent, "BackdropTemplate")
 LevelUpFrame:SetSize(380, 200)
-LevelUpFrame:SetPoint("TOP", UIParent, "TOP", 0, 0)
 LevelUpFrame:SetFrameStrata("FULLSCREEN_DIALOG")
 LevelUpFrame:SetFrameLevel(999)
+LevelUpFrame:SetMovable(true)
+LevelUpFrame:EnableMouse(true)
+LevelUpFrame:RegisterForDrag("LeftButton")
+LevelUpFrame:SetScript("OnDragStart", LevelUpFrame.StartMoving)
+LevelUpFrame:SetScript("OnDragStop", function(self)
+	self:StopMovingOrSizing()
+	SchlingelInc:SaveFramePosition(self, "levelupannouncement_position")
+end)
+SchlingelInc:RestoreFramePosition(LevelUpFrame, "levelupannouncement_position", "TOP", 0, 0)
 LevelUpFrame:Hide()
 
 LevelUpFrame:SetBackdrop(SchlingelInc.Constants.POPUPBACKDROP)

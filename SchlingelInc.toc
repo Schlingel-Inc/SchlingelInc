@@ -35,7 +35,6 @@ interfaces\popups\DeathAnnouncement.lua
 interfaces\popups\LevelUpAnnouncement.lua
 interfaces\Deathlog.lua
 interfaces\popups\GuildInvites.lua
-interfaces\InactivityWindow.lua
 interfaces\popups\PvPFrame.lua
 interfaces\DiscordHandlePrompt.lua
 interfaces\GuildJoinPrompt.lua
