@@ -54,7 +54,10 @@ local function processDeath(data, isOwnDeath)
 	-- Update UI
 	SchlingelInc:UpdateMiniDeathLog()
 
-	if isOwnDeath then return end
+	if isOwnDeath then
+		CharacterDeaths = CharacterDeaths + 1
+		return
+	end
 
 	local pronoun = data.pronoun or "der"
 	local messageString
@@ -158,9 +161,6 @@ function SchlingelInc.Death:Initialize()
 				deathLastWords = SchlingelInc.Death.lastChatMessage
 				SchlingelInc.Death.lastChatMessage = ""
 			end
-
-			-- Always count the death.
-			CharacterDeaths = CharacterDeaths + 1
 
 			local now = time()
 			if (now - lastOwnDeathSendTime) >= SchlingelInc.Constants.COOLDOWNS.DEATH_ANNOUNCEMENT then
