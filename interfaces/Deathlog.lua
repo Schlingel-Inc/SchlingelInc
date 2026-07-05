@@ -1,4 +1,8 @@
 -- Deathlog.lua
+
+SchlingelInc.Deathlog = SchlingelInc.Deathlog or {}
+
+SchlingelInc.DeathLogData = {}
 -- Creates and manages the mini death log window with tooltips and resizing
 
 local FONT_NORMAL = "GameFontNormal"
@@ -97,6 +101,11 @@ local function UpdateDeathLogLayout(frame)
     end
 
     -- Refresh data display
+    SchlingelInc:UpdateMiniDeathLog()
+end
+
+function SchlingelInc.Deathlog:AddEntry(deathEntry)
+    table.insert(SchlingelInc.DeathLogData, 1, deathEntry)
     SchlingelInc:UpdateMiniDeathLog()
 end
 

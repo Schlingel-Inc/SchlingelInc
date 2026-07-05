@@ -1,9 +1,5 @@
 -- Initialize the Death module in the SchlingelInc namespace
-SchlingelInc.Death = {
-	lastChatMessage = "",
-	lastAttackSource = "",
-	MAX_LOG_ENTRIES = 50  -- Maximum number of stored deaths
-}
+SchlingelInc.Death = {}
 
 -- Initialize CharacterDeaths to avoid nil reference
 CharacterDeaths = CharacterDeaths or 0
@@ -11,25 +7,9 @@ CharacterDeaths = CharacterDeaths or 0
 -- Cooldown for sending own death to guild (seconds)
 local lastOwnDeathSendTime = 0
 
--- Session-based death log (NOT persisted, only during session)
--- This prevents out-of-sync issues when players are offline
-SchlingelInc.DeathLogData = {}
-
 -- Track deaths we've already processed to prevent duplicates
 local seenDeaths = {}
 
--- Function to add an entry to the death log with rotation
-function SchlingelInc.Death:AddLogEntry(entry)
-	table.insert(SchlingelInc.DeathLogData, 1, entry)
-
-	-- Rotation: Keep only the last MAX_LOG_ENTRIES entries
-	while #SchlingelInc.DeathLogData > SchlingelInc.Death.MAX_LOG_ENTRIES do
-		table.remove(SchlingelInc.DeathLogData)
-	end
-end
-
-
--- Process a death (from guild chat parsing or addon messages)
 local function processDeath(data, isOwnDeath)
 	-- Create unique ID to prevent duplicates (bucket to 5s to handle dual-path latency)
 	local deathID = data.name .. "-" .. data.level .. "-" .. data.zone .. "-" .. math.floor(time() / 5)
@@ -49,10 +29,7 @@ local function processDeath(data, isOwnDeath)
 		discordHandle = data.discordHandle,
 		timestamp = time()
 	}
-	SchlingelInc.Death:AddLogEntry(deathEntry)
-
-	-- Update UI
-	SchlingelInc:UpdateMiniDeathLog()
+	SchlingelInc.Deathlog:AddEntry(deathEntry)
 
 	if isOwnDeath then
 		CharacterDeaths = CharacterDeaths + 1
@@ -81,12 +58,6 @@ SchlingelInc.Death.ProcessDeath = function(data)
 	processDeath(data, false)
 end
 
-local function IsOwnSender(sender)
-	local name = UnitName("player")
-	if not name then return false end
-	return sender == name or sender:match("^" .. name .. "%-") ~= nil
-end
-
 -- Initializes the Death module and registers events
 function SchlingelInc.Death:Initialize()
 	SchlingelInc.EventManager:RegisterHandler("PLAYER_ENTERING_WORLD",
@@ -103,10 +74,10 @@ function SchlingelInc.Death:Initialize()
 			local level = UnitLevel("player")
 			local sex = UnitSex("player")
 
-			local inPvP = SchlingelInc:IsInBattleground() or SchlingelInc:IsInRaid() or SchlingelInc:IsInArena()
-			if inPvP and level == SchlingelInc.Rules.CurrentCap then
-				return
-			end
+			-- local inPvP = SchlingelInc:IsInBattleground() or SchlingelInc:IsInRaid() or SchlingelInc:IsInArena()
+			-- if inPvP and level == SchlingelInc.Rules.CurrentCap then
+			-- 	return
+			-- end
 
 			-- Safe zone query with error handling
 			local zone, mapID
@@ -147,26 +118,15 @@ function SchlingelInc.Death:Initialize()
 				end
 			end
 
-			-- Store cause and last words before adding to message (for own death log entry)
-			local deathCause = nil
-			local deathLastWords = nil
-
-			if SchlingelInc.Death.lastAttackSource and SchlingelInc.Death.lastAttackSource ~= "" then
-				deathCause = SchlingelInc.Death.lastAttackSource
-				messageString = string.format("%s Gestorben an %s", messageString, SchlingelInc.Death.lastAttackSource)
-				SchlingelInc.Death.lastAttackSource = ""
-			end
-
-			if SchlingelInc.Death.lastChatMessage and SchlingelInc.Death.lastChatMessage ~= "" then
-				deathLastWords = SchlingelInc.Death.lastChatMessage
-				SchlingelInc.Death.lastChatMessage = ""
+			if SchlingelInc.DeathCauseHandler.DeathCause ~= "" then
+				messageString = string.format("%s Gestorben an %s", messageString, SchlingelInc.DeathCauseHandler.DeathCause)
 			end
 
 			local now = time()
 			if (now - lastOwnDeathSendTime) >= SchlingelInc.Constants.COOLDOWNS.DEATH_ANNOUNCEMENT then
 				SchlingelInc:SendGuildChatMessage(messageString)
-				if deathLastWords then
-					SchlingelInc:SendGuildChatMessage(string.format('Die letzten Worte: "%s"', deathLastWords))
+				if SchlingelInc.LastMessageHandler.LastWords ~= "" then
+					SchlingelInc:SendGuildChatMessage(string.format('Die letzten Worte: "%s"', SchlingelInc.LastMessageHandler.LastWords))
 				end
 				lastOwnDeathSendTime = now
 
@@ -180,7 +140,7 @@ function SchlingelInc.Death:Initialize()
 						class,
 						tostring(level),
 						zone,
-						deathCause or "",
+						SchlingelInc.DeathCauseHandler.DeathCause,
 					}, "|")
 					C_ChatInfo.SendAddonMessage(SchlingelInc.prefix, addonDeathMsg, "GUILD")
 				end
@@ -192,58 +152,20 @@ function SchlingelInc.Death:Initialize()
 				class = class,
 				level = level,
 				zone = zone,
-				cause = deathCause,
-				lastWords = deathLastWords,
+				cause = SchlingelInc.DeathCauseHandler.DeathCause,
+				lastWords = SchlingelInc.LastMessageHandler.LastWords,
 				discordHandle = discordHandle,
 				pronoun = pronoun,
 			}
 			processDeath(deathData, true)
 
+			SchlingelInc.DeathCauseHandler.DeathCause = ""
+			SchlingelInc.LastMessageHandler.LastWords = ""
+
 			C_Timer.After(2, function()
 				SchlingelInc.GuildProfiles:Broadcast()
 			end)
 		end, 0, "DeathTracker")
-
-	-- Chat message tracker for last words
-	SchlingelInc.EventManager:RegisterHandler("CHAT_MSG_SAY", function(_, msg, sender)
-		if IsOwnSender(sender) then
-			SchlingelInc.Death.lastChatMessage = msg
-		end
-	end, 0, "LastWordsSay")
-
-	SchlingelInc.EventManager:RegisterHandler("CHAT_MSG_GUILD", function(_, msg, sender)
-		local senderBase = sender:match("^([^-]+)") or sender
-		local name = UnitName("player")
-		if name and senderBase == name then
-			SchlingelInc.Death.lastChatMessage = msg
-		end
-	end, 0, "LastWordsGuild")
-
-	SchlingelInc.EventManager:RegisterHandler("CHAT_MSG_PARTY", function(_, msg, sender)
-		if IsOwnSender(sender) then
-			SchlingelInc.Death.lastChatMessage = msg
-		end
-	end, 0, "LastWordsParty")
-
-	SchlingelInc.EventManager:RegisterHandler("CHAT_MSG_RAID", function(_, msg, sender)
-		if IsOwnSender(sender) then
-			SchlingelInc.Death.lastChatMessage = msg
-		end
-	end, 0, "LastWordsRaid")
-
-	-- Combat log for last attack source
-	SchlingelInc.EventManager:RegisterHandler("COMBAT_LOG_EVENT_UNFILTERED",
-		function()
-			local _, subevent, _, _, sourceName, _, _, destGUID = CombatLogGetCurrentEventInfo()
-
-			if destGUID ~= UnitGUID("player") then return end
-
-			-- Track damage events
-			if subevent == "SWING_DAMAGE" or subevent == "RANGE_DAMAGE" or
-			   subevent == "SPELL_DAMAGE" or subevent == "SPELL_PERIODIC_DAMAGE" then
-				SchlingelInc.Death.lastAttackSource = sourceName or "Unbekannt"
-			end
-		end, 0, "LastAttackTracker")
 end
 
 -- Define slash command
