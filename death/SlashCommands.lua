@@ -1,3 +1,15 @@
+SchlingelInc.EventManager:RegisterHandler("CHAT_MSG_ADDON",
+    function(_, prefix, message, _, _)
+        if prefix ~= SchlingelInc.prefix then return end
+        local valueStr = message:match("^DEATHSET|(.+)$")
+        if not valueStr then return end
+        local value = tonumber(valueStr)
+        if value and value >= 0 and value <= 999999 then
+            CharacterDeaths = value
+            SchlingelInc:Print(SchlingelInc.Constants.COLORS.SUCCESS .. "Deathcounter auf " .. CharacterDeaths .. " gesetzt.|r")
+        end
+    end, 0, "DeathSetReceive")
+
 -- Define slash command
 SLASH_DEATHSET1 = '/deathset'
 SlashCmdList["DEATHSET"] = function(msg)

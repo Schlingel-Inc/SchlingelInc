@@ -53,10 +53,40 @@ local function processDeath(data, isOwnDeath)
 	end
 end
 
--- Public wrapper for use from other modules (e.g. Global.lua addon message handler)
-SchlingelInc.Death.ProcessDeath = function(data)
-	processDeath(data, false)
+local function ProcessStructuredDeathMessage(message, sender)
+	local parts = SchlingelInc:ParsePipeMessage(message)
+	if #parts < 5 then return end
+
+	local senderShort = SchlingelInc:RemoveRealmFromName(sender)
+	if senderShort == UnitName("player") then return end
+
+	local deathLevel = tonumber(parts[4])
+	if not deathLevel then return end
+
+	local deathData = {
+		name    = parts[2],
+		class   = parts[3],
+		level   = deathLevel,
+		zone    = parts[5],
+		cause   = (parts[6] and parts[6] ~= "") and parts[6] or nil,
+		pronoun = SchlingelInc.Constants.PRONOUNS[2] or "der",
+	}
+
+	local profile = SchlingelGuildProfileCache and SchlingelGuildProfileCache[senderShort]
+	if profile then
+		deathData.discordHandle = profile.discord
+		profile.deaths = (profile.deaths or 0) + 1
+	end
+
+	processDeath(deathData, false)
 end
+
+SchlingelInc.EventManager:RegisterHandler("CHAT_MSG_ADDON",
+	function(_, prefix, message, _, sender)
+		if prefix ~= SchlingelInc.prefix then return end
+		if not message:match("^DEATH|") then return end
+		ProcessStructuredDeathMessage(message, sender)
+	end, 0, "DeathAddonMessage")
 
 -- Initializes the Death module and registers events
 function SchlingelInc.Death:Initialize()

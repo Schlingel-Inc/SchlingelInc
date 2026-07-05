@@ -233,6 +233,24 @@ function SchlingelInc.LevelUps:Initialize()
 
     SchlingelInc.EventManager:RegisterHandler("GUILD_ROSTER_UPDATE",
         function() PruneProgressCache() CacheOwnProgress() end, 0, "LevelUpProgressPrune")
+
+    SchlingelInc.EventManager:RegisterHandler("CHAT_MSG_ADDON",
+        function(_, prefix, message, _, sender)
+            if prefix ~= SchlingelInc.prefix then return end
+            local senderShort = SchlingelInc:RemoveRealmFromName(sender)
+            if senderShort == UnitName("player") then return end
+            if message:match("^LEVELUP:") then
+                local levelName, levelNum = message:match("^LEVELUP:(.+):(%d+)$")
+                if levelName and levelNum then
+                    SchlingelInc.LevelUpAnnouncement:ShowMessage(levelName, tonumber(levelNum))
+                end
+            elseif message:match("^CAP:") then
+                local capName, capNum = message:match("^CAP:(.+):(%d+)$")
+                if capName and capNum then
+                    SchlingelInc.LevelUpAnnouncement:ShowCap(capName, tonumber(capNum))
+                end
+            end
+        end, 0, "MilestoneAddonMessage")
 end
 
 function SchlingelInc.LevelUps:RequestProgress(targetName)
