@@ -494,5 +494,5 @@ function OfficerPanel.BuildProgressTab(pc)
     end
 
     pc.Refresh = RefreshProgress
-    SchlingelInc.OfficerPanel:RefreshProgress = RefreshProgress
+    SchlingelInc.OfficerPanel.RefreshProgress = RefreshProgress
 end

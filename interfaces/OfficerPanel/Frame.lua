@@ -162,18 +162,18 @@ local function BuildPanel()
             return
         end
         SwitchTab("invites")
-        OfficerPanel.RefreshInvites()
+        SchlingelInc.OfficerPanel:RefreshInvites()
     end)
 
     -- ── Filter panels ─────────────────────────────────────────────────────
     OfficerPanel.BuildFilters(f)
 
     f.RefreshInvites  = OfficerPanel.RefreshInvites
-    f.RefreshProgress = SchlingelInc.OfficerPanel:RefreshProgress
+    f.RefreshProgress = SchlingelInc.OfficerPanel:RefreshProgress()
     f.RefreshDiscord  = OfficerPanel.RefreshDiscordHandles
     f.SwitchToInvites = function()
         SwitchTab("invites")
-        OfficerPanel.RefreshInvites()
+        SchlingelInc.OfficerPanel:RefreshInvites()
     end
 
     f:HookScript("OnHide", function()
@@ -209,7 +209,7 @@ end
 
 function SchlingelInc.OfficerPanel:RefreshInvites()
     if OfficerPanel.frame and OfficerPanel.frame.RefreshInvites then
-        OfficerPanel.frame.RefreshInvites()
+        SchlingelInc.OfficerPanel.frame.RefreshInvites()
     end
 end
 
