@@ -18,18 +18,9 @@ local function processDeath(data, isOwnDeath)
 	end
 	seenDeaths[deathID] = true
 
-	-- Add to death log
-	local deathEntry = {
-		name = data.name,
-		class = data.class,
-		level = data.level,
-		zone = data.zone,
-		cause = data.cause or "Unbekannt",
-		lastWords = data.lastWords,
-		discordHandle = data.discordHandle,
-		timestamp = time()
-	}
-	SchlingelInc.Deathlog:AddEntry(deathEntry)
+	data.cause = data.cause or "Unbekannt"
+	data.timestamp = time()
+	SchlingelInc.Deathlog:AddEntry(data)
 
 	if isOwnDeath then
 		CharacterDeaths = CharacterDeaths + 1
@@ -103,11 +94,6 @@ function SchlingelInc.Death:Initialize()
 			local class = UnitClass("player")
 			local level = UnitLevel("player")
 			local sex = UnitSex("player")
-
-			-- local inPvP = SchlingelInc:IsInBattleground() or SchlingelInc:IsInRaid() or SchlingelInc:IsInArena()
-			-- if inPvP and level == SchlingelInc.Rules.CurrentCap then
-			-- 	return
-			-- end
 
 			-- Safe zone query with error handling
 			local zone, mapID
