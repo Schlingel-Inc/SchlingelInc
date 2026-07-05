@@ -412,7 +412,7 @@ end
 -- rather than silently aborting the rest of the calling event handler.
 function SchlingelInc:SendGuildChatMessage(text)
     if not text then return end
-    pcall(SendChatMessage, text:sub(1, 250), "GUILD")
+    pcall(C_ChatInfo.SendChatMessage, text:sub(1, 250), "GUILD")
 end
 
 -- Sanitizes text to prevent UI injection via escape codes.

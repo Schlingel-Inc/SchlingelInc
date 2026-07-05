@@ -107,7 +107,7 @@ function OfficerPanel.BuildFilters(mainFrame)
     pfNameEB:SetPoint("TOPLEFT", pfNameLbl, "BOTTOMLEFT", 0, -4)
     pfNameEB:SetScript("OnTextChanged", function(eb)
         pf.filterName = eb:GetText():match("^%s*(.-)%s*$") or ""
-        OfficerPanel.RefreshProgress()
+        SchlingelInc.OfficerPanel:RefreshProgress()
     end)
 
     local pfLvLbl = MakeSectionLabel(pfFp, "Level:", pfNameEB, 10)
@@ -117,7 +117,7 @@ function OfficerPanel.BuildFilters(mainFrame)
     pfLvEB:SetPoint("TOPLEFT", pfLvLbl, "BOTTOMLEFT", 0, -4)
     pfLvEB:SetScript("OnTextChanged", function(eb)
         pf.levelValue = tonumber(eb:GetText()) or nil
-        OfficerPanel.RefreshProgress()
+        SchlingelInc.OfficerPanel:RefreshProgress()
     end)
     local pfLvTog = MakeToggle(pfFp, FP_TOG_W, "<", ">")
     pfLvTog:SetPoint("TOPLEFT", pfLvLbl, "BOTTOMLEFT", FP_EB_W + 4, -4)
@@ -125,7 +125,7 @@ function OfficerPanel.BuildFilters(mainFrame)
         pf.levelBelow   = not pf.levelBelow
         pfLvTog._stateA = pf.levelBelow
         pfLvTog.Update()
-        OfficerPanel.RefreshProgress()
+                SchlingelInc.OfficerPanel:RefreshProgress()
     end)
 
     local pfCapBtn = CreateFrame("Button", nil, pfFp)
@@ -152,7 +152,7 @@ function OfficerPanel.BuildFilters(mainFrame)
     pfCapBtn:SetScript("OnClick", function()
         pf.capOnly = not pf.capOnly
         UpdateCapBtn()
-        OfficerPanel.RefreshProgress()
+        SchlingelInc.OfficerPanel:RefreshProgress()
     end)
     pfCapBtn:SetScript("OnEnter", function() pfCapLbl:SetTextColor(1, 1, 0.7, 1) end)
     pfCapBtn:SetScript("OnLeave", UpdateCapBtn)
@@ -164,7 +164,7 @@ function OfficerPanel.BuildFilters(mainFrame)
     pfGoldEB:SetPoint("TOPLEFT", pfGoldLbl, "BOTTOMLEFT", 0, -4)
     pfGoldEB:SetScript("OnTextChanged", function(eb)
         pf.goldValue = tonumber(eb:GetText()) or nil
-        OfficerPanel.RefreshProgress()
+        SchlingelInc.OfficerPanel:RefreshProgress()
     end)
     local pfGoldTog = MakeToggle(pfFp, FP_TOG_W, "\226\137\164", "\226\137\165")  -- ≤ / ≥
     pfGoldTog:SetPoint("TOPLEFT", pfGoldLbl, "BOTTOMLEFT", FP_EB_W + 4, -4)
@@ -172,7 +172,7 @@ function OfficerPanel.BuildFilters(mainFrame)
         pf.goldBelow      = not pf.goldBelow
         pfGoldTog._stateA = pf.goldBelow
         pfGoldTog.Update()
-        OfficerPanel.RefreshProgress()
+        SchlingelInc.OfficerPanel:RefreshProgress()
     end)
 
     MakeResetButton(pfFp, pfGoldEB, function()
@@ -182,7 +182,7 @@ function OfficerPanel.BuildFilters(mainFrame)
         pf.capOnly    = false; UpdateCapBtn()
         pf.goldValue  = nil;  pfGoldEB:SetText("")
         pf.goldBelow  = true; pfGoldTog._stateA = true; pfGoldTog.Update()
-        OfficerPanel.RefreshProgress()
+        SchlingelInc.OfficerPanel:RefreshProgress()
     end)
 
     OfficerPanel.tabFilterPanels.progress = pfFp

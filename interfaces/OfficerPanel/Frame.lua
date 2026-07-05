@@ -143,7 +143,7 @@ local function BuildPanel()
             return
         end
         SwitchTab("progress")
-        OfficerPanel.RefreshProgress()
+        SchlingelInc.OfficerPanel:RefreshProgress()
     end)
 
     OfficerPanel.tabBtns["discord"]:SetScript("OnClick", function()
@@ -169,7 +169,7 @@ local function BuildPanel()
     OfficerPanel.BuildFilters(f)
 
     f.RefreshInvites  = OfficerPanel.RefreshInvites
-    f.RefreshProgress = OfficerPanel.RefreshProgress
+    f.RefreshProgress = SchlingelInc.OfficerPanel:RefreshProgress
     f.RefreshDiscord  = OfficerPanel.RefreshDiscordHandles
     f.SwitchToInvites = function()
         SwitchTab("invites")

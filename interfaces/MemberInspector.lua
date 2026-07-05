@@ -70,7 +70,7 @@ function MI.ShowTooltip(anchor, entry)
     local safeNote = entry.note ~= "" and SchlingelInc:SanitizeText(entry.note) or nil
     if safeNote and safeNote ~= "" then
         GameTooltip:AddLine(" ")
-        GameTooltip:AddDoubleLine("Notiz:", safeNote, 0.65, 0.65, 0.65, 1, 0.9, 0.5, true)
+        GameTooltip:AddDoubleLine("Notiz:", safeNote, 0.65, 0.65, 0.65, 1, 0.9, 0.5)
     end
 
     local hasProfile = entry.role ~= "" or entry.pronouns ~= "" or entry.discord ~= "" or entry.prof1 or entry.prof2

@@ -94,7 +94,7 @@ function SchlingelInc.LevelUps:Initialize()
         if progressLoadTimer then progressLoadTimer:Cancel() progressLoadTimer = nil end
         progressLoadTotal    = 0
         progressLoadReceived = 0
-        if OfficerPanel and OfficerPanel.EndProgressLoad then OfficerPanel.EndProgressLoad() end
+        if SchlingelInc.OfficerPanel and SchlingelInc.OfficerPanel.EndProgressLoad then SchlingelInc.OfficerPanel.EndProgressLoad() end
         SchlingelInc.OfficerPanel:RefreshProgress()
     end
 
