@@ -168,7 +168,7 @@ function SchlingelInc.Death:Initialize()
 				class = class,
 				level = level,
 				zone = zone,
-				cause = SchlingelInc.DeathCauseHandler.DeathCause,
+				cause = SchlingelInc.DeathCauseHandler.DeathCause ~= "" and SchlingelInc.DeathCauseHandler.DeathCause or nil,
 				lastWords = SchlingelInc.LastMessageHandler.LastWords,
 				discordHandle = discordHandle,
 				pronoun = pronoun,
