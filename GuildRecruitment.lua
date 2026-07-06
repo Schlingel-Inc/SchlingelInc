@@ -20,6 +20,37 @@ local function GetFallbackOfficerNames()
     return SchlingelInc.Constants.FALLBACK_OFFICERS
 end
 
+-- /who-based online detection, usable even by players who aren't guild
+-- members yet (GetGuildRosterInfo/CanGuildInvite require membership).
+-- Note: /who caps results at 50 entries guild-wide, not per-officer - if more
+-- than 50 guild members are online at once (e.g. raid times), an online
+-- officer could be left out of the results. Accepted tradeoff for simplicity.
+local WHO_QUERY_COOLDOWN = 5
+local lastWhoQueryTime = 0
+local onlineOfficersFromWho = {}
+
+-- SendWho pops open the default Blizzard Who/FriendsFrame window as a side
+-- effect; hide it back up since this is meant to be a silent background check.
+local function HideWhoWindow()
+    if FriendsFrame and FriendsFrame:IsShown() then
+        HideUIPanel(FriendsFrame)
+    end
+end
+
+function SchlingelInc.GuildRecruitment:CheckOfficersOnline()
+    local now = time()
+    if (now - lastWhoQueryTime) < WHO_QUERY_COOLDOWN then return end
+    lastWhoQueryTime = now
+    C_FriendList.SendWho(string.format('g-"%s"', SchlingelInc.Constants.GUILD_NAME))
+    HideWhoWindow()
+end
+
+-- Officers detected online via the last /who query, or an empty table if
+-- none were found yet (callers should fall back to GetFallbackOfficerNames).
+function SchlingelInc.GuildRecruitment:GetOnlineOfficers()
+    return onlineOfficersFromWho
+end
+
 local function GetRunesKnown()
     local engraving = C_Engraving
     if type(engraving) ~= "table" or type(engraving.GetNumRunesKnown) ~= "function" then
@@ -80,7 +111,10 @@ function SchlingelInc.GuildRecruitment:SendGuildRequest()
 
     local message = string.format("INVITE_REQUEST:%s:%d:%d:%d:%d:%s", playerName, playerLevel, playerExp, playerGold, runesKnown, safeZone)
 
-    local guildOfficers = GetFallbackOfficerNames()
+    local guildOfficers = SchlingelInc.GuildRecruitment:GetOnlineOfficers()
+    if #guildOfficers == 0 then
+        guildOfficers = GetFallbackOfficerNames()
+    end
 
     if #guildOfficers == 0 then
         return
@@ -209,6 +243,25 @@ function SchlingelInc.GuildRecruitment:Initialize()
 				end
 			end
 		end, 0, "GuildInviteHandler")
+
+	-- Priority 10 so this runs before the join prompt's hint-refresh handler
+	-- (registered at priority 0), which reads onlineOfficersFromWho.
+	SchlingelInc.EventManager:RegisterHandler("WHO_LIST_UPDATE", function()
+		HideWhoWindow()
+		wipe(onlineOfficersFromWho)
+		for i = 1, C_FriendList.GetNumWhoResults() do
+			local info = C_FriendList.GetWhoInfo(i)
+			local name = info and info.fullName and SchlingelInc:RemoveRealmFromName(info.fullName)
+			if name then
+				for _, officer in ipairs(GetFallbackOfficerNames()) do
+					if name == officer then
+						table.insert(onlineOfficersFromWho, name)
+						break
+					end
+				end
+			end
+		end
+	end, 10, "WhoOfficerCheck")
 end
 
 function SchlingelInc.GuildRecruitment:GetPlayerZone()
