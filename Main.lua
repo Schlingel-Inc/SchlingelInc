@@ -14,6 +14,7 @@ function SchlingelInc:OnLoad()
     SchlingelInc.GuildProfiles:Initialize()
     SchlingelInc:InitializeDiscordHandlePrompt()
     SchlingelInc:InitializeSetupWizard()
+    SchlingelInc:InitializeGuildJoinPrompt()
     SchlingelInc.GuildPanel:Initialize()
 
     SchlingelInc:InitializeOptionsDB()
