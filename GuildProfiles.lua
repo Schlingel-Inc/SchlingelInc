@@ -169,4 +169,10 @@ function SchlingelInc.GuildProfiles:Initialize()
                 SchlingelInc.GuildProfiles:Broadcast()
             end
         end, 0, "GuildProfilesSkillUp")
+
+    SchlingelInc.EventManager:RegisterHandler("CHAT_MSG_ADDON",
+        function(_, prefix, message, _, sender)
+            if prefix ~= SchlingelInc.prefix then return end
+            SchlingelInc.GuildProfiles:HandleMessage(sender, message)
+        end, 0, "GuildProfilesAddonMessage")
 end

@@ -60,115 +60,6 @@ SchlingelInc.Global = {}
 function SchlingelInc.Global:Initialize()
 	C_ChatInfo.RegisterAddonMessagePrefix(SchlingelInc.prefix)
 
-    local pendingDeathMessages = {}
-    local pendingMilestoneMessages = {}
-
-    local function ProcessLevelUpMessage(message, sender)
-        local levelName, levelNum = message:match("^LEVELUP:(.+):(%d+)$")
-        if not levelName or not levelNum then
-            return false
-        end
-
-        local senderShort = SchlingelInc:RemoveRealmFromName(sender)
-        if senderShort == UnitName("player") then
-            return true
-        end
-
-        SchlingelInc.LevelUpAnnouncement:ShowMessage(levelName, tonumber(levelNum))
-        return true
-    end
-
-    local function ProcessCapMessage(message, sender)
-        local capName, capNum = message:match("^CAP:(.+):(%d+)$")
-        if not capName or not capNum then
-            return false
-        end
-
-        local senderShort = SchlingelInc:RemoveRealmFromName(sender)
-        if senderShort == UnitName("player") then
-            return true
-        end
-
-        SchlingelInc.LevelUpAnnouncement:ShowCap(capName, tonumber(capNum))
-        return true
-    end
-
-    local function HandleMilestoneAddonMessage(message, sender)
-        local isLevelUp = message:match("^LEVELUP:") ~= nil
-        local isCap = message:match("^CAP:") ~= nil
-        if not isLevelUp and not isCap then
-            return false
-        end
-
-        if SchlingelInc:IsValidGuildSender(sender) then
-            if isLevelUp then
-                return ProcessLevelUpMessage(message, sender)
-            end
-            return ProcessCapMessage(message, sender)
-        end
-
-        table.insert(pendingMilestoneMessages, {
-            message = message,
-            sender = sender,
-            receivedAt = time(),
-        })
-        SchlingelInc.GuildCache:RequestUpdate()
-        return true
-    end
-
-    local function ProcessStructuredDeathMessage(message, sender)
-        local parts = SchlingelInc:ParsePipeMessage(message)
-        if #parts < 5 then
-            return false
-        end
-
-        local senderShort = SchlingelInc:RemoveRealmFromName(sender)
-        if senderShort == UnitName("player") then
-            return true
-        end
-
-        local deathLevel = tonumber(parts[4])
-        if not deathLevel then
-            return false
-        end
-
-        local deathData = {
-            name    = parts[2],
-            class   = parts[3],
-            level   = deathLevel,
-            zone    = parts[5],
-            cause   = (parts[6] and parts[6] ~= "") and parts[6] or nil,
-            pronoun = SchlingelInc.Constants.PRONOUNS[2] or "der",
-        }
-
-        local profile = SchlingelGuildProfileCache and SchlingelGuildProfileCache[senderShort]
-        if profile then
-            deathData.discordHandle = profile.discord
-            profile.deaths = (profile.deaths or 0) + 1
-        end
-
-        SchlingelInc.Death.ProcessDeath(deathData)
-        return true
-    end
-
-    local function HandleDeathAddonMessage(message, sender)
-        if not message:match("^DEATH|") then
-            return false
-        end
-
-        if SchlingelInc:IsValidGuildSender(sender) then
-            return ProcessStructuredDeathMessage(message, sender)
-        end
-
-        table.insert(pendingDeathMessages, {
-            message = message,
-            sender = sender,
-            receivedAt = time(),
-        })
-        SchlingelInc.GuildCache:RequestUpdate()
-        return true
-    end
-
 	SchlingelInc.EventManager:RegisterHandler("PLAYER_TARGET_CHANGED",
 		function()
 			if SchlingelOptionsDB["pvp_alert"] == false then
@@ -182,73 +73,25 @@ function SchlingelInc.Global:Initialize()
 	local newestVersionSeen = SchlingelInc.version
 	SchlingelInc.EventManager:RegisterHandler("CHAT_MSG_ADDON",
 		function(_, prefix, message, _, sender)
-			if prefix == SchlingelInc.prefix then
-				local incomingVersion = message:match("^VERSION:(.+)$")
-				if incomingVersion then
-					if sender then
-						SchlingelInc.guildMemberVersions[sender] = incomingVersion
-					end
-
-					if SchlingelInc:CompareVersions(incomingVersion, newestVersionSeen) > 0 then
-						newestVersionSeen = incomingVersion
-						SchlingelInc:Print("Eine neue Version des Addons wurde gefunden: " ..
-							newestVersionSeen .. ". Bitte aktualisiere das Addon!")
-					end
-				elseif message == "VERSION_REQUEST" and IsInGuild() then
-					C_ChatInfo.SendAddonMessage(SchlingelInc.prefix, "VERSION:" .. SchlingelInc.version, "GUILD")
-                elseif message == "RULES_UPDATE" then
-                    C_Timer.After(2, function()
-                        SchlingelInc.Rules:LoadFromGuildInfo()
-                    end)
-				else
-                    HandleMilestoneAddonMessage(message, sender)
-
-                    HandleDeathAddonMessage(message, sender)
-
-                    if message:match("^DEATHSET|") and SchlingelInc:IsValidGuildSender(sender) then
-                        local valueStr = message:match("^DEATHSET|(.+)$")
-                        local value = tonumber(valueStr)
-                        if value and value >= 0 and value <= 999999 then
-                            CharacterDeaths = value
-                            SchlingelInc:Print(SchlingelInc.Constants.COLORS.SUCCESS .. "Deathcounter auf " .. CharacterDeaths .. " gesetzt.|r")
-                        end
-                    end
-
-					SchlingelInc.GuildProfiles:HandleMessage(sender, message)
+			if prefix ~= SchlingelInc.prefix then return end
+			local incomingVersion = message:match("^VERSION:(.+)$")
+			if incomingVersion then
+				if sender then
+					SchlingelInc.guildMemberVersions[sender] = incomingVersion
 				end
+				if SchlingelInc:CompareVersions(incomingVersion, newestVersionSeen) > 0 then
+					newestVersionSeen = incomingVersion
+					SchlingelInc:Print("Eine neue Version des Addons wurde gefunden: " ..
+						newestVersionSeen .. ". Bitte aktualisiere das Addon!")
+				end
+			elseif message == "VERSION_REQUEST" and IsInGuild() then
+				C_ChatInfo.SendAddonMessage(SchlingelInc.prefix, "VERSION:" .. SchlingelInc.version, "GUILD")
+			elseif message == "RULES_UPDATE" then
+				C_Timer.After(2, function()
+					SchlingelInc.Rules:LoadFromGuildInfo()
+				end)
 			end
 		end, 0, "VersionChecker")
-
-    SchlingelInc.EventManager:RegisterHandler("GUILD_ROSTER_UPDATE",
-        function()
-            if #pendingDeathMessages > 0 then
-                for i = #pendingDeathMessages, 1, -1 do
-                    local pending = pendingDeathMessages[i]
-                    if not pending or (time() - pending.receivedAt) > 30 then
-                        table.remove(pendingDeathMessages, i)
-                    elseif SchlingelInc:IsValidGuildSender(pending.sender) then
-                        ProcessStructuredDeathMessage(pending.message, pending.sender)
-                        table.remove(pendingDeathMessages, i)
-                    end
-                end
-            end
-
-            if #pendingMilestoneMessages > 0 then
-                for i = #pendingMilestoneMessages, 1, -1 do
-                    local pending = pendingMilestoneMessages[i]
-                    if not pending or (time() - pending.receivedAt) > 30 then
-                        table.remove(pendingMilestoneMessages, i)
-                    elseif SchlingelInc:IsValidGuildSender(pending.sender) then
-                        if pending.message:match("^LEVELUP:") then
-                            ProcessLevelUpMessage(pending.message, pending.sender)
-                        elseif pending.message:match("^CAP:") then
-                            ProcessCapMessage(pending.message, pending.sender)
-                        end
-                        table.remove(pendingMilestoneMessages, i)
-                    end
-                end
-            end
-        end, 0, "DeferredDeathAddonMessageReplay")
 
 	if IsInGuild() then
 		C_ChatInfo.SendAddonMessage(SchlingelInc.prefix, "VERSION:" .. SchlingelInc.version, "GUILD")
@@ -412,7 +255,7 @@ end
 -- rather than silently aborting the rest of the calling event handler.
 function SchlingelInc:SendGuildChatMessage(text)
     if not text then return end
-    pcall(SendChatMessage, text:sub(1, 250), "GUILD")
+    pcall(C_ChatInfo.SendChatMessage, text:sub(1, 250), "GUILD")
 end
 
 -- Sanitizes text to prevent UI injection via escape codes.

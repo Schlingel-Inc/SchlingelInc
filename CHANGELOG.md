@@ -1,3 +1,7 @@
+# 4.1.1
+
+- Tode werden nun nicht mehr doppelt gezähöt. Das Death Modul wurde umfassend refactored.
+
 # 4.1.0
 
 - Großschlingel haben jetzt Zugriff auf das Offizier-Panel

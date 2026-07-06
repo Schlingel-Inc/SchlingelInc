@@ -127,15 +127,14 @@ function SchlingelInc.Debug:TestDeathFrame()
 	SchlingelInc.DeathAnnouncement:ShowDeathMessage(
 		string.format("%s der %s ist mit Level %s in %s gestorben.", name, class, level, zone))
 
-	SchlingelInc.DeathLogData = SchlingelInc.DeathLogData or {}
-	table.insert(SchlingelInc.DeathLogData, 1, {
+	local testEntry = {
 		name = name,
 		class = class,
 		level = level,
 		zone = zone,
 		cause = "Test-Eber"
-	})
-	SchlingelInc:UpdateMiniDeathLog()
+	}
+	SchlingelInc.Deathlog:AddEntry(testEntry)
 
 	SchlingelInc:Print(SchlingelInc.Constants.COLORS.SUCCESS ..
 		"Test death frame shown for " .. name .. "|r")

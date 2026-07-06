@@ -57,7 +57,7 @@ function OfficerPanel.BuildProgressTab(pc)
                 progressSortAsc = colIdx == 1
             end
             if OfficerPanel.frame and OfficerPanel.frame:IsShown() then
-                OfficerPanel.RefreshProgress()
+                SchlingelInc.OfficerPanel:RefreshProgress()
             end
         end)
         btn:SetScript("OnEnter", function() lbl:SetTextColor(1, 1, 0.7, 1) end)
@@ -95,7 +95,7 @@ function OfficerPanel.BuildProgressTab(pc)
         hideOfflineProgress = not hideOfflineProgress
         UpdateOfflineBtn()
         if OfficerPanel.frame and OfficerPanel.frame:IsShown() then
-            OfficerPanel.RefreshProgress()
+            SchlingelInc.OfficerPanel:RefreshProgress()
         end
     end)
     pOfflineBtn:SetScript("OnEnter", function() pOfflineLbl:SetTextColor(1, 1, 0.7, 1) end)
@@ -494,5 +494,5 @@ function OfficerPanel.BuildProgressTab(pc)
     end
 
     pc.Refresh = RefreshProgress
-    OfficerPanel.RefreshProgress = RefreshProgress
+    SchlingelInc.OfficerPanel.RefreshProgress = RefreshProgress
 end
