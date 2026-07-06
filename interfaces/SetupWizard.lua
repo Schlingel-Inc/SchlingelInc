@@ -447,27 +447,6 @@ local function OnNextProfessions(frame)
     return true
 end
 
--- Step: Guild join (only shown when not in guild)
-local function RenderGuildJoin(frame)
-    local f = frame.contentAnchor
-
-    local lbl = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    lbl:SetPoint("TOPLEFT", f, "BOTTOMLEFT", 0, -24)
-    lbl:SetWidth(FRAME_W - 40)
-    lbl:SetJustifyH("CENTER")
-    lbl:SetText("Du bist noch nicht in der Gilde!\nSende eine Beitrittsanfrage an unsere Offiziere.")
-    TrackChild(frame, lbl)
-
-    local btn = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
-    btn:SetSize(200, 28)
-    btn:SetPoint("TOP", lbl, "BOTTOM", 0, -16)
-    btn:SetText("Beitrittsanfrage senden")
-    btn:SetScript("OnClick", function()
-        SchlingelInc.GuildRecruitment:SendGuildRequest()
-    end)
-    TrackChild(frame, btn)
-end
-
 -- ── Public API ────────────────────────────────────────────────────────────────
 
 -- Build the step list based on current player state.
@@ -518,15 +497,6 @@ function SchlingelInc:BuildWizardSteps(forceAll)
             SchlingelOwnProfile = SchlingelOwnProfile or {}
             SchlingelOwnProfile.profSetupDone = true
         end
-    end
-
-    if not IsInGuild() then
-        table.insert(steps, {
-            id     = "guild",
-            render = RenderGuildJoin,
-            onNext = nil,
-            frameH = 255,
-        })
     end
 end
 

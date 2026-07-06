@@ -78,6 +78,9 @@ SchlingelInc.Constants.PRONOUNS = {
 	[3] = "die"   -- Female
 }
 
+-- In-game guild name, used for /who lookups from players who aren't guild members yet
+SchlingelInc.Constants.GUILD_NAME = "Schlingel Inc"
+
 -- Guild ranks with invite permissions (for Guild Recruitment)
 SchlingelInc.Constants.OFFICER_RANKS = {
 	"Oberschlingel",
@@ -108,7 +111,8 @@ SchlingelInc.Constants.FALLBACK_OFFICERS = {
 	"Kurti",
 	"Eulkrampf",
 	"Soulswift",
-	"Knusbi"
+	"Knusbi",
+	"Tinatrifft"
 }
 
 -- UI Backdrop Settings
