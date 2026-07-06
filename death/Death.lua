@@ -72,15 +72,15 @@ local function ProcessStructuredDeathMessage(message, sender)
 	processDeath(deathData, false)
 end
 
-SchlingelInc.EventManager:RegisterHandler("CHAT_MSG_ADDON",
-	function(_, prefix, message, _, sender)
-		if prefix ~= SchlingelInc.prefix then return end
-		if not message:match("^DEATH|") then return end
-		ProcessStructuredDeathMessage(message, sender)
-	end, 0, "DeathAddonMessage")
-
 -- Initializes the Death module and registers events
 function SchlingelInc.Death:Initialize()
+	SchlingelInc.EventManager:RegisterHandler("CHAT_MSG_ADDON",
+		function(_, prefix, message, _, sender)
+			if prefix ~= SchlingelInc.prefix then return end
+			if not message:match("^DEATH|") then return end
+			ProcessStructuredDeathMessage(message, sender)
+		end, 0, "DeathAddonMessage")
+
 	SchlingelInc.EventManager:RegisterHandler("PLAYER_ENTERING_WORLD",
 		function() wipe(seenDeaths) end, 0, "DeathSeenClear")
 
@@ -142,7 +142,10 @@ function SchlingelInc.Death:Initialize()
 			if (now - lastOwnDeathSendTime) >= SchlingelInc.Constants.COOLDOWNS.DEATH_ANNOUNCEMENT then
 				SchlingelInc:SendGuildChatMessage(messageString)
 				if SchlingelInc.LastMessageHandler.LastWords ~= "" then
-					SchlingelInc:SendGuildChatMessage(string.format('Die letzten Worte: "%s"', SchlingelInc.LastMessageHandler.LastWords))
+					local lastWords = SchlingelInc.LastMessageHandler.LastWords
+					C_Timer.After(0.3, function()
+						SchlingelInc:SendGuildChatMessage(string.format('Die letzten Worte: "%s"', lastWords))
+					end)
 				end
 				lastOwnDeathSendTime = now
 
@@ -182,4 +185,8 @@ function SchlingelInc.Death:Initialize()
 				SchlingelInc.GuildProfiles:Broadcast()
 			end)
 		end, 0, "DeathTracker")
+
+	SchlingelInc.DeathCauseHandler:Initialize()
+	SchlingelInc.LastMessageHandler:Initialize()
+	SchlingelInc.DeathSlashCommands:Initialize()
 end

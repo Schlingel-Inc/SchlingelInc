@@ -54,8 +54,8 @@ interfaces\GuildPanel\Data.lua
 interfaces\GuildPanel\Rows.lua
 interfaces\GuildPanel\FilterPanel.lua
 interfaces\GuildPanel\Frame.lua
+death\Death.lua
 death\DeathCauseHandler.lua
 death\LastMessageHandler.lua
 death\SlashCommands.lua
-death\Death.lua
 Main.lua
