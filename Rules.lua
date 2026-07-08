@@ -291,11 +291,6 @@ function SchlingelInc.Rules:Initialize()
 			SchlingelInc.Rules:AutoDeclineDuels()
 		end, 0, "DuelAutoDecline")
 
-	SchlingelInc.EventManager:RegisterHandler("GOSSIP_SHOW",
-		function()
-			SchlingelInc.Rules:ProhibitBlockedTrader()
-		end, 0, "RuleBlockedTrader")
-
 	SchlingelInc.EventManager:RegisterHandler("MERCHANT_SHOW",
 		function()
 			SchlingelInc.Rules:ProhibitBlockedTrader()
