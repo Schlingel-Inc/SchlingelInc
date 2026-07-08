@@ -48,72 +48,44 @@ local function BuildPanel()
     closeBtn:SetPoint("TOPRIGHT", f, "TOPRIGHT", -2, -2)
     closeBtn:SetScript("OnClick", function() f:Hide() end)
 
-    -- ── Tab buttons ───────────────────────────────────────────────────────
-    local tabDefs = {
-        { id = "rules",    label = "Regeln"      },
-        { id = "inactive", label = "Inaktiv"     },
-        { id = "progress", label = "Fortschritt" },
-        { id = "discord",  label = "Discord"     },
-        { id = "invites",  label = "Anfragen"    },
-    }
-
-    local CONTENT_TOP = -(OfficerPanel.TITLE_H + OfficerPanel.TAB_H + 14)
-    local TAB_GAP     = 4
-    local TAB_BTN_W   = math.floor((OfficerPanel.PANEL_W - 16 - TAB_GAP * (#tabDefs - 1)) / #tabDefs)
-    local TAB_STEP    = TAB_BTN_W + TAB_GAP
-
-    for i, tab in ipairs(tabDefs) do
-        local btn = CreateFrame("Button", nil, f)
-        btn:SetSize(TAB_BTN_W, OfficerPanel.TAB_H)
-        btn:SetPoint("TOPLEFT", f, "TOPLEFT", 8 + (i - 1) * TAB_STEP, -(OfficerPanel.TITLE_H + 6))
-        btn:EnableMouse(true)
-
-        local tabBg = btn:CreateTexture(nil, "BACKGROUND")
-        tabBg:SetAllPoints()
-        tabBg:SetColorTexture(0.06, 0.06, 0.06, 1)
-        btn.tabBg = tabBg
-
-        local activeLine = btn:CreateTexture(nil, "OVERLAY")
-        activeLine:SetHeight(2)
-        activeLine:SetPoint("BOTTOMLEFT",  btn, "BOTTOMLEFT",  2, 0)
-        activeLine:SetPoint("BOTTOMRIGHT", btn, "BOTTOMRIGHT", -2, 0)
-        activeLine:SetColorTexture(1, 0.82, 0, 1)
-        activeLine:Hide()
-        btn.activeLine = activeLine
-
-        local lbl = btn:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-        lbl:SetAllPoints()
-        lbl:SetJustifyH("CENTER")
-        lbl:SetText(tab.label)
-        btn.lbl = lbl
-
-        OfficerPanel.tabBtns[tab.id] = btn
-
-        local content = CreateFrame("Frame", nil, f)
-        content:SetPoint("TOPLEFT",     f, "TOPLEFT",     8, CONTENT_TOP)
-        content:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -8, 8)
-        content:Hide()
-        OfficerPanel.tabContents[tab.id] = content
-    end
-
-    local divider = f:CreateTexture(nil, "ARTWORK")
-    divider:SetHeight(1)
-    divider:SetColorTexture(0.4, 0.4, 0.4, 0.7)
-    divider:SetPoint("TOPLEFT",  f, "TOPLEFT",  8, CONTENT_TOP + 2)
-    divider:SetPoint("TOPRIGHT", f, "TOPRIGHT", -8, CONTENT_TOP + 2)
-
-    local function SwitchTab(id)
-        for _, fp in pairs(OfficerPanel.tabFilterPanels) do
-            if fp and fp:IsShown() then fp:Hide() end
-        end
-        for tid, c in pairs(OfficerPanel.tabContents) do c:SetShown(tid == id) end
-        for tid, btn in pairs(OfficerPanel.tabBtns) do
-            local active = tid == id
-            btn.lbl:SetTextColor(active and 1 or 0.5, active and 0.82 or 0.5, active and 0 or 0.5, 1)
-            btn.tabBg:SetColorTexture(active and 0.14 or 0.06, active and 0.14 or 0.06, active and 0.14 or 0.06, 1)
-            btn.activeLine:SetShown(active)
+    -- ── Tab buttons + content (shared factory) ─────────────────────────────
+    local function RequirePermission(message)
+        return function()
+            if not OfficerPanel.IsOfficer() then
+                SchlingelInc:Print(message)
+                return false
+            end
         end
     end
+
+    local switcher = SchlingelInc.Shared.CreateTabSwitcher({
+        parent    = f,
+        width     = OfficerPanel.PANEL_W - 16,
+        tabHeight = OfficerPanel.TAB_H,
+        topOffset = -(OfficerPanel.TITLE_H + 6),
+        contentTop = -(OfficerPanel.TITLE_H + OfficerPanel.TAB_H + 14),
+        tabDefs   = {
+            { id = "rules",    label = "Regeln" },
+            { id = "inactive", label = "Inaktiv", canSelect = RequirePermission("Inaktive Mitglieder sind nur für Offiziere sichtbar."),
+              onSelected = function()
+                  C_GuildInfo.GuildRoster()
+                  C_Timer.After(0.3, OfficerPanel.RefreshInactive)
+              end },
+            { id = "progress", label = "Mitglieder", canSelect = RequirePermission("Mitgliederliste ist nur für Offiziere sichtbar."),
+              onSelected = function() SchlingelInc.OfficerPanel:RefreshProgress() end },
+            { id = "discord",  label = "Discord", canSelect = RequirePermission("Discord-Übersicht ist nur für Offiziere sichtbar."),
+              onSelected = function()
+                  C_GuildInfo.GuildRoster()
+                  C_Timer.After(0.3, OfficerPanel.RefreshDiscordHandles)
+              end },
+            { id = "invites",  label = "Anfragen", canSelect = RequirePermission("Anfragen sind nur für Offiziere sichtbar."),
+              onSelected = function() SchlingelInc.OfficerPanel:RefreshInvites() end },
+        },
+    })
+
+    OfficerPanel.tabBtns         = switcher.tabBtns
+    OfficerPanel.tabContents     = switcher.tabContents
+    OfficerPanel.tabFilterPanels = switcher.filterPanels
 
     -- ── Build tab content ─────────────────────────────────────────────────
     OfficerPanel.BuildRulesTab(OfficerPanel.tabContents["rules"])
@@ -122,57 +94,14 @@ local function BuildPanel()
     OfficerPanel.BuildDiscordTab(OfficerPanel.tabContents["discord"])
     OfficerPanel.BuildInvitesTab(OfficerPanel.tabContents["invites"])
 
-    -- ── Wire tab button clicks ────────────────────────────────────────────
-    OfficerPanel.tabBtns["rules"]:SetScript("OnClick", function()
-        SwitchTab("rules")
-    end)
-
-    OfficerPanel.tabBtns["inactive"]:SetScript("OnClick", function()
-        if not OfficerPanel.IsOfficer() then
-            SchlingelInc:Print("Inaktive Mitglieder sind nur für Offiziere sichtbar.")
-            return
-        end
-        SwitchTab("inactive")
-        C_GuildInfo.GuildRoster()
-        C_Timer.After(0.3, OfficerPanel.RefreshInactive)
-    end)
-
-    OfficerPanel.tabBtns["progress"]:SetScript("OnClick", function()
-        if not OfficerPanel.IsOfficer() then
-            SchlingelInc:Print("Fortschritt ist nur für Offiziere sichtbar.")
-            return
-        end
-        SwitchTab("progress")
-        SchlingelInc.OfficerPanel:RefreshProgress()
-    end)
-
-    OfficerPanel.tabBtns["discord"]:SetScript("OnClick", function()
-        if not OfficerPanel.IsOfficer() then
-            SchlingelInc:Print("Discord-Übersicht ist nur für Offiziere sichtbar.")
-            return
-        end
-        SwitchTab("discord")
-        C_GuildInfo.GuildRoster()
-        C_Timer.After(0.3, OfficerPanel.RefreshDiscordHandles)
-    end)
-
-    OfficerPanel.tabBtns["invites"]:SetScript("OnClick", function()
-        if not OfficerPanel.IsOfficer() then
-            SchlingelInc:Print("Anfragen sind nur für Offiziere sichtbar.")
-            return
-        end
-        SwitchTab("invites")
-        SchlingelInc.OfficerPanel:RefreshInvites()
-    end)
-
     -- ── Filter panels ─────────────────────────────────────────────────────
     OfficerPanel.BuildFilters(f)
 
     f.RefreshInvites  = OfficerPanel.RefreshInvites
-    f.RefreshProgress = SchlingelInc.OfficerPanel:RefreshProgress()
+    f.RefreshProgress = OfficerPanel.RefreshProgress
     f.RefreshDiscord  = OfficerPanel.RefreshDiscordHandles
     f.SwitchToInvites = function()
-        SwitchTab("invites")
+        switcher.SwitchTab("invites")
         SchlingelInc.OfficerPanel:RefreshInvites()
     end
 
@@ -182,7 +111,7 @@ local function BuildPanel()
         end
     end)
 
-    SwitchTab("rules")
+    switcher.SwitchTab("rules")
     return f
 end
 
