@@ -4,7 +4,7 @@
 ## Author: Cricksu, Pudi, Canasterzaster
 ## Version: 4.1.1
 ## IconTexture: Interface\AddOns\SchlingelInc\media\graphics\SI_Transp_512_x_512_px.tga
-## SavedVariablesPerCharacter: CharacterDeaths, SchlingelOptionsDB, SchlingelOwnProfile
+## SavedVariablesPerCharacter: CharacterDeaths, SchlingelOptionsDB, SchlingelOwnProfile, SchlingelOwnSchande
 ## SavedVariables: DiscordHandle, Pronouns, SchlingelGuildProfileCache, SchlingelGuildDB, SchlingelProgressDB
 
 # Notwendiges externe Abhängigkeiten aus dem Lib Folder
@@ -23,6 +23,7 @@ Constants.lua
 EventManager.lua
 GuildCache.lua
 GuildProfiles.lua
+Schande.lua
 Tooltip.lua
 Debug.lua
 Options.lua
