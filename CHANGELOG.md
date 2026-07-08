@@ -1,6 +1,6 @@
 # 4.1.1
 
-- Tode werden nun nicht mehr doppelt gezähöt. Das Death Modul wurde umfassend refactored.
+- Tode werden nun nicht mehr doppelt gezählt. Das Death Modul wurde umfassend refactored.
 - Invite Mechanismus schickt nun /who requests um einen Online Indikator für Offiziere zu bieten.
 
 # 4.1.0
