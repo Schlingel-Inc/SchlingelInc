@@ -40,6 +40,7 @@ interfaces\DiscordHandlePrompt.lua
 interfaces\GuildJoinPrompt.lua
 interfaces\SetupWizard.lua
 interfaces\FilterPanel.lua
+interfaces\TabSwitcher.lua
 interfaces\MemberInspector.lua
 interfaces\OfficerPanel\init.lua
 interfaces\OfficerPanel\Frame.lua
