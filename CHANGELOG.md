@@ -1,3 +1,7 @@
+# 4.1.2
+
+- HOTFIX unblock gossip for blocked npcs
+
 # 4.1.1
 
 - Tode werden nun nicht mehr doppelt gezählt. Das Death Modul wurde umfassend refactored.
