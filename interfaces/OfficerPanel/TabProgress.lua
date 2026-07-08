@@ -2,12 +2,6 @@ local OfficerPanel = SchlingelInc.OfficerPanel
 local MI = SchlingelInc.MemberInspector
 
 -- ── Schande context menu (right-click a row: impose / resolve) ────────────
--- Blizzard renamed StaticPopup's `self.editBox` to `self.EditBox` in newer client
--- builds (Blizzard_StaticPopup_Game); support both so this works either way.
-local function GetPopupEditBox(popup)
-    return popup.EditBox or popup.editBox
-end
-
 StaticPopupDialogs["SCHLINGEL_SCHANDE_IMPOSE"] = {
     text = "Schande-Aufgabe für %s:",
     button1 = "Verhängen",
@@ -15,12 +9,11 @@ StaticPopupDialogs["SCHLINGEL_SCHANDE_IMPOSE"] = {
     hasEditBox = true,
     maxLetters = 200,
     OnShow = function(self)
-        local eb = GetPopupEditBox(self)
-        eb:SetText("")
-        eb:SetFocus()
+        self.EditBox:SetText("")
+        self.EditBox:SetFocus()
     end,
     OnAccept = function(self)
-        SchlingelInc.Schande:Impose(self.data, GetPopupEditBox(self):GetText())
+        SchlingelInc.Schande:Impose(self.data, self.EditBox:GetText())
     end,
     EditBoxOnEnterPressed = function(self)
         self:GetParent().button1:Click()
@@ -41,12 +34,11 @@ StaticPopupDialogs["SCHLINGEL_SCHANDE_RESOLVE"] = {
     hasEditBox = true,
     maxLetters = 6,
     OnShow = function(self)
-        local eb = GetPopupEditBox(self)
-        eb:SetText("")
-        eb:SetFocus()
+        self.EditBox:SetText("")
+        self.EditBox:SetFocus()
     end,
     OnAccept = function(self)
-        SchlingelInc.Schande:Resolve(self.data, GetPopupEditBox(self):GetText())
+        SchlingelInc.Schande:Resolve(self.data, self.EditBox:GetText())
     end,
     EditBoxOnEnterPressed = function(self)
         self:GetParent().button1:Click()

@@ -52,13 +52,7 @@ function SchlingelInc.GuildRecruitment:GetOnlineOfficers()
 end
 
 local function GetRunesKnown()
-    local engraving = C_Engraving
-    if type(engraving) ~= "table" or type(engraving.GetNumRunesKnown) ~= "function" then
-        return nil
-    end
-    local ok, count = pcall(engraving.GetNumRunesKnown)
-    if not ok then return nil end
-    return tonumber(count)
+    return C_Engraving.GetNumRunesKnown()
 end
 
 local function GetAuthorizedOfficers()
@@ -265,9 +259,6 @@ function SchlingelInc.GuildRecruitment:Initialize()
 end
 
 function SchlingelInc.GuildRecruitment:GetPlayerZone()
-    if C_Map and C_Map.GetBestMapForUnit then
-        local mapID = C_Map.GetBestMapForUnit("player")
-        return mapID and C_Map.GetMapInfo(mapID) and C_Map.GetMapInfo(mapID).name or GetZoneText() or "Unknown"
-    end
-    return GetZoneText() or "Unknown"
+    local mapID = C_Map.GetBestMapForUnit("player")
+    return mapID and C_Map.GetMapInfo(mapID) and C_Map.GetMapInfo(mapID).name or GetZoneText() or "Unknown"
 end

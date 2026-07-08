@@ -81,9 +81,8 @@ local function TranslateProfession(name)
 end
 
 -- Detect primary trade professions and return up to two tables {name, rank, maxRank}.
--- Uses GetSkillLineInfo (vanilla-era API, always available in TBC Classic) instead of
--- GetProfessions() which is a Cataclysm backport and can return nil in TBC Classic
--- when profession data hasn't been loaded in the current session frame.
+-- Uses GetSkillLineInfo, the API available on Classic Era (SoD); GetProfessions()
+-- is a later-expansion backport and isn't available on this client.
 -- isAbandonable=true identifies primary trade professions only — secondary professions
 -- (cooking, fishing, first aid) and combat skills are not abandoable.
 function SchlingelInc.GuildProfiles:DetectProfessions()
