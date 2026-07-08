@@ -1,12 +1,12 @@
-# 4.1.2
+# 4.1.3
 
 - Neuer "Schande"-Tab im Gildenpanel: zeigt die eigene Schande (Anzahl, Status, Aufgabe).
 - Fortschritt-Tab im Offizier-Panel heißt jetzt "Mitglieder"; Rechtsklick auf einen Spieler erlaubt das Verhängen bzw. Aufheben von Schande.
 - Gildenpanel und Offizier-Panel teilen sich jetzt eine gemeinsame Tab-Leisten-Komponente.
+
+# 4.1.2
+
 - HOTFIX unblock gossip for blocked npcs
-- Neuer "Schande"-Tab im Gildenpanel: zeigt die eigene Schande (Anzahl, Status, Aufgabe).
-- Fortschritt-Tab im Offizier-Panel heißt jetzt "Mitglieder"; Rechtsklick auf einen Spieler erlaubt das Verhängen bzw. Aufheben von Schande.
-- Gildenpanel und Offizier-Panel teilen sich jetzt eine gemeinsame Tab-Leisten-Komponente.
 
 # 4.1.1
 
