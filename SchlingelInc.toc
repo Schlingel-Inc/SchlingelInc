@@ -55,6 +55,8 @@ interfaces\GuildPanel\init.lua
 interfaces\GuildPanel\Data.lua
 interfaces\GuildPanel\Rows.lua
 interfaces\GuildPanel\FilterPanel.lua
+interfaces\GuildPanel\TabRoster.lua
+interfaces\GuildPanel\TabSchande.lua
 interfaces\GuildPanel\Frame.lua
 death\Death.lua
 death\DeathCauseHandler.lua

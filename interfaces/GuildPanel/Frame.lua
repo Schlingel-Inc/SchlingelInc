@@ -97,81 +97,25 @@ function SchlingelInc.GuildPanel:Create()
         f:Hide()
     end)
 
-    -- ── Column headers (clickable — sort asc/desc on each click) ──────────
-    self.headerBtns = {}
-    local xOff = 8
-    for i, col in ipairs(GP.COLUMNS) do
-        local btn = CreateFrame("Button", nil, f)
-        btn:SetSize(col.width - 2, GP.COL_H)
-        btn:SetPoint("TOPLEFT", f, "TOPLEFT", xOff, -(GP.TITLE_H + 3))
-        btn:EnableMouse(true)
+    -- ── Tabs (shared factory) ──────────────────────────────────────────────
+    local switcher = SchlingelInc.Shared.CreateTabSwitcher({
+        parent     = f,
+        width      = GP.FRAME_W - 16,
+        tabHeight  = GP.TAB_H,
+        topOffset  = -(GP.TITLE_H + 6),
+        contentTop = -(GP.TITLE_H + GP.TAB_H + 14),
+        tabDefs    = {
+            { id = "roster",  label = "Mitglieder" },
+            { id = "schande", label = "Schande",
+              onSelected = function() SchlingelInc.GuildPanel:RefreshSchande() end },
+        },
+        defaultTab = "roster",
+    })
+    f.tabSwitcher = switcher
 
-        local lbl = btn:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-        lbl:SetAllPoints()
-        lbl:SetJustifyH(i == 2 and "CENTER" or "LEFT")
-        lbl:SetTextColor(1, 0.82, 0, 1)
-        lbl:SetText(col.label)
-        btn.lbl = lbl
+    GP.BuildRosterTab(switcher.tabContents["roster"], f)
+    GP.BuildSchandeTab(switcher.tabContents["schande"])
 
-        local colIdx = i
-        btn:SetScript("OnClick", function()
-            if GP.sortCol == colIdx then
-                GP.sortAsc = not GP.sortAsc
-            else
-                GP.sortCol = colIdx
-                GP.sortAsc = true
-            end
-            SchlingelInc.GuildPanel:Refresh()
-        end)
-        btn:SetScript("OnEnter", function() lbl:SetTextColor(1, 1, 0.7, 1) end)
-        btn:SetScript("OnLeave", function()
-            if GP.sortCol == colIdx then
-                lbl:SetTextColor(1, 1, 0.45, 1)
-            else
-                lbl:SetTextColor(1, 0.82, 0, 1)
-            end
-        end)
-
-        self.headerBtns[i] = btn
-        xOff = xOff + col.width
-    end
-
-    local divider = f:CreateTexture(nil, "ARTWORK")
-    divider:SetHeight(1)
-    divider:SetColorTexture(0.4, 0.4, 0.4, 0.7)
-    divider:SetPoint("TOPLEFT",  f, "TOPLEFT",  8, -(GP.TITLE_H + GP.COL_H + 3))
-    divider:SetPoint("TOPRIGHT", f, "TOPRIGHT", -8, -(GP.TITLE_H + GP.COL_H + 3))
-
-    -- ── Scroll frame ───────────────────────────────────────────────────────
-    local scrollTop = GP.TITLE_H + GP.COL_H + 6
-    local scrollFrame = CreateFrame("ScrollFrame", GP.PANEL_NAME .. "Scroll", f)
-    scrollFrame:SetPoint("TOPLEFT",     f, "TOPLEFT",     8, -scrollTop)
-    scrollFrame:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -8, 30)
-    scrollFrame:EnableMouseWheel(true)
-    scrollFrame:SetScript("OnMouseWheel", function(sf, delta)
-        local step = GP.ROW_H * 3
-        sf:SetVerticalScroll(
-            math.max(0, math.min(sf:GetVerticalScrollRange(), sf:GetVerticalScroll() - delta * step))
-        )
-    end)
-
-    local content = CreateFrame("Frame", GP.PANEL_NAME .. "Content", scrollFrame)
-    content:SetWidth(GP.TotalColWidth())
-    content:SetHeight(1)
-    scrollFrame:SetScrollChild(content)
-
-    -- Filter toggle button (bottom right)
-    local filterToggleBtn = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
-    filterToggleBtn:SetSize(70, 20)
-    filterToggleBtn:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -8, 6)
-    filterToggleBtn:SetText("Filter")
-    filterToggleBtn:SetScript("OnClick", function()
-        SchlingelInc.GuildPanel:ToggleFilterPanel()
-    end)
-
-    f.scrollFrame = scrollFrame
-    f.content     = content
-    f.rows        = {}
     f:Hide()
     self.frame = f
 end
@@ -299,6 +243,13 @@ function SchlingelInc.GuildPanel:Refresh()
 
     content:SetHeight(math.max(1, #data * GP.ROW_H))
     self.frame.scrollFrame:SetVerticalScroll(0)
+end
+
+function SchlingelInc.GuildPanel:RefreshSchande()
+    local content = self.frame and self.frame.tabSwitcher and self.frame.tabSwitcher.tabContents.schande
+    if content and content.Refresh then
+        content.Refresh()
+    end
 end
 
 -- ── Toggle / Init ─────────────────────────────────────────────────────────────

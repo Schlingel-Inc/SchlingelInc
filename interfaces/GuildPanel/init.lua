@@ -8,6 +8,7 @@ local GP = SchlingelInc.GuildPanel
 GP.PANEL_NAME = "SchlingelGuildPanel"
 GP.ROW_H      = 16
 GP.TITLE_H    = 26   -- title bar height
+GP.TAB_H      = 24   -- tab button row height
 GP.COL_H      = 16   -- column label row height
 
 -- Column definitions (mirrors native guild window + addon extras)
@@ -23,7 +24,7 @@ GP.COLUMNS = {
 
 GP.PAD_X   = 16
 GP.FRAME_W = 0    -- computed in Frame.lua before first use
-GP.FRAME_H = 420  -- fixed height (~22 visible rows)
+GP.FRAME_H = 458  -- fixed height (~22 visible rows, plus the tab row)
 
 -- ── Sort / filter state (mutable, shared across Data, Frame, FilterPanel) ──────
 GP.sortCol     = 0      -- 0 = default (online+name); 1..#COLUMNS = COLUMNS index
