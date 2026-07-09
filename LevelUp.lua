@@ -52,12 +52,11 @@ local function SendProgressTo(targetName)
     local entry = BuildProgressEntry()
     if not entry then return end
 
-    local xpStopSuffix = entry.xpStop ~= nil and (":" .. (entry.xpStop and "1" or "0")) or ""
     ChatThrottleLib:SendAddonMessage(
         "NORMAL",
         SchlingelInc.prefix,
-        string.format("PROGRESS:%s:%d:%d:%d:%d:%d%s",
-            entry.name, entry.level, entry.xpCurrent, entry.xpMax, entry.gold, entry.runesKnown, xpStopSuffix),
+        string.format("PROGRESS:%s:%d:%d:%d:%d:%d:%d",
+            entry.name, entry.level, entry.xpCurrent, entry.xpMax, entry.gold, entry.runesKnown, entry.xpStop and 1 or 0),
         "WHISPER",
         targetName,
         "SchlingelInc-Progress"
@@ -205,30 +204,16 @@ function SchlingelInc.LevelUps:Initialize()
                 end
                 return
             end
-            local msgType, _, levelStr, xpCurrentStr, xpMaxStr, goldStr, field7, field8 = strsplit(":", message)
-            if msgType == "PROGRESS" and tonumber(levelStr) and tonumber(xpCurrentStr) and tonumber(xpMaxStr) and tonumber(goldStr) then
-                local runesKnown
-                local xpStop
-
-                -- Legacy format: PROGRESS:name:level:xpCurrent:xpMax:gold[:xpStop]
-                if field7 == "0" or field7 == "1" then
-                    xpStop = field7 == "1"
-                else
-                    -- New format: PROGRESS:name:level:xpCurrent:xpMax:gold:runesKnown[:xpStop]
-                    runesKnown = tonumber(field7)
-                    if field8 == "0" or field8 == "1" then
-                        xpStop = field8 == "1"
-                    end
-                end
-
+            local msgType, _, levelStr, xpCurrentStr, xpMaxStr, goldStr, runesStr, xpStopStr = strsplit(":", message)
+            if msgType == "PROGRESS" and tonumber(levelStr) and tonumber(xpCurrentStr) and tonumber(xpMaxStr) and tonumber(goldStr) and tonumber(runesStr) then
                 local shortName = SchlingelInc:RemoveRealmFromName(sender)
                 local entry = {
                     level      = tonumber(levelStr),
                     xpCurrent  = tonumber(xpCurrentStr),
                     xpMax      = tonumber(xpMaxStr),
                     gold       = tonumber(goldStr),
-                    runesKnown = runesKnown,
-                    xpStop     = xpStop,
+                    runesKnown = tonumber(runesStr),
+                    xpStop     = xpStopStr == "1",
                     timestamp  = time(),
                 }
                 SchlingelInc.LevelUps.progressCache[shortName] = entry
