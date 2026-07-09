@@ -185,11 +185,7 @@ local function CloseBlockedTraderPanels()
         else
             GossipFrame:Hide()
         end
-        if CloseGossip then
-            CloseGossip()
-        elseif C_GossipInfo and C_GossipInfo.CloseGossip then
-            C_GossipInfo.CloseGossip()
-        end
+        C_GossipInfo.CloseGossip()
     end
 end
 

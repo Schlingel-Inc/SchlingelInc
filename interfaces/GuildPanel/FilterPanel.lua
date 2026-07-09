@@ -17,6 +17,10 @@ function SchlingelInc.GuildPanel:CreateFilterPanel()
 
     self.filterPanel    = fp
     self.filterProfList = fp.profList
+
+    if self.frame.tabSwitcher then
+        self.frame.tabSwitcher.filterPanels.roster = fp
+    end
 end
 
 function SchlingelInc.GuildPanel:ToggleFilterPanel()

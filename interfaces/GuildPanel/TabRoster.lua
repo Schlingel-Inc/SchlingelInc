@@ -1,0 +1,83 @@
+-- GuildPanel/TabRoster.lua
+-- "Mitglieder" tab: the guild roster list (column headers + scrollable rows).
+
+local GP = SchlingelInc.GuildPanel
+
+function GP.BuildRosterTab(content, f)
+    local self = SchlingelInc.GuildPanel
+
+    -- ── Column headers (clickable — sort asc/desc on each click) ──────────
+    self.headerBtns = {}
+    local xOff = 4
+    for i, col in ipairs(GP.COLUMNS) do
+        local btn = CreateFrame("Button", nil, content)
+        btn:SetSize(col.width - 2, GP.COL_H)
+        btn:SetPoint("TOPLEFT", content, "TOPLEFT", xOff, -2)
+        btn:EnableMouse(true)
+
+        local lbl = btn:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+        lbl:SetAllPoints()
+        lbl:SetJustifyH(i == 2 and "CENTER" or "LEFT")
+        lbl:SetTextColor(1, 0.82, 0, 1)
+        lbl:SetText(col.label)
+        btn.lbl = lbl
+
+        local colIdx = i
+        btn:SetScript("OnClick", function()
+            if GP.sortCol == colIdx then
+                GP.sortAsc = not GP.sortAsc
+            else
+                GP.sortCol = colIdx
+                GP.sortAsc = true
+            end
+            SchlingelInc.GuildPanel:Refresh()
+        end)
+        btn:SetScript("OnEnter", function() lbl:SetTextColor(1, 1, 0.7, 1) end)
+        btn:SetScript("OnLeave", function()
+            if GP.sortCol == colIdx then
+                lbl:SetTextColor(1, 1, 0.45, 1)
+            else
+                lbl:SetTextColor(1, 0.82, 0, 1)
+            end
+        end)
+
+        self.headerBtns[i] = btn
+        xOff = xOff + col.width
+    end
+
+    local divider = content:CreateTexture(nil, "ARTWORK")
+    divider:SetHeight(1)
+    divider:SetColorTexture(0.4, 0.4, 0.4, 0.7)
+    divider:SetPoint("TOPLEFT",  content, "TOPLEFT",  0, -(GP.COL_H + 2))
+    divider:SetPoint("TOPRIGHT", content, "TOPRIGHT", 0, -(GP.COL_H + 2))
+
+    -- ── Scroll frame ───────────────────────────────────────────────────────
+    local scrollFrame = CreateFrame("ScrollFrame", GP.PANEL_NAME .. "Scroll", content)
+    scrollFrame:SetPoint("TOPLEFT",     content, "TOPLEFT",     0, -(GP.COL_H + 5))
+    scrollFrame:SetPoint("BOTTOMRIGHT", content, "BOTTOMRIGHT", 0, 24)
+    scrollFrame:EnableMouseWheel(true)
+    scrollFrame:SetScript("OnMouseWheel", function(sf, delta)
+        local step = GP.ROW_H * 3
+        sf:SetVerticalScroll(
+            math.max(0, math.min(sf:GetVerticalScrollRange(), sf:GetVerticalScroll() - delta * step))
+        )
+    end)
+
+    local rosterContent = CreateFrame("Frame", GP.PANEL_NAME .. "Content", scrollFrame)
+    rosterContent:SetWidth(GP.TotalColWidth())
+    rosterContent:SetHeight(1)
+    scrollFrame:SetScrollChild(rosterContent)
+
+    -- Filter toggle button (bottom right)
+    local filterToggleBtn = CreateFrame("Button", nil, content, "UIPanelButtonTemplate")
+    filterToggleBtn:SetSize(70, 20)
+    filterToggleBtn:SetPoint("BOTTOMRIGHT", content, "BOTTOMRIGHT", 0, 2)
+    filterToggleBtn:SetText("Filter")
+    filterToggleBtn:SetScript("OnClick", function()
+        SchlingelInc.GuildPanel:ToggleFilterPanel()
+    end)
+
+    f.scrollFrame = scrollFrame
+    f.content     = rosterContent
+    f.rows        = {}
+end

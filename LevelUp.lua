@@ -12,21 +12,11 @@ end
 local lastKnownXPStop = nil
 
 local function GetXPStopState()
-    local api = C_PlayerInfo and C_PlayerInfo.IsXPUserDisabled
-    if type(api) ~= "function" then return nil end
-    local ok, result = pcall(api)
-    if not ok or type(result) ~= "boolean" then return nil end
-    return result
+    return C_PlayerInfo.IsXPUserDisabled()
 end
 
 local function GetRunesKnown()
-    local engraving = C_Engraving
-    if type(engraving) ~= "table" or type(engraving.GetNumRunesKnown) ~= "function" then
-        return nil
-    end
-    local ok, count = pcall(engraving.GetNumRunesKnown)
-    if not ok then return nil end
-    return tonumber(count)
+    return C_Engraving.GetNumRunesKnown()
 end
 
 local function BuildProgressEntry()

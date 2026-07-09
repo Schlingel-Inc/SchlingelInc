@@ -2,9 +2,9 @@
 ## Title: Schlingel Inc
 ## Notes: Visit DerHauges Discord for more information: https://discord.gg/KXkyUZW
 ## Author: Cricksu, Pudi, Canasterzaster
-## Version: 4.1.2
+## Version: 4.1.3
 ## IconTexture: Interface\AddOns\SchlingelInc\media\graphics\SI_Transp_512_x_512_px.tga
-## SavedVariablesPerCharacter: CharacterDeaths, SchlingelOptionsDB, SchlingelOwnProfile
+## SavedVariablesPerCharacter: CharacterDeaths, SchlingelOptionsDB, SchlingelOwnProfile, SchlingelOwnSchande
 ## SavedVariables: DiscordHandle, Pronouns, SchlingelGuildProfileCache, SchlingelGuildDB, SchlingelProgressDB
 
 # Notwendiges externe Abhängigkeiten aus dem Lib Folder
@@ -23,6 +23,7 @@ Constants.lua
 EventManager.lua
 GuildCache.lua
 GuildProfiles.lua
+Schande.lua
 Tooltip.lua
 Debug.lua
 Options.lua
@@ -40,6 +41,8 @@ interfaces\DiscordHandlePrompt.lua
 interfaces\GuildJoinPrompt.lua
 interfaces\SetupWizard.lua
 interfaces\FilterPanel.lua
+interfaces\TabSwitcher.lua
+interfaces\SchandeList.lua
 interfaces\MemberInspector.lua
 interfaces\OfficerPanel\init.lua
 interfaces\OfficerPanel\Frame.lua
@@ -49,10 +52,13 @@ interfaces\OfficerPanel\TabProgress.lua
 interfaces\OfficerPanel\TabDiscord.lua
 interfaces\OfficerPanel\TabInvites.lua
 interfaces\OfficerPanel\Filters.lua
+interfaces\OfficerPanel\SchandeViewer.lua
 interfaces\GuildPanel\init.lua
 interfaces\GuildPanel\Data.lua
 interfaces\GuildPanel\Rows.lua
 interfaces\GuildPanel\FilterPanel.lua
+interfaces\GuildPanel\TabRoster.lua
+interfaces\GuildPanel\TabSchande.lua
 interfaces\GuildPanel\Frame.lua
 death\Death.lua
 death\DeathCauseHandler.lua

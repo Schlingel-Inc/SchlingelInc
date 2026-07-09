@@ -373,6 +373,8 @@ function OfficerPanel.BuildProgressTab(pc)
             row:SetScript("OnMouseUp", function(_, btn)
                 if btn == "LeftButton" then
                     SchlingelInc.LevelUps:RequestProgress(entry.name)
+                elseif btn == "RightButton" then
+                    SchlingelInc.OfficerPanel:ShowSchandeViewer(entry.name)
                 end
             end)
 

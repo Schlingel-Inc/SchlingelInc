@@ -65,6 +65,16 @@ function SchlingelInc.Debug:Initialize()
 			else
 				SchlingelInc:Print(SchlingelInc.Constants.COLORS.ERROR .. "Usage: /schlingeldebug events [start|stop]|r")
 			end
+		elseif command == "schande" then
+			local text = table.concat(args, " ", 2) or ""
+			SchlingelInc.Debug:TestSchandeImpose(text)
+		elseif command == "schanderesolve" then
+			if args[2] then
+				SchlingelInc.Debug:TestSchandeResolve(args[2])
+			else
+				SchlingelInc:Print(SchlingelInc.Constants.COLORS.ERROR ..
+					"Verwendung: /schlingeldebug schanderesolve <id>|r")
+			end
 		elseif command == "cachestats" then
 			SchlingelInc.Debug:ShowCacheStats()
 		elseif command == "cacherefresh" then
@@ -93,6 +103,8 @@ function SchlingelInc.Debug:ShowHelp()
 	print(SchlingelInc.colorCode .. "/schlingeldebug deathset <number>" .. "|r - Sets the death counter")
 	print(SchlingelInc.colorCode .. "/schlingeldebug guildrequest <name>" .. "|r - Tests guild request to an officer")
 	print(SchlingelInc.colorCode .. "/schlingeldebug events [start|stop]" .. "|r - Track all fired WoW events in chat")
+	print(SchlingelInc.colorCode .. "/schlingeldebug schande <text>" .. "|r - Simulates receiving a Schande verdict with the given task text")
+	print(SchlingelInc.colorCode .. "/schlingeldebug schanderesolve <id>" .. "|r - Simulates that Schande entry being marked resolved")
 	print(SchlingelInc.colorCode .. "/schlingeldebug cachestats" .. "|r - Shows guild cache statistics")
 	print(SchlingelInc.colorCode .. "/schlingeldebug cacherefresh" .. "|r - Forces guild cache refresh")
 	print(SchlingelInc.Constants.COLORS.WARNING .. "Alias: /sdebug <command>" .. "|r")
@@ -204,6 +216,16 @@ function SchlingelInc.Debug:TestGuildRequest(targetName)
 
 	SchlingelInc:Print(SchlingelInc.Constants.COLORS.SUCCESS ..
 		"Test guild request sent to " .. targetName .. "|r")
+end
+
+-- Simulates receiving an officer's Schande verdict locally (addon whispers never
+-- loop back to the sender, so a real self-whisper wouldn't trigger anything).
+function SchlingelInc.Debug:TestSchandeImpose(text)
+	SchlingelInc.Schande:HandleMessage("SCHANDE_IMPOSE|" .. (text or ""))
+end
+
+function SchlingelInc.Debug:TestSchandeResolve(id)
+	SchlingelInc.Schande:HandleMessage("SCHANDE_RESOLVE|" .. tostring(id))
 end
 
 function SchlingelInc.Debug:ShowCacheStats()

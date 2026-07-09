@@ -10,7 +10,7 @@ function GP.BuildRosterData()
     local n       = GetNumGuildMembers()
 
     for i = 1, n do
-        -- Field order (TBC Classic):
+        -- Field order (Classic Era / SoD):
         -- 1:name  2:rankName  3:rankIndex  4:level  5:classDisplay(localized)
         -- 6:zone  7:note  8:officerNote  9:isOnline  10:status  11:classToken
         local fullName, rankName, rankIndex, level, classDisplay, zone, note, _, isOnline, _, classToken =
