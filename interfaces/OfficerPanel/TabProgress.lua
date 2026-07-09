@@ -1,92 +1,6 @@
 local OfficerPanel = SchlingelInc.OfficerPanel
 local MI = SchlingelInc.MemberInspector
 
--- ── Schande context menu (right-click a row: impose / resolve) ────────────
-StaticPopupDialogs["SCHLINGEL_SCHANDE_IMPOSE"] = {
-    text = "Schande-Aufgabe für %s:",
-    button1 = "Verhängen",
-    button2 = "Abbrechen",
-    hasEditBox = true,
-    maxLetters = 200,
-    OnShow = function(self)
-        self.EditBox:SetText("")
-        self.EditBox:SetFocus()
-    end,
-    OnAccept = function(self)
-        SchlingelInc.Schande:Impose(self.data, self.EditBox:GetText())
-    end,
-    EditBoxOnEnterPressed = function(self)
-        self:GetParent().button1:Click()
-    end,
-    EditBoxOnEscapePressed = function(self)
-        self:GetParent():Hide()
-    end,
-    timeout = 0,
-    whileDead = true,
-    hideOnEscape = true,
-    preferredIndex = 3,
-}
-
-StaticPopupDialogs["SCHLINGEL_SCHANDE_RESOLVE"] = {
-    text = "Schande-ID für %s aufheben:",
-    button1 = "Aufheben",
-    button2 = "Abbrechen",
-    hasEditBox = true,
-    maxLetters = 6,
-    OnShow = function(self)
-        self.EditBox:SetText("")
-        self.EditBox:SetFocus()
-    end,
-    OnAccept = function(self)
-        SchlingelInc.Schande:Resolve(self.data, self.EditBox:GetText())
-    end,
-    EditBoxOnEnterPressed = function(self)
-        self:GetParent().button1:Click()
-    end,
-    EditBoxOnEscapePressed = function(self)
-        self:GetParent():Hide()
-    end,
-    timeout = 0,
-    whileDead = true,
-    hideOnEscape = true,
-    preferredIndex = 3,
-}
-
-local schandeMenuTarget = nil
-local schandeMenu = CreateFrame("Frame", "SchlingelIncSchandeMenu", UIParent, "UIDropDownMenuTemplate")
-UIDropDownMenu_Initialize(schandeMenu, function(self, level)
-    if not schandeMenuTarget then return end
-
-    local imposeInfo = UIDropDownMenu_CreateInfo()
-    imposeInfo.text = "Schande verhängen"
-    imposeInfo.notCheckable = true
-    imposeInfo.func = function()
-        StaticPopup_Show("SCHLINGEL_SCHANDE_IMPOSE", schandeMenuTarget, nil, schandeMenuTarget)
-    end
-    UIDropDownMenu_AddButton(imposeInfo, level)
-
-    local resolveInfo = UIDropDownMenu_CreateInfo()
-    resolveInfo.text = "Schande aufheben"
-    resolveInfo.notCheckable = true
-    resolveInfo.func = function()
-        StaticPopup_Show("SCHLINGEL_SCHANDE_RESOLVE", schandeMenuTarget, nil, schandeMenuTarget)
-    end
-    UIDropDownMenu_AddButton(resolveInfo, level)
-
-    local viewInfo = UIDropDownMenu_CreateInfo()
-    viewInfo.text = "Schande anzeigen"
-    viewInfo.notCheckable = true
-    viewInfo.func = function()
-        SchlingelInc.OfficerPanel:ShowSchandeViewer(schandeMenuTarget)
-    end
-    UIDropDownMenu_AddButton(viewInfo, level)
-end, "MENU")
-
-local function ShowSchandeMenu(name)
-    schandeMenuTarget = name
-    ToggleDropDownMenu(1, nil, schandeMenu, "cursor", 0, 0)
-end
-
 local function FormatGoldShort(copper)
     if not copper then return "\226\128\148" end
     local g = math.floor(copper / 10000)
@@ -460,7 +374,7 @@ function OfficerPanel.BuildProgressTab(pc)
                 if btn == "LeftButton" then
                     SchlingelInc.LevelUps:RequestProgress(entry.name)
                 elseif btn == "RightButton" then
-                    ShowSchandeMenu(entry.name)
+                    SchlingelInc.OfficerPanel:ShowSchandeViewer(entry.name)
                 end
             end)
 
