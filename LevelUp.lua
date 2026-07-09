@@ -52,13 +52,14 @@ local function SendProgressTo(targetName)
     local entry = BuildProgressEntry()
     if not entry then return end
 
-    local xpStopSuffix = entry.xpStop ~= nil and (":" .. (entry.xpStop and "1" or "0")) or ""
-    C_ChatInfo.SendAddonMessage(
+    ChatThrottleLib:SendAddonMessage(
+        "NORMAL",
         SchlingelInc.prefix,
-        string.format("PROGRESS:%s:%d:%d:%d:%d:%d%s",
-            entry.name, entry.level, entry.xpCurrent, entry.xpMax, entry.gold, entry.runesKnown, xpStopSuffix),
+        string.format("PROGRESS:%s:%d:%d:%d:%d:%d:%d",
+            entry.name, entry.level, entry.xpCurrent, entry.xpMax, entry.gold, entry.runesKnown, entry.xpStop and 1 or 0),
         "WHISPER",
-        targetName
+        targetName,
+        "SchlingelInc-Progress"
     )
 end
 
@@ -70,7 +71,7 @@ local function CheckForMilestone(level)
             local handle = SchlingelInc:GetDiscordHandle()
             local playerDisplay = (handle and handle ~= "") and (player .. " (" .. handle .. ")") or player
             SchlingelInc:SendGuildChatMessage(playerDisplay .. " hat Level " .. level .. " erreicht! Schlingel! Schlingel! Schlingel!")
-            C_ChatInfo.SendAddonMessage(SchlingelInc.prefix, "LEVELUP:" .. player .. ":" .. level, "GUILD")
+            ChatThrottleLib:SendAddonMessage("BULK", SchlingelInc.prefix, "LEVELUP:" .. player .. ":" .. level, "GUILD", nil, "SchlingelInc-Announce")
         end
     end
 end
@@ -80,12 +81,22 @@ function SchlingelInc.LevelUps:Initialize()
     local progressLoadReceived = 0
     local progressLoadTimer    = nil
 
+    local versionLoadTotal    = 0
+    local versionLoadReceived = 0
+    local versionLoadTimer    = nil
+
+    local function RefreshWhenLoadsDone()
+        if progressLoadTotal == 0 and versionLoadTotal == 0 then
+            SchlingelInc.OfficerPanel:RefreshProgress()
+        end
+    end
+
     local function EndProgressLoad()
         if progressLoadTimer then progressLoadTimer:Cancel() progressLoadTimer = nil end
         progressLoadTotal    = 0
         progressLoadReceived = 0
         if SchlingelInc.OfficerPanel and SchlingelInc.OfficerPanel.EndProgressLoad then SchlingelInc.OfficerPanel.EndProgressLoad() end
-        SchlingelInc.OfficerPanel:RefreshProgress()
+        RefreshWhenLoadsDone()
     end
 
     SchlingelInc.LevelUps.StartLoad = function(total)
@@ -106,6 +117,28 @@ function SchlingelInc.LevelUps:Initialize()
         end
         if progressLoadReceived >= progressLoadTotal then
             EndProgressLoad()
+        end
+    end
+
+    local function EndVersionLoad()
+        if versionLoadTimer then versionLoadTimer:Cancel() versionLoadTimer = nil end
+        versionLoadTotal    = 0
+        versionLoadReceived = 0
+        RefreshWhenLoadsDone()
+    end
+
+    SchlingelInc.LevelUps.StartVersionLoad = function(total)
+        versionLoadTotal    = total
+        versionLoadReceived = 0
+        if versionLoadTimer then versionLoadTimer:Cancel() end
+        versionLoadTimer = C_Timer.NewTimer(math.max(5, total * 0.1 + 5), EndVersionLoad)
+    end
+
+    SchlingelInc.LevelUps.OnVersionReceived = function()
+        if versionLoadTotal == 0 then return end
+        versionLoadReceived = versionLoadReceived + 1
+        if versionLoadReceived >= versionLoadTotal then
+            EndVersionLoad()
         end
     end
 
@@ -171,30 +204,16 @@ function SchlingelInc.LevelUps:Initialize()
                 end
                 return
             end
-            local msgType, _, levelStr, xpCurrentStr, xpMaxStr, goldStr, field7, field8 = strsplit(":", message)
-            if msgType == "PROGRESS" and tonumber(levelStr) and tonumber(xpCurrentStr) and tonumber(xpMaxStr) and tonumber(goldStr) then
-                local runesKnown
-                local xpStop
-
-                -- Legacy format: PROGRESS:name:level:xpCurrent:xpMax:gold[:xpStop]
-                if field7 == "0" or field7 == "1" then
-                    xpStop = field7 == "1"
-                else
-                    -- New format: PROGRESS:name:level:xpCurrent:xpMax:gold:runesKnown[:xpStop]
-                    runesKnown = tonumber(field7)
-                    if field8 == "0" or field8 == "1" then
-                        xpStop = field8 == "1"
-                    end
-                end
-
+            local msgType, _, levelStr, xpCurrentStr, xpMaxStr, goldStr, runesStr, xpStopStr = strsplit(":", message)
+            if msgType == "PROGRESS" and tonumber(levelStr) and tonumber(xpCurrentStr) and tonumber(xpMaxStr) and tonumber(goldStr) and tonumber(runesStr) then
                 local shortName = SchlingelInc:RemoveRealmFromName(sender)
                 local entry = {
                     level      = tonumber(levelStr),
                     xpCurrent  = tonumber(xpCurrentStr),
                     xpMax      = tonumber(xpMaxStr),
                     gold       = tonumber(goldStr),
-                    runesKnown = runesKnown,
-                    xpStop     = xpStop,
+                    runesKnown = tonumber(runesStr),
+                    xpStop     = xpStopStr == "1",
                     timestamp  = time(),
                 }
                 SchlingelInc.LevelUps.progressCache[shortName] = entry
@@ -250,11 +269,10 @@ function SchlingelInc.LevelUps:RequestProgress(targetName)
 
     if targetName then
         SchlingelInc.LevelUps.StartLoad(1)
-        C_ChatInfo.SendAddonMessage(SchlingelInc.prefix, "PROGRESS_REQUEST", "WHISPER", targetName)
+        ChatThrottleLib:SendAddonMessage("NORMAL", SchlingelInc.prefix, "PROGRESS_REQUEST", "WHISPER", targetName, "SchlingelInc-Progress")
         return
     end
 
-    -- Staggered whispers to avoid simultaneous response flood
     local online = {}
     local selfName = UnitName("player")
     for i = 1, GetNumGuildMembers() or 0 do
@@ -267,10 +285,10 @@ function SchlingelInc.LevelUps:RequestProgress(targetName)
         end
     end
     SchlingelInc.LevelUps.StartLoad(#online)
-    for i, name in ipairs(online) do
-        C_Timer.After((i - 1) * 0.5, function()
-            C_ChatInfo.SendAddonMessage(SchlingelInc.prefix, "PROGRESS_REQUEST", "WHISPER", name)
-        end)
+    SchlingelInc.LevelUps.StartVersionLoad(#online)
+    ChatThrottleLib:SendAddonMessage("BULK", SchlingelInc.prefix, "VERSION_REQUEST", "GUILD", nil, "SchlingelInc-Version")
+    for _, name in ipairs(online) do
+        ChatThrottleLib:SendAddonMessage("NORMAL", SchlingelInc.prefix, "PROGRESS_REQUEST", "WHISPER", name, "SchlingelInc-Progress")
     end
 end
 
@@ -292,7 +310,7 @@ function SchlingelInc.LevelUps:CheckForCap(level, announce)
             local handle = SchlingelInc:GetDiscordHandle()
             local playerDisplay = (handle and handle ~= "") and (player .. " (" .. handle .. ")") or player
             SchlingelInc:SendGuildChatMessage(playerDisplay .. " hat das Level Cap von " .. level .. " erreicht! Herzlichen Glückwunsch!")
-            C_ChatInfo.SendAddonMessage(SchlingelInc.prefix, "CAP:" .. player .. ":" .. level, "GUILD")
+            ChatThrottleLib:SendAddonMessage("BULK", SchlingelInc.prefix, "CAP:" .. player .. ":" .. level, "GUILD", nil, "SchlingelInc-Announce")
         end
     end
 end

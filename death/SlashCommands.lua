@@ -39,6 +39,6 @@ SlashCmdList["DEATHSET"] = function(msg)
 		return
 	end
 
-	C_ChatInfo.SendAddonMessage(SchlingelInc.prefix, "DEATHSET|" .. tostring(inputValue), "WHISPER", targetName)
+	ChatThrottleLib:SendAddonMessage("ALERT", SchlingelInc.prefix, "DEATHSET|" .. tostring(inputValue), "WHISPER", targetName, "SchlingelInc-Schande")
 	SchlingelInc:Print(SchlingelInc.Constants.COLORS.SUCCESS .. "Deathset-Nachricht an " .. targetName .. " gesendet.|r")
 end

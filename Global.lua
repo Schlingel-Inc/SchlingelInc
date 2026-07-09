@@ -79,13 +79,16 @@ function SchlingelInc.Global:Initialize()
 				if sender then
 					SchlingelInc.guildMemberVersions[sender] = incomingVersion
 				end
+				if SchlingelInc.LevelUps and SchlingelInc.LevelUps.OnVersionReceived then
+					SchlingelInc.LevelUps.OnVersionReceived()
+				end
 				if SchlingelInc:CompareVersions(incomingVersion, newestVersionSeen) > 0 then
 					newestVersionSeen = incomingVersion
 					SchlingelInc:Print("Eine neue Version des Addons wurde gefunden: " ..
 						newestVersionSeen .. ". Bitte aktualisiere das Addon!")
 				end
 			elseif message == "VERSION_REQUEST" and IsInGuild() then
-				C_ChatInfo.SendAddonMessage(SchlingelInc.prefix, "VERSION:" .. SchlingelInc.version, "GUILD")
+				ChatThrottleLib:SendAddonMessage("BULK", SchlingelInc.prefix, "VERSION:" .. SchlingelInc.version, "GUILD", nil, "SchlingelInc-Version")
 			elseif message == "RULES_UPDATE" then
 				C_Timer.After(2, function()
 					SchlingelInc.Rules:LoadFromGuildInfo()
@@ -94,8 +97,8 @@ function SchlingelInc.Global:Initialize()
 		end, 0, "VersionChecker")
 
 	if IsInGuild() then
-		C_ChatInfo.SendAddonMessage(SchlingelInc.prefix, "VERSION:" .. SchlingelInc.version, "GUILD")
-		C_ChatInfo.SendAddonMessage(SchlingelInc.prefix, "VERSION_REQUEST", "GUILD")
+		ChatThrottleLib:SendAddonMessage("BULK", SchlingelInc.prefix, "VERSION:" .. SchlingelInc.version, "GUILD", nil, "SchlingelInc-Version")
+		ChatThrottleLib:SendAddonMessage("BULK", SchlingelInc.prefix, "VERSION_REQUEST", "GUILD", nil, "SchlingelInc-Version")
 	end
     C_GuildInfo.GuildRoster()
 end
@@ -223,7 +226,7 @@ function SchlingelInc:WriteGuildInfo(mail, ah, trade, group, blockedTrader, cap)
     SetGuildInfoText(newText)
     SchlingelInc:Print("Gildeninfo mit neuen Regeln aktualisiert.")
     SchlingelInc.Rules:LoadFromGuildInfo()
-    C_ChatInfo.SendAddonMessage(SchlingelInc.prefix, "RULES_UPDATE", "GUILD")
+    ChatThrottleLib:SendAddonMessage("BULK", SchlingelInc.prefix, "RULES_UPDATE", "GUILD", nil, "SchlingelInc-Rules")
     return true
 end
 
@@ -255,7 +258,9 @@ end
 -- rather than silently aborting the rest of the calling event handler.
 function SchlingelInc:SendGuildChatMessage(text)
     if not text then return end
-    pcall(C_ChatInfo.SendChatMessage, text:sub(1, 250), "GUILD")
+    pcall(function()
+        ChatThrottleLib:SendChatMessage("NORMAL", SchlingelInc.prefix, text:sub(1, 250), "GUILD")
+    end)
 end
 
 -- Sanitizes text to prevent UI injection via escape codes.
