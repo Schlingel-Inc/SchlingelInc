@@ -3,6 +3,8 @@
 - Neuer "Schande"-Tab im Gildenpanel: zeigt die eigene Schande (Anzahl, Status, Aufgabe).
 - Fortschritt-Tab im Offizier-Panel heißt jetzt "Mitglieder"; Rechtsklick auf einen Spieler öffnet ein Fenster mit dessen kompletter Schande-Historie (live abgefragt), inklusive Buttons zum direkten Verhängen und Aufheben.
 - Gildenpanel und Offizier-Panel teilen sich jetzt eine gemeinsame Tab-Leisten-Komponente.
+- Addon-Nachrichten werden jetzt gedrosselt versendet, um Verbindungsprobleme und Aussetzer bei vielen Online-Mitgliedern zu vermeiden.
+- Der "Anfordern"-Button im Fortschritt-Tab prüft jetzt auch gleich die Addon-Versionen mit; der separate "Versionen"-Button wurde entfernt.
 
 # 4.1.2
 
