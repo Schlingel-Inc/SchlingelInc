@@ -320,7 +320,9 @@ function OfficerPanel.BuildProgressTab(pc)
                 va = tonumber(a[key]) or 0
                 vb = tonumber(b[key]) or 0
             end
-            if va ~= vb then return ascending and va < vb or va > vb end
+            if va ~= vb then
+                if ascending then return va < vb else return va > vb end
+            end
             local na = tostring(a.name or ""):lower()
             local nb = tostring(b.name or ""):lower()
             if na ~= nb then return na < nb end
