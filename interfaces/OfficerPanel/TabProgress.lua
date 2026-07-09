@@ -72,6 +72,14 @@ UIDropDownMenu_Initialize(schandeMenu, function(self, level)
         StaticPopup_Show("SCHLINGEL_SCHANDE_RESOLVE", schandeMenuTarget, nil, schandeMenuTarget)
     end
     UIDropDownMenu_AddButton(resolveInfo, level)
+
+    local viewInfo = UIDropDownMenu_CreateInfo()
+    viewInfo.text = "Schande anzeigen"
+    viewInfo.notCheckable = true
+    viewInfo.func = function()
+        SchlingelInc.OfficerPanel:ShowSchandeViewer(schandeMenuTarget)
+    end
+    UIDropDownMenu_AddButton(viewInfo, level)
 end, "MENU")
 
 local function ShowSchandeMenu(name)

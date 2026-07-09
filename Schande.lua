@@ -15,20 +15,35 @@ SchlingelOwnSchande = SchlingelOwnSchande or {}
 SchlingelOwnSchande.entries = SchlingelOwnSchande.entries or {}
 SchlingelOwnSchande.nextId  = SchlingelOwnSchande.nextId or 1
 
-local MSG_IMPOSE  = "SCHANDE_IMPOSE"
-local MSG_RESOLVE = "SCHANDE_RESOLVE"
+local MSG_IMPOSE     = "SCHANDE_IMPOSE"
+local MSG_RESOLVE    = "SCHANDE_RESOLVE"
+local MSG_FETCH      = "SCHANDE_FETCH"
+local MSG_PUSH_COUNT = "SCHANDE_PUSH_COUNT"
+local MSG_PUSH       = "SCHANDE_PUSH"
+
+local FETCH_TIMEOUT = 5
+
+-- Officer-side state for an in-flight GetAllOf() request. seq guards against a late
+-- response (or timeout) from a superseded request clobbering a newer one.
+local fetchSeq = 0
+local pendingFetch = nil -- { target = shortName, seq = number, callback = fn, count = number|nil, entries = {} }
 
 -- Returns the local player's own Schande record ({ entries = {...} }).
 function SchlingelInc.Schande:GetOwn()
     return SchlingelOwnSchande
 end
 
--- Returns true if any entry is currently an active (unresolved) Schande.
-function SchlingelInc.Schande:IsActive()
-    for _, entry in ipairs(SchlingelOwnSchande.entries) do
+-- True if any of entries is currently an active (unresolved) Schande.
+function SchlingelInc.Schande.IsEntriesActive(entries)
+    for _, entry in ipairs(entries) do
         if entry.active then return true end
     end
     return false
+end
+
+-- Returns true if any entry is currently an active (unresolved) Schande.
+function SchlingelInc.Schande:IsActive()
+    return SchlingelInc.Schande.IsEntriesActive(SchlingelOwnSchande.entries)
 end
 
 -- Officer action: impose a new Schande verdict on targetName (must be online).
@@ -63,8 +78,40 @@ function SchlingelInc.Schande:Resolve(targetName, id)
         "Schande #" .. id .. " von " .. targetName .. " aufgehoben.|r")
 end
 
--- Handle incoming SCHANDE_IMPOSE / SCHANDE_RESOLVE addon whispers (applies to own record).
-function SchlingelInc.Schande:HandleMessage(message)
+-- Officer action: request targetName's full Schande list (must be online and have the addon).
+-- callback is invoked as callback(entries) on success, or callback(nil) if targetName
+-- doesn't respond within FETCH_TIMEOUT seconds. Any earlier pending request is superseded.
+function SchlingelInc.Schande:GetAllOf(targetName, callback)
+    if not CanGuildInvite() then
+        SchlingelInc:Print(SchlingelInc.Constants.COLORS.ERROR .. "Keine Berechtigung für diesen Befehl.|r")
+        return
+    end
+    if not targetName or targetName == "" then return end
+
+    fetchSeq = fetchSeq + 1
+    local seq = fetchSeq
+    pendingFetch = {
+        target   = SchlingelInc:RemoveRealmFromName(targetName),
+        seq      = seq,
+        callback = callback,
+        count    = nil,
+        entries  = {},
+    }
+
+    C_ChatInfo.SendAddonMessage(SchlingelInc.prefix, MSG_FETCH, "WHISPER", targetName)
+
+    C_Timer.After(FETCH_TIMEOUT, function()
+        if pendingFetch and pendingFetch.seq == seq then
+            local cb = pendingFetch.callback
+            pendingFetch = nil
+            if cb then cb(nil) end
+        end
+    end)
+end
+
+-- Handle incoming Schande addon whispers (SCHANDE_IMPOSE / SCHANDE_RESOLVE apply to own
+-- record; SCHANDE_FETCH / SCHANDE_PUSH* implement GetAllOf's officer <-> player round trip).
+function SchlingelInc.Schande:HandleMessage(message, sender)
     local resolveIdStr = message:match("^" .. MSG_RESOLVE .. "|(%d+)$")
     if resolveIdStr then
         local id = tonumber(resolveIdStr)
@@ -101,13 +148,57 @@ function SchlingelInc.Schande:HandleMessage(message)
         return true
     end
 
+    if message == MSG_FETCH then
+        local entries = SchlingelOwnSchande.entries
+        C_ChatInfo.SendAddonMessage(SchlingelInc.prefix, MSG_PUSH_COUNT .. "|" .. #entries, "WHISPER", sender)
+        for _, entry in ipairs(entries) do
+            C_ChatInfo.SendAddonMessage(SchlingelInc.prefix,
+                MSG_PUSH .. "|" .. entry.id .. "|" .. (entry.active and "1" or "0") .. "|" .. entry.freetext,
+                "WHISPER", sender)
+        end
+        return true
+    end
+
+    local countStr = message:match("^" .. MSG_PUSH_COUNT .. "|(%d+)$")
+    if countStr then
+        local senderShort = SchlingelInc:RemoveRealmFromName(sender)
+        if pendingFetch and pendingFetch.target == senderShort then
+            local count = tonumber(countStr)
+            pendingFetch.count = count
+            pendingFetch.entries = {}
+            if count == 0 then
+                local cb = pendingFetch.callback
+                pendingFetch = nil
+                if cb then cb({}) end
+            end
+        end
+        return true
+    end
+
+    local idStr, activeStr, pushFreetext = message:match("^" .. MSG_PUSH .. "|(%d+)|([01])|(.*)$")
+    if idStr then
+        local senderShort = SchlingelInc:RemoveRealmFromName(sender)
+        if pendingFetch and pendingFetch.target == senderShort and pendingFetch.count then
+            table.insert(pendingFetch.entries, {
+                id = tonumber(idStr), active = activeStr == "1", freetext = pushFreetext,
+            })
+            if #pendingFetch.entries >= pendingFetch.count then
+                local cb = pendingFetch.callback
+                local result = pendingFetch.entries
+                pendingFetch = nil
+                if cb then cb(result) end
+            end
+        end
+        return true
+    end
+
     return false
 end
 
 function SchlingelInc.Schande:Initialize()
     SchlingelInc.EventManager:RegisterHandler("CHAT_MSG_ADDON",
-        function(_, prefix, message, _, _)
+        function(_, prefix, message, _, sender)
             if prefix ~= SchlingelInc.prefix then return end
-            SchlingelInc.Schande:HandleMessage(message)
+            SchlingelInc.Schande:HandleMessage(message, sender)
         end, 0, "SchandeReceive")
 end

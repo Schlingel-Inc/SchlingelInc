@@ -42,6 +42,7 @@ interfaces\GuildJoinPrompt.lua
 interfaces\SetupWizard.lua
 interfaces\FilterPanel.lua
 interfaces\TabSwitcher.lua
+interfaces\SchandeList.lua
 interfaces\MemberInspector.lua
 interfaces\OfficerPanel\init.lua
 interfaces\OfficerPanel\Frame.lua
@@ -51,6 +52,7 @@ interfaces\OfficerPanel\TabProgress.lua
 interfaces\OfficerPanel\TabDiscord.lua
 interfaces\OfficerPanel\TabInvites.lua
 interfaces\OfficerPanel\Filters.lua
+interfaces\OfficerPanel\SchandeViewer.lua
 interfaces\GuildPanel\init.lua
 interfaces\GuildPanel\Data.lua
 interfaces\GuildPanel\Rows.lua
