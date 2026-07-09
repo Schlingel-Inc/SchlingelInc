@@ -101,7 +101,7 @@ function OfficerPanel.BuildProgressTab(pc)
     pOfflineBtn:SetScript("OnEnter", function() pOfflineLbl:SetTextColor(1, 1, 0.7, 1) end)
     pOfflineBtn:SetScript("OnLeave", UpdateOfflineBtn)
 
-    -- Left side: Lade-Indikator | Anfordern | Versionen | Filter
+    -- Left side: Lade-Indikator | Anfordern | Filter
     local pLoadFs = pc:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     pLoadFs:SetPoint("LEFT", pc, "TOPLEFT", 4, -11)
     pLoadFs:SetWidth(72)
@@ -115,16 +115,6 @@ function OfficerPanel.BuildProgressTab(pc)
     pRequestBtn:SetText("Anfordern")
     pRequestBtn:SetScript("OnClick", function()
         SchlingelInc.LevelUps:RequestProgress()
-    end)
-
-    local pVersionBtn = CreateFrame("Button", nil, pc, "UIPanelButtonTemplate")
-    pVersionBtn:SetSize(80, 18)
-    pVersionBtn:SetPoint("LEFT", pRequestBtn, "RIGHT", 4, 0)
-    pVersionBtn:SetText("Versionen")
-    pVersionBtn:SetScript("OnClick", function()
-        if IsInGuild() then
-            C_ChatInfo.SendAddonMessage(SchlingelInc.prefix, "VERSION_REQUEST", "GUILD")
-        end
     end)
 
     OfficerPanel.StartProgressLoad = function(total)
@@ -142,7 +132,7 @@ function OfficerPanel.BuildProgressTab(pc)
 
     local pfFilterBtn = CreateFrame("Button", nil, pc, "UIPanelButtonTemplate")
     pfFilterBtn:SetSize(60, 18)
-    pfFilterBtn:SetPoint("LEFT", pVersionBtn, "RIGHT", 4, 0)
+    pfFilterBtn:SetPoint("LEFT", pRequestBtn, "RIGHT", 4, 0)
     pfFilterBtn:SetText("Filter")
     pfFilterBtn:SetScript("OnClick", function()
         local fp = OfficerPanel.tabFilterPanels.progress
