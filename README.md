@@ -44,7 +44,7 @@ Alle Tode werden in der Gilde geteilt und angezeigt.
   - Tooltip mit vollständigen Details beim Hover (Discord Handle, Zone, Todesursache, Letzte Worte)
   - Größe anpassbar: 250x120 Minimum bis 500x350 Maximum
   - Speichert Position und Größe automatisch
-- **Slash Command:** `/deathset <nummer>` zum manuellen Setzen des Todeszählers
+- **Todeszähler setzen:** Offiziere können im Mitglieder-Tab per Rechtsklick auf einen Spieler "Deathset setzen" wählen
 
 ### Levelbenachrichtigungen
 
@@ -182,7 +182,7 @@ Das Addon hat einige optionale Einstellungen die du im WoW Options-Menü unter "
 - **Discord Handle:** Wird automatisch beim ersten Login abgefragt und in der Gildennotiz gespeichert
 - **Discord Handle ändern:** `/setHandle <handle>` um den Discord Handle zu ändern
 - **Gildenbeitritt:** Linksklick auf Minimap-Icon – erst Profil einrichten, dann Beitrittsanfrage senden
-- **Todeszähler setzen:** `/deathset <nummer>` um den Zähler manuell anzupassen
+- **Todeszähler setzen:** Rechtsklick auf einen Spieler im Mitglieder-Tab (Offizier-Panel) → "Deathset setzen"
 
 ---
 
