@@ -1,5 +1,6 @@
-# 4.1.3
+# 4.2.0
 
+- Neuer "Raid"-Tab im Gildenpanel (Raid Panel mit LFG-light): Mitglieder können Raids posten (Titel, Instanz, Datum/Uhrzeit, optionale Notiz) und per Klick mit Rolle und optionaler Notiz zusagen. Einträge werden gildenweit synchronisiert und laufen automatisch ab.
 - Neuer "Schande"-Tab im Gildenpanel: zeigt die eigene Schande (Anzahl, Status, Aufgabe).
 - Fortschritt-Tab im Offizier-Panel heißt jetzt "Mitglieder"; Rechtsklick auf einen Spieler öffnet ein Kontextmenü mit "Schande-Ansicht öffnen" (zeigt die komplette Schande-Historie live abgefragt, inklusive Buttons zum direkten Verhängen und Aufheben) und "Deathset setzen".
 - Gildenpanel und Offizier-Panel teilen sich jetzt eine gemeinsame Tab-Leisten-Komponente.

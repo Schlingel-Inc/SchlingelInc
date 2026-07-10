@@ -61,35 +61,6 @@ function SchlingelInc.GuildPanel:Create()
     titleText:SetText("Schlingel Inc")
     titleText:SetTextColor(1, 0.82, 0, 1)
 
-    local countLabel = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    countLabel:SetPoint("RIGHT", titleBg, "RIGHT", -28, 0)
-    countLabel:SetTextColor(0.6, 0.6, 0.6, 1)
-    self.countLabel = countLabel
-
-    -- Hide-offline toggle (left of count label)
-    local hideBtn = CreateFrame("Button", nil, f)
-    hideBtn:SetSize(50, GP.TITLE_H - 4)
-    hideBtn:SetPoint("RIGHT", countLabel, "LEFT", -6, 0)
-    hideBtn:EnableMouse(true)
-    local hideLbl = hideBtn:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    hideLbl:SetAllPoints()
-    hideLbl:SetJustifyH("RIGHT")
-    hideLbl:SetTextColor(0.45, 0.45, 0.45, 1)
-    hideLbl:SetText("Offline")
-    local function UpdateHideBtnColor()
-        hideLbl:SetTextColor(
-            GP.hideOffline and 1    or 0.45,
-            GP.hideOffline and 0.82 or 0.45,
-            GP.hideOffline and 0    or 0.45, 1)
-    end
-    hideBtn:SetScript("OnClick", function()
-        GP.hideOffline = not GP.hideOffline
-        UpdateHideBtnColor()
-        SchlingelInc.GuildPanel:Refresh()
-    end)
-    hideBtn:SetScript("OnEnter", function() hideLbl:SetTextColor(1, 1, 0.7, 1) end)
-    hideBtn:SetScript("OnLeave", UpdateHideBtnColor)
-
     local closeBtn = CreateFrame("Button", nil, f, "UIPanelCloseButton")
     closeBtn:SetSize(20, 20)
     closeBtn:SetPoint("TOPRIGHT", f, "TOPRIGHT", -2, -2)
@@ -108,6 +79,11 @@ function SchlingelInc.GuildPanel:Create()
             { id = "roster",  label = "Mitglieder" },
             { id = "schande", label = "Schande",
               onSelected = function() SchlingelInc.GuildPanel:RefreshSchande() end },
+            { id = "raid",    label = "Raid",
+              onSelected = function()
+                  SchlingelInc.Raid:RequestSync()
+                  SchlingelInc.GuildPanel:RefreshRaid()
+              end },
         },
         defaultTab = "roster",
     })
@@ -115,6 +91,7 @@ function SchlingelInc.GuildPanel:Create()
 
     GP.BuildRosterTab(switcher.tabContents["roster"], f)
     GP.BuildSchandeTab(switcher.tabContents["schande"])
+    GP.BuildRaidTab(switcher.tabContents["raid"])
 
     f:Hide()
     self.frame = f
@@ -131,8 +108,8 @@ function SchlingelInc.GuildPanel:Refresh()
 
     local onlineCount = 0
     for _, e in ipairs(allData) do if e.online then onlineCount = onlineCount + 1 end end
-    if self.countLabel then
-        self.countLabel:SetText(#allData .. " (|cff44ff44" .. onlineCount .. " online|r)")
+    if self.frame.countLabel then
+        self.frame.countLabel:SetText(#allData .. " (|cff44ff44" .. onlineCount .. " online|r)")
     end
 
     -- Apply offline filter
@@ -247,6 +224,13 @@ end
 
 function SchlingelInc.GuildPanel:RefreshSchande()
     local content = self.frame and self.frame.tabSwitcher and self.frame.tabSwitcher.tabContents.schande
+    if content and content.Refresh then
+        content.Refresh()
+    end
+end
+
+function SchlingelInc.GuildPanel:RefreshRaid()
+    local content = self.frame and self.frame.tabSwitcher and self.frame.tabSwitcher.tabContents.raid
     if content and content.Refresh then
         content.Refresh()
     end
