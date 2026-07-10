@@ -366,7 +366,7 @@ function OfficerPanel.BuildProgressTab(pc)
                 if btn == "LeftButton" then
                     SchlingelInc.LevelUps:RequestProgress(entry.name)
                 elseif btn == "RightButton" then
-                    SchlingelInc.OfficerPanel:ShowSchandeViewer(entry.name)
+                    SchlingelInc.OfficerPanel:ShowMemberContextMenu(entry.name)
                 end
             end)
 

@@ -14,31 +14,25 @@ function SchlingelInc.DeathSlashCommands:Initialize()
         end, 0, "DeathSetReceive")
 end
 
--- Define slash command
-SLASH_DEATHSET1 = '/deathset'
-SlashCmdList["DEATHSET"] = function(msg)
+function SchlingelInc.Death:SetRemote(targetName, valueStr)
 	if not CanGuildInvite() then
 		SchlingelInc:Print(SchlingelInc.Constants.COLORS.ERROR .. "Keine Berechtigung für diesen Befehl.|r")
 		return
 	end
 
-	local targetName, valueStr = msg:match("^(%S+)%s+(%S+)$")
-	if not targetName or not valueStr then
-		SchlingelInc:Print(SchlingelInc.Constants.COLORS.ERROR .. "Verwendung: /deathset <Spielername> <Zahl>|r")
+	if not targetName or targetName == "" then return end
+
+	local value = tonumber(valueStr)
+	if not value then
+		SchlingelInc:Print(SchlingelInc.Constants.COLORS.ERROR .. "Ungültige Zahl: " .. tostring(valueStr) .. "|r")
 		return
 	end
 
-	local inputValue = tonumber(valueStr)
-	if not inputValue then
-		SchlingelInc:Print(SchlingelInc.Constants.COLORS.ERROR .. "Ungültige Zahl: " .. valueStr .. "|r")
-		return
-	end
-
-	if inputValue < 0 or inputValue > 999999 then
+	if value < 0 or value > 999999 then
 		SchlingelInc:Print(SchlingelInc.Constants.COLORS.ERROR .. "Wert muss zwischen 0 und 999999 liegen.|r")
 		return
 	end
 
-	ChatThrottleLib:SendAddonMessage("ALERT", SchlingelInc.prefix, "DEATHSET|" .. tostring(inputValue), "WHISPER", targetName, "SchlingelInc-Schande")
+	ChatThrottleLib:SendAddonMessage("ALERT", SchlingelInc.prefix, "DEATHSET|" .. tostring(value), "WHISPER", targetName, "SchlingelInc-Schande")
 	SchlingelInc:Print(SchlingelInc.Constants.COLORS.SUCCESS .. "Deathset-Nachricht an " .. targetName .. " gesendet.|r")
 end

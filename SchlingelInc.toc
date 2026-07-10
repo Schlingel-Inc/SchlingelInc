@@ -54,6 +54,7 @@ interfaces\OfficerPanel\TabDiscord.lua
 interfaces\OfficerPanel\TabInvites.lua
 interfaces\OfficerPanel\Filters.lua
 interfaces\OfficerPanel\SchandeViewer.lua
+interfaces\OfficerPanel\MemberContextMenu.lua
 interfaces\GuildPanel\init.lua
 interfaces\GuildPanel\Data.lua
 interfaces\GuildPanel\Rows.lua
