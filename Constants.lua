@@ -145,6 +145,17 @@ SchlingelInc.Constants.SOD_BLOCKED_TRADERS = {
 -- Guild member roles
 SchlingelInc.Constants.ROLES = { "Tank", "Heal", "DPS" }
 
+-- Achievement ranks (Schlingel-RP), unlocked by cumulative Schlingelpunkte.
+-- Must stay sorted ascending by minPoints. Placeholder names/thresholds — final
+-- values to be provided later.
+SchlingelInc.Constants.ACHIEVEMENT_RANKS = {
+    { name = "Schlingel-Neuling",    minPoints = 0 },
+    { name = "Schlingel",            minPoints = 100 },
+    { name = "Erfahrener Schlingel", minPoints = 300 },
+    { name = "Elite-Schlingel",      minPoints = 600 },
+    { name = "Schlingel-Legende",    minPoints = 1000 },
+}
+
 -- Selectable raid instances for the Raid-Panel LFG-light feature, in SoD progression order.
 SchlingelInc.Constants.RAID_INSTANCES = {
     "Blackfathom-Tiefe / Blackfathom Deeps (BFD)",
