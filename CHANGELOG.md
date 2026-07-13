@@ -1,5 +1,6 @@
 # 4.2.0
 
+- Neuer "Erfolge"-Tab im Gildenpanel: zeigt den gemeinsamen Erfolge-Katalog mit dem eigenen Freischalt-Status (nicht erreichte Erfolge grau dargestellt). Level-Erfolge (auch "ohne zu sterben") und Kill-Zähler-Erfolge werden automatisch erkannt, RP-Erfolge werden von Offizieren manuell verliehen. Offiziere verwalten den Katalog über einen neuen "Erfolge"-Tab im Offizier-Panel. Erfolgspunkte fließen in eine Erfolge-Punktzahl, die im Gildenprofil mitgesendet wird und im Spieler-Tooltip erscheint.
 - Neuer "Raid"-Tab im Gildenpanel (Raid Panel mit LFG-light): Mitglieder können Raids posten (Titel, Instanz, Datum/Uhrzeit, optionale Notiz) und per Klick mit Rolle und optionaler Notiz zusagen. Einträge werden gildenweit synchronisiert und laufen automatisch ab.
 - Neuer "Schande"-Tab im Gildenpanel: zeigt die eigene Schande (Anzahl, Status, Aufgabe).
 - Fortschritt-Tab im Offizier-Panel heißt jetzt "Mitglieder"; Rechtsklick auf einen Spieler öffnet ein Kontextmenü mit "Schande-Ansicht öffnen" (zeigt die komplette Schande-Historie live abgefragt, inklusive Buttons zum direkten Verhängen und Aufheben) und "Deathset setzen".
