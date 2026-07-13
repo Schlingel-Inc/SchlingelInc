@@ -50,6 +50,15 @@ UIDropDownMenu_Initialize(contextMenu, function(self, level)
         StaticPopup_Show("SCHLINGEL_DEATHSET_SET", targetName, nil, targetName)
     end
     UIDropDownMenu_AddButton(info, level)
+
+    info = UIDropDownMenu_CreateInfo()
+    info.notCheckable = true
+    info.text = "Erfolg verleihen"
+    info.func = function()
+        CloseDropDownMenus()
+        SchlingelInc.Popup:ShowAchievementGrantForm(targetName)
+    end
+    UIDropDownMenu_AddButton(info, level)
 end, "MENU")
 
 -- Public API

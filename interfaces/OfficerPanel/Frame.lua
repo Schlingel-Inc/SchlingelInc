@@ -80,6 +80,8 @@ local function BuildPanel()
               end },
             { id = "invites",  label = "Anfragen", canSelect = RequirePermission("Anfragen sind nur für Offiziere sichtbar."),
               onSelected = function() SchlingelInc.OfficerPanel:RefreshInvites() end },
+            { id = "achievements", label = "Erfolge", canSelect = RequirePermission("Erfolge sind nur für Offiziere verwaltbar."),
+              onSelected = function() SchlingelInc.OfficerPanel:RefreshAchievements() end },
         },
     })
 
@@ -93,6 +95,7 @@ local function BuildPanel()
     OfficerPanel.BuildProgressTab(OfficerPanel.tabContents["progress"])
     OfficerPanel.BuildDiscordTab(OfficerPanel.tabContents["discord"])
     OfficerPanel.BuildInvitesTab(OfficerPanel.tabContents["invites"])
+    OfficerPanel.BuildAchievementsTab(OfficerPanel.tabContents["achievements"])
 
     -- ── Filter panels ─────────────────────────────────────────────────────
     OfficerPanel.BuildFilters(f)
@@ -145,5 +148,12 @@ end
 function SchlingelInc.OfficerPanel:RefreshProgress()
     if OfficerPanel.frame and OfficerPanel.frame:IsShown() and OfficerPanel.frame.RefreshProgress then
         OfficerPanel.frame.RefreshProgress()
+    end
+end
+
+function SchlingelInc.OfficerPanel:RefreshAchievements()
+    local content = OfficerPanel.tabContents and OfficerPanel.tabContents["achievements"]
+    if content and content.Refresh then
+        content.Refresh()
     end
 end

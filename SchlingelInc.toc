@@ -47,6 +47,9 @@ interfaces\popups\GuildInvites.lua
 interfaces\popups\PvPFrame.lua
 interfaces\popups\RaidPostForm.lua
 interfaces\popups\RaidSignupForm.lua
+interfaces\popups\AchievementAnnouncement.lua
+interfaces\popups\AchievementForm.lua
+interfaces\popups\AchievementGrantForm.lua
 interfaces\DiscordHandlePrompt.lua
 interfaces\GuildJoinPrompt.lua
 interfaces\SetupWizard.lua
@@ -61,6 +64,7 @@ interfaces\OfficerPanel\TabInactive.lua
 interfaces\OfficerPanel\TabProgress.lua
 interfaces\OfficerPanel\TabDiscord.lua
 interfaces\OfficerPanel\TabInvites.lua
+interfaces\OfficerPanel\TabAchievements.lua
 interfaces\OfficerPanel\Filters.lua
 interfaces\OfficerPanel\SchandeViewer.lua
 interfaces\OfficerPanel\MemberContextMenu.lua
@@ -71,6 +75,7 @@ interfaces\GuildPanel\FilterPanel.lua
 interfaces\GuildPanel\TabRoster.lua
 interfaces\GuildPanel\TabSchande.lua
 interfaces\GuildPanel\TabRaid.lua
+interfaces\GuildPanel\TabAchievements.lua
 interfaces\GuildPanel\Frame.lua
 death\Death.lua
 death\DeathCauseHandler.lua

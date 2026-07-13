@@ -45,6 +45,7 @@ SchlingelInc.Constants.SOUNDS = {
 	DEATH_ANNOUNCEMENT = 8192,
 	LEVELUP_ANNOUNCEMENT = 888,
 	CAP_ANNOUNCEMENT_STANDARD = 8574,  -- Achievement sound
+	ACHIEVEMENT_ANNOUNCEMENT_STANDARD = 8473,  -- Reputation up
 	-- Torro custom sound files (sound_pack = "torro")
 	TORRO_DEATH = {
 		"Interface\\AddOns\\SchlingelInc\\media\\sounds\\schandenschlingel.wav",
