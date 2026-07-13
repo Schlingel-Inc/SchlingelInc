@@ -35,7 +35,7 @@ local function BroadcastDefine(entry)
         MSG_DEFINE, entry.id, entry.kind,
         SanitizeForMessage(entry.name), SanitizeForMessage(entry.description),
         tostring(entry.points), tostring(entry.critA or ""), tostring(entry.critB or ""),
-        entry.retired and "1" or "0",
+        entry.retired and "1" or "0", (entry.isGlobal and "1" or "0"),
     }, "|")
     ChatThrottleLib:SendAddonMessage("NORMAL", SchlingelInc.prefix, payload, "GUILD", nil, "SchlingelInc-Achievements")
 end
@@ -45,13 +45,14 @@ end
 -- kind-specific criteria: LEVEL -> critA=threshold level, critB=requireNoDeath (bool)
 --                         KILL_COUNT -> critA=npcID, critB=required kill count
 --                         MANUAL -> critA/critB unused
-function Catalog:Create(kind, name, description, points, critA, critB)
+function Catalog:Create(kind, name, description, points, critA, critB, isGlobal)
     if not CanGuildInvite() then return nil, "Keine Berechtigung für diesen Befehl." end
     if not IsValidKind(kind) then return nil, "Ungültige Erfolgsart." end
     name = (name or ""):match("^%s*(.-)%s*$")
     if name == "" then return nil, "Name darf nicht leer sein." end
     points = tonumber(points)
     if not points or points < 0 then return nil, "Ungültige Punktzahl." end
+    isGlobal = isGlobal == true or isGlobal == 1 or isGlobal == "1"
 
     local id = OwnName() .. "-" .. time()
     local entry = {
@@ -66,13 +67,14 @@ function Catalog:Create(kind, name, description, points, critA, critB)
         createdAt   = time(),
         updatedAt   = time(),
         retired     = false,
+        isGlobal    = isGlobal,
     }
     SchlingelAchievementDB.entries[id] = entry
     BroadcastDefine(entry)
     return id
 end
 
-function Catalog:Edit(id, name, description, points, critA, critB)
+function Catalog:Edit(id, name, description, points, critA, critB, isGlobal)
     if not CanGuildInvite() then return nil, "Keine Berechtigung für diesen Befehl." end
     local entry = SchlingelAchievementDB.entries[id]
     if not entry then return nil, "Erfolg nicht gefunden." end
@@ -80,12 +82,14 @@ function Catalog:Edit(id, name, description, points, critA, critB)
     if name == "" then return nil, "Name darf nicht leer sein." end
     points = tonumber(points)
     if not points or points < 0 then return nil, "Ungültige Punktzahl." end
+    isGlobal = isGlobal == true or isGlobal == 1 or isGlobal == "1"
 
     entry.name        = SanitizeForMessage(name):sub(1, NAME_MAX_LEN)
     entry.description = SanitizeForMessage(description or ""):sub(1, DESC_MAX_LEN)
     entry.points      = points
     entry.critA       = critA
     entry.critB       = critB
+    entry.isGlobal    = isGlobal
     entry.updatedAt   = time()
 
     BroadcastDefine(entry)
@@ -152,8 +156,13 @@ function Catalog:HandleMessage(message, sender)
         return true
     end
 
-    local id, kind, name, description, pointsStr, critAStr, critBStr, retiredStr =
-        message:match("^" .. MSG_DEFINE .. "|([^|]+)|([^|]+)|([^|]*)|([^|]*)|(%d+)|([^|]*)|([^|]*)|([01])$")
+    local id, kind, name, description, pointsStr, critAStr, critBStr, retiredStr, isGlobalStr =
+        message:match("^" .. MSG_DEFINE .. "|([^|]+)|([^|]+)|([^|]*)|([^|]*)|(%d+)|([^|]*)|([^|]*)|([01])|([01])$")
+    if not id then
+        id, kind, name, description, pointsStr, critAStr, critBStr, retiredStr =
+            message:match("^" .. MSG_DEFINE .. "|([^|]+)|([^|]+)|([^|]*)|([^|]*)|(%d+)|([^|]*)|([^|]*)|([01])$")
+        isGlobalStr = "0"
+    end
     if id then
         if not IsValidKind(kind) then return true end
         local existing = SchlingelAchievementDB.entries[id]
@@ -175,6 +184,7 @@ function Catalog:HandleMessage(message, sender)
             createdAt   = (existing and existing.createdAt) or time(),
             updatedAt   = time(),
             retired     = retiredStr == "1",
+            isGlobal    = isGlobalStr == "1",
         }
 
         SchlingelInc.Achievements.LevelDetector:Check()

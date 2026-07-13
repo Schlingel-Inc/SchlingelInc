@@ -39,7 +39,7 @@ end
 
 local function BuildForm()
     local f = CreateFrame("Frame", "SchlingelAchievementForm", UIParent, "BackdropTemplate")
-    f:SetSize(FORM_W, 460)
+    f:SetSize(FORM_W, 490)
     f:SetFrameStrata("DIALOG")
     f:SetBackdrop(SchlingelInc.Constants.BACKDROP)
     f:SetBackdropColor(0.07, 0.07, 0.07, 0.98)
@@ -102,6 +102,16 @@ local function BuildForm()
     kindBtn:SetHighlightFontObject("GameFontHighlightSmall")
     f.kindBtn = kindBtn
 
+    local globalCb = CreateFrame("CheckButton", nil, f, "UICheckButtonTemplate")
+    globalCb:SetSize(24, 24)
+    globalCb:SetPoint("TOPLEFT", pointsEB, "BOTTOMLEFT", 0, -10)
+    f.globalCb = globalCb
+
+    local globalLbl = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    globalLbl:SetPoint("LEFT", globalCb, "RIGHT", 2, 0)
+    globalLbl:SetText("Global (für alle Charaktere)")
+    globalLbl:SetTextColor(0.85, 0.85, 0.85, 1)
+
     local kindList = CreateFrame("Frame", "SchlingelAchievementFormKindList", UIParent, "BackdropTemplate")
     kindList:SetSize(INNER_W / 2 - 10, 10)
     kindList:SetFrameStrata("TOOLTIP")
@@ -119,7 +129,7 @@ local function BuildForm()
 
     -- ── Kriterien (dynamic per kind, all anchored at the same point) ────────
     local criteriaAnchor = CreateFrame("Frame", nil, f)
-    criteriaAnchor:SetPoint("TOPLEFT", pointsEB, "BOTTOMLEFT", 0, -14)
+    criteriaAnchor:SetPoint("TOPLEFT", globalCb, "BOTTOMLEFT", 0, -12)
     criteriaAnchor:SetSize(INNER_W, 1)
     f.criteriaAnchor = criteriaAnchor
 
@@ -234,6 +244,7 @@ local function BuildForm()
         local description = descEB:GetText()
         local points = pointsEB:GetText()
         local kind = f.selectedKind
+        local isGlobal = globalCb:GetChecked() and true or false
 
         if not kind then
             errorFs:SetText("Bitte eine Art auswählen.")
@@ -263,9 +274,9 @@ local function BuildForm()
 
         local ok, err
         if f.editId then
-            ok, err = SchlingelInc.Achievements.Catalog:Edit(f.editId, name, description, points, critA, critB)
+            ok, err = SchlingelInc.Achievements.Catalog:Edit(f.editId, name, description, points, critA, critB, isGlobal)
         else
-            ok, err = SchlingelInc.Achievements.Catalog:Create(kind, name, description, points, critA, critB)
+            ok, err = SchlingelInc.Achievements.Catalog:Create(kind, name, description, points, critA, critB, isGlobal)
         end
 
         if not ok then
@@ -303,6 +314,7 @@ function SchlingelInc.Popup:ShowAchievementForm(existingEntry)
         f.pointsEB:SetText(tostring(existingEntry.points or 0))
         f.SelectKind(existingEntry.kind)
         f.kindBtn:Disable() -- kind can't change after creation (criteria fields are kind-specific)
+        f.globalCb:SetChecked(existingEntry.isGlobal == true or existingEntry.isGlobal == 1 or existingEntry.isGlobal == "1")
         if existingEntry.kind == KIND.LEVEL then
             f.levelEB:SetText(tostring(tonumber(existingEntry.critA) or ""))
             f.noDeathCb:SetChecked(existingEntry.critB == true or existingEntry.critB == 1 or existingEntry.critB == "1")
@@ -322,6 +334,7 @@ function SchlingelInc.Popup:ShowAchievementForm(existingEntry)
         f.kindBtn:SetText("Auswählen...")
         f.levelEB:SetText("")
         f.noDeathCb:SetChecked(false)
+        f.globalCb:SetChecked(false)
         f.npcEB:SetText("")
         f.countEB:SetText("")
     end

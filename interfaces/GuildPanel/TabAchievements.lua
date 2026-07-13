@@ -34,14 +34,24 @@ local function VisibleEntries()
     local Progress = SchlingelInc.Achievements.Progress
     local out = {}
     for _, entry in ipairs(SchlingelInc.Achievements.Catalog:GetAll()) do
-        if not entry.retired or Progress:IsUnlocked(entry.id) then
-            table.insert(out, entry)
+        if type(entry) == "table" and entry.id then
+            local unlocked = Progress:IsUnlocked(entry.id)
+            if not entry.retired or unlocked then
+                table.insert(out, entry)
+            end
         end
     end
     return out
 end
 
 local function CreateCard(parent, cardW, entry)
+    if type(entry) ~= "table" then return nil end
+
+    local safeId = entry.id
+    local safeName = SchlingelInc:SanitizeText(entry.name) or "(ohne Namen)"
+    local safePoints = tonumber(entry.points) or 0
+    local isGlobal = entry.isGlobal == true or entry.isGlobal == 1 or entry.isGlobal == "1"
+
     local card = CreateFrame("Frame", nil, parent, "BackdropTemplate")
     card:SetBackdrop({
         bgFile   = "Interface\\BUTTONS\\WHITE8X8",
@@ -54,42 +64,51 @@ local function CreateCard(parent, cardW, entry)
     card:SetWidth(cardW)
 
     local Progress = SchlingelInc.Achievements.Progress
-    local unlocked = Progress:IsUnlocked(entry.id)
+    local unlocked = safeId and Progress:IsUnlocked(safeId) or false
     local color = unlocked and UNLOCKED_COLOR or LOCKED_COLOR
 
     local titleFs = card:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     titleFs:SetPoint("TOPLEFT", card, "TOPLEFT", CARD_PAD, -CARD_PAD)
     titleFs:SetWidth(cardW - CARD_PAD * 2 - 60)
     titleFs:SetJustifyH("LEFT")
-    titleFs:SetText(SchlingelInc:SanitizeText(entry.name))
+    titleFs:SetText(safeName)
     titleFs:SetTextColor(color[1], color[2], color[3], 1)
 
     local pointsFs = card:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     pointsFs:SetPoint("TOPRIGHT", card, "TOPRIGHT", -CARD_PAD, -CARD_PAD)
     pointsFs:SetJustifyH("RIGHT")
-    pointsFs:SetText((entry.points or 0) .. " Punkte")
+    pointsFs:SetText(safePoints .. " Punkte")
     pointsFs:SetTextColor(color[1], color[2], color[3], 1)
+
+    if isGlobal then
+        local globalFs = card:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+        globalFs:SetPoint("TOPRIGHT", pointsFs, "BOTTOMRIGHT", 0, -1)
+        globalFs:SetJustifyH("RIGHT")
+        globalFs:SetText((SchlingelInc.colorCode or "|cFFF48CBA") .. "Charakter übergreifend|r")
+    end
 
     local descFs = card:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     descFs:SetPoint("TOPLEFT", titleFs, "BOTTOMLEFT", 0, -3)
     descFs:SetWidth(cardW - CARD_PAD * 2)
     descFs:SetJustifyH("LEFT")
     descFs:SetWordWrap(true)
-    descFs:SetText(SchlingelInc:SanitizeText(entry.description ~= "" and entry.description or CriteriaHint(entry)))
+    local descText = (entry.description and entry.description ~= "") and entry.description or CriteriaHint(entry)
+    descFs:SetText(SchlingelInc:SanitizeText(descText) or "")
     descFs:SetTextColor(color[1] * 0.9, color[2] * 0.9, color[3] * 0.9, 1)
 
     local height = CARD_PAD + 16 + descFs:GetStringHeight() + CARD_PAD
 
     if unlocked then
+        local unlockedAt = safeId and Progress:GetUnlockedAt(safeId)
         local dateFs = card:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
         dateFs:SetPoint("TOPLEFT", descFs, "BOTTOMLEFT", 0, -3)
-        dateFs:SetText("|cff44ff44Freigeschaltet am " .. FormatDate(Progress:GetUnlockedAt(entry.id)) .. "|r")
+        dateFs:SetText(unlockedAt and ("|cff44ff44Freigeschaltet am " .. FormatDate(unlockedAt) .. "|r") or "|cff44ff44Freigeschaltet|r")
         height = height + 14
-    elseif entry.kind == KIND.KILL_COUNT then
+    elseif entry.kind == KIND.KILL_COUNT and safeId then
         local required = tonumber(entry.critB) or 0
         local progressFs = card:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
         progressFs:SetPoint("TOPLEFT", descFs, "BOTTOMLEFT", 0, -3)
-        progressFs:SetText("Fortschritt: " .. Progress:GetKillProgress(entry.id) .. "/" .. required)
+        progressFs:SetText("Fortschritt: " .. Progress:GetKillProgress(safeId) .. "/" .. required)
         progressFs:SetTextColor(LOCKED_COLOR[1], LOCKED_COLOR[2], LOCKED_COLOR[3], 1)
         height = height + 14
     end
@@ -187,9 +206,11 @@ function GP.BuildAchievementsTab(content)
         else
             for _, entry in ipairs(entries) do
                 local card = CreateCard(scrollChild, cardW, entry)
-                card:SetPoint("TOPLEFT", scrollChild, "TOPLEFT", 0, yOff)
-                table.insert(cards, card)
-                yOff = yOff - card:GetHeight() - CARD_GAP
+                if card then
+                    card:SetPoint("TOPLEFT", scrollChild, "TOPLEFT", 0, yOff)
+                    table.insert(cards, card)
+                    yOff = yOff - card:GetHeight() - CARD_GAP
+                end
             end
         end
 

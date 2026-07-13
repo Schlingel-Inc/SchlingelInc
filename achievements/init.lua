@@ -5,9 +5,8 @@
 -- Catalog (achievement definitions) is account-wide: officers create/edit/retire
 -- entries and broadcast them to the guild, so every character on the account shares
 -- the same catalog without re-syncing per alt.
--- Progress (which achievements THIS character unlocked) is per-character, mirroring
--- CharacterDeaths/SchlingelOwnSchande — achievements are earned by a character, not
--- shared across an account's alts.
+-- Progress is mixed: entries with `isGlobal` are account-wide (all characters),
+-- while non-global entries stay per-character.
 
 SchlingelInc.Achievements = {}
 
@@ -19,6 +18,8 @@ SchlingelInc.Achievements.KIND = {
 
 SchlingelAchievementDB         = SchlingelAchievementDB         or {}
 SchlingelAchievementDB.entries = SchlingelAchievementDB.entries or {} -- [id] = definition
+SchlingelAchievementDB.globalUnlocked     = SchlingelAchievementDB.globalUnlocked     or {} -- [id] = timestamp
+SchlingelAchievementDB.globalKillProgress = SchlingelAchievementDB.globalKillProgress or {} -- [id] = count
 
 SchlingelOwnAchievements               = SchlingelOwnAchievements               or {}
 SchlingelOwnAchievements.unlocked      = SchlingelOwnAchievements.unlocked      or {} -- [id] = timestamp

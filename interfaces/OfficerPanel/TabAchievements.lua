@@ -17,6 +17,13 @@ local KIND_LABELS = {
     [KIND.MANUAL]     = "Manuell (RP)",
 }
 
+local function ScopeText(entry)
+    if entry.isGlobal == true or entry.isGlobal == 1 or entry.isGlobal == "1" then
+        return "Global"
+    end
+    return "Char"
+end
+
 local function CriteriaText(entry)
     if entry.kind == KIND.LEVEL then
         local threshold = tonumber(entry.critA) or 0
@@ -44,13 +51,14 @@ local function CreateCard(parent, cardW, entry)
     titleFs:SetPoint("TOPLEFT", card, "TOPLEFT", CARD_PAD, -CARD_PAD)
     titleFs:SetWidth(cardW - CARD_PAD * 2 - 160)
     titleFs:SetJustifyH("LEFT")
-    titleFs:SetText(SchlingelInc:SanitizeText(entry.name) .. (entry.retired and "  |cff888888(Eingestellt)|r" or ""))
+    local nameText = SchlingelInc:SanitizeText(entry.name) or "(ohne Namen)"
+    titleFs:SetText(nameText .. (entry.retired and "  |cff888888(Eingestellt)|r" or ""))
     titleFs:SetTextColor(1, 1, 1, 1)
 
     local kindFs = card:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     kindFs:SetPoint("TOPRIGHT", card, "TOPRIGHT", -CARD_PAD, -CARD_PAD)
     kindFs:SetJustifyH("RIGHT")
-    kindFs:SetText((entry.points or 0) .. " Punkte — " .. (KIND_LABELS[entry.kind] or entry.kind))
+    kindFs:SetText((entry.points or 0) .. " Punkte — " .. (KIND_LABELS[entry.kind] or entry.kind) .. " — " .. ScopeText(entry))
     kindFs:SetTextColor(0.6, 0.8, 1, 1)
 
     local descFs = card:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
@@ -58,7 +66,8 @@ local function CreateCard(parent, cardW, entry)
     descFs:SetWidth(cardW - CARD_PAD * 2)
     descFs:SetJustifyH("LEFT")
     descFs:SetWordWrap(true)
-    descFs:SetText(entry.description ~= "" and SchlingelInc:SanitizeText(entry.description) or "|cff888888— keine Beschreibung —|r")
+    local hasDescription = entry.description and entry.description ~= ""
+    descFs:SetText(hasDescription and (SchlingelInc:SanitizeText(entry.description) or "") or "|cff888888— keine Beschreibung —|r")
 
     local critFs = card:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     critFs:SetPoint("TOPLEFT", descFs, "BOTTOMLEFT", 0, -3)
