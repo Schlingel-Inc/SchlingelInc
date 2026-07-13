@@ -6,6 +6,10 @@ SchlingelOptionsDB = SchlingelOptionsDB or {}
 local AceConfig       = LibStub("AceConfig-3.0")
 local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 
+local function TogglePopupEditMode()
+    SchlingelInc.PopupEditMode:Toggle()
+end
+
 -- Generic getter/setter: arg key must match the SchlingelOptionsDB key
 local function get(info) return SchlingelOptionsDB[info[#info]] end
 local function set(info, val) SchlingelOptionsDB[info[#info]] = val end
@@ -46,6 +50,19 @@ local options = {
                     width = "full",
                     get   = get,
                     set   = set,
+                },
+                popup_edit_mode = {
+                    type  = "execute",
+                    name  = function()
+                        if SchlingelInc.PopupEditMode and SchlingelInc.PopupEditMode:IsEnabled() then
+                            return "Popup-Edit-Modus beenden"
+                        end
+                        return "Popup-Edit-Modus starten"
+                    end,
+                    desc  = "Zeigt Platzhalter für alle Popup-Fenster an, damit du ihre Positionen speichern kannst",
+                    order = 4,
+                    width = "full",
+                    func  = TogglePopupEditMode,
                 },
             },
         },
