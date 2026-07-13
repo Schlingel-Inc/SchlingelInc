@@ -115,6 +115,8 @@ SchlingelInc.Constants.FALLBACK_OFFICERS = {
 	"Tinatrifft",
 	"Pfeilkrampf",
 	"Elemetina",
+	"Trork",
+	"Magentatefau",
 }
 
 -- UI Backdrop Settings
