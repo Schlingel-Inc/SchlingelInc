@@ -3,8 +3,39 @@
 
 local GP = SchlingelInc.GuildPanel
 
+local TOP_H = 20
+
 function GP.BuildRosterTab(content, f)
     local self = SchlingelInc.GuildPanel
+
+    -- ── Count + offline toggle ──────────────────────────────────────────────
+    local countLabel = content:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    countLabel:SetPoint("TOPRIGHT", content, "TOPRIGHT", 0, -2)
+    countLabel:SetTextColor(0.6, 0.6, 0.6, 1)
+    f.countLabel = countLabel
+
+    local hideBtn = CreateFrame("Button", nil, content)
+    hideBtn:SetSize(50, TOP_H)
+    hideBtn:SetPoint("RIGHT", countLabel, "LEFT", -6, 0)
+    hideBtn:EnableMouse(true)
+    local hideLbl = hideBtn:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    hideLbl:SetAllPoints()
+    hideLbl:SetJustifyH("RIGHT")
+    hideLbl:SetTextColor(0.45, 0.45, 0.45, 1)
+    hideLbl:SetText("Offline")
+    local function UpdateHideBtnColor()
+        hideLbl:SetTextColor(
+            GP.hideOffline and 1    or 0.45,
+            GP.hideOffline and 0.82 or 0.45,
+            GP.hideOffline and 0    or 0.45, 1)
+    end
+    hideBtn:SetScript("OnClick", function()
+        GP.hideOffline = not GP.hideOffline
+        UpdateHideBtnColor()
+        SchlingelInc.GuildPanel:Refresh()
+    end)
+    hideBtn:SetScript("OnEnter", function() hideLbl:SetTextColor(1, 1, 0.7, 1) end)
+    hideBtn:SetScript("OnLeave", UpdateHideBtnColor)
 
     -- ── Column headers (clickable — sort asc/desc on each click) ──────────
     self.headerBtns = {}
@@ -12,7 +43,7 @@ function GP.BuildRosterTab(content, f)
     for i, col in ipairs(GP.COLUMNS) do
         local btn = CreateFrame("Button", nil, content)
         btn:SetSize(col.width - 2, GP.COL_H)
-        btn:SetPoint("TOPLEFT", content, "TOPLEFT", xOff, -2)
+        btn:SetPoint("TOPLEFT", content, "TOPLEFT", xOff, -(TOP_H + 2))
         btn:EnableMouse(true)
 
         local lbl = btn:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
@@ -48,12 +79,12 @@ function GP.BuildRosterTab(content, f)
     local divider = content:CreateTexture(nil, "ARTWORK")
     divider:SetHeight(1)
     divider:SetColorTexture(0.4, 0.4, 0.4, 0.7)
-    divider:SetPoint("TOPLEFT",  content, "TOPLEFT",  0, -(GP.COL_H + 2))
-    divider:SetPoint("TOPRIGHT", content, "TOPRIGHT", 0, -(GP.COL_H + 2))
+    divider:SetPoint("TOPLEFT",  content, "TOPLEFT",  0, -(TOP_H + GP.COL_H + 2))
+    divider:SetPoint("TOPRIGHT", content, "TOPRIGHT", 0, -(TOP_H + GP.COL_H + 2))
 
     -- ── Scroll frame ───────────────────────────────────────────────────────
     local scrollFrame = CreateFrame("ScrollFrame", GP.PANEL_NAME .. "Scroll", content)
-    scrollFrame:SetPoint("TOPLEFT",     content, "TOPLEFT",     0, -(GP.COL_H + 5))
+    scrollFrame:SetPoint("TOPLEFT",     content, "TOPLEFT",     0, -(TOP_H + GP.COL_H + 5))
     scrollFrame:SetPoint("BOTTOMRIGHT", content, "BOTTOMRIGHT", 0, 24)
     scrollFrame:EnableMouseWheel(true)
     scrollFrame:SetScript("OnMouseWheel", function(sf, delta)

@@ -145,6 +145,21 @@ SchlingelInc.Constants.SOD_BLOCKED_TRADERS = {
 -- Guild member roles
 SchlingelInc.Constants.ROLES = { "Tank", "Heal", "DPS" }
 
+-- Selectable raid instances for the Raid-Panel LFG-light feature, in SoD progression order.
+SchlingelInc.Constants.RAID_INSTANCES = {
+    "Blackfathom-Tiefe / Blackfathom Deeps (BFD)",
+    "Gnomeregan (GNO)",
+    "Versunkener Tempel / Sunken Temple (ST)",
+    "Geschmolzener Kern / Molten Core (MC)",
+    "Onyxias Hort / Onyxia's Lair (ONY)",
+    "Pechschwingenhort / Blackwing Lair (BWL)",
+    "Zul'Gurub (ZG)",
+    "Ruinen von Ahn'Qiraj / Ruins of Ahn'Qiraj (AQ20)",
+    "Tempel von Ahn'Qiraj / Temple of Ahn'Qiraj (AQ40)",
+    "Naxxramas (Naxx)",
+    "Scharlachrote Enklave / Scarlet Enclave (SE)",
+}
+
 -- Profession name normalisation: maps English client names → German display names.
 -- GetSkillLineInfo returns localised strings, so English-client players end up with
 -- English profession names in their profile.  This table is used to normalise them

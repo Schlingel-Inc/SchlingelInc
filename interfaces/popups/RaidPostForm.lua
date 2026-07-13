@@ -1,0 +1,275 @@
+-- interfaces/popups/RaidPostForm.lua
+-- Popup form to post a new raid entry, or edit one the local player already posted.
+
+SchlingelInc.Popup = SchlingelInc.Popup or {}
+
+local FORM_W  = 460
+local INNER_W = FORM_W - 32
+
+local function CreateEditBox(parent, width, maxLetters, numeric)
+    local eb = CreateFrame("EditBox", nil, parent, BackdropTemplateMixin and "BackdropTemplate")
+    eb:SetSize(width, 22)
+    eb:SetBackdrop(SchlingelInc.Constants.POPUPBACKDROP)
+    eb:SetBackdropColor(0.1, 0.1, 0.1, 0.9)
+    eb:SetBackdropBorderColor(0.4, 0.4, 0.4, 1)
+    eb:SetFontObject("GameFontHighlight")
+    eb:SetTextInsets(6, 6, 0, 0)
+    eb:SetAutoFocus(false)
+    eb:SetMaxLetters(maxLetters)
+    if numeric then eb:SetNumeric(true) end
+    eb:SetScript("OnEscapePressed", function(box) box:ClearFocus() end)
+    eb:SetScript("OnEnterPressed", function(box) box:ClearFocus() end)
+    return eb
+end
+
+local function CreateLabel(parent, text)
+    local lbl = parent:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    lbl:SetText(text)
+    lbl:SetTextColor(0.8, 0.8, 0.8, 1)
+    return lbl
+end
+
+local function BuildForm()
+    local f = CreateFrame("Frame", "SchlingelRaidPostForm", UIParent, "BackdropTemplate")
+    f:SetSize(FORM_W, 380)
+    f:SetFrameStrata("DIALOG")
+    f:SetBackdrop(SchlingelInc.Constants.BACKDROP)
+    f:SetBackdropColor(0.07, 0.07, 0.07, 0.98)
+    f:SetBackdropBorderColor(0.45, 0.45, 0.45, 1)
+    f:SetMovable(true)
+    f:EnableMouse(true)
+    f:RegisterForDrag("LeftButton")
+    f:SetScript("OnDragStart", f.StartMoving)
+    f:SetScript("OnDragStop", function(self)
+        self:StopMovingOrSizing()
+        SchlingelInc:SaveFramePosition(self, "raidpostform_position")
+    end)
+    SchlingelInc:RestoreFramePosition(f, "raidpostform_position", "CENTER", 0, 80)
+    SchlingelInc:RegisterFrameForEscape(f)
+    f:Hide()
+
+    local titleFs = f:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    titleFs:SetPoint("TOP", f, "TOP", 0, -16)
+    titleFs:SetTextColor(1, 0.82, 0, 1)
+    f.titleFs = titleFs
+
+    local closeBtn = CreateFrame("Button", nil, f, "UIPanelCloseButton")
+    closeBtn:SetSize(20, 20)
+    closeBtn:SetPoint("TOPRIGHT", f, "TOPRIGHT", -2, -2)
+    closeBtn:SetScript("OnClick", function() f:Hide() end)
+
+    -- ── Titel ────────────────────────────────────────────────────────────────
+    local titleLbl = CreateLabel(f, "Titel:")
+    titleLbl:SetPoint("TOPLEFT", f, "TOPLEFT", 16, -48)
+
+    local titleEB = CreateEditBox(f, INNER_W, 60, false)
+    titleEB:SetPoint("TOPLEFT", titleLbl, "BOTTOMLEFT", 0, -4)
+    f.titleEB = titleEB
+
+    -- ── Instanz (dropdown) ──────────────────────────────────────────────────
+    local instLbl = CreateLabel(f, "Instanz:")
+    instLbl:SetPoint("TOPLEFT", titleEB, "BOTTOMLEFT", 0, -10)
+
+    local instBtn = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+    instBtn:SetSize(INNER_W, 22)
+    instBtn:SetPoint("TOPLEFT", instLbl, "BOTTOMLEFT", 0, -4)
+    instBtn:SetText("Auswählen...")
+    instBtn:GetFontString():SetWordWrap(false)
+    instBtn:SetNormalFontObject("GameFontHighlightSmall")
+    instBtn:SetHighlightFontObject("GameFontHighlightSmall")
+    f.instBtn = instBtn
+
+    local instList = CreateFrame("Frame", "SchlingelRaidPostFormInstList", UIParent, "BackdropTemplate")
+    instList:SetSize(INNER_W, 10)
+    instList:SetFrameStrata("TOOLTIP")
+    instList:SetBackdrop({
+        bgFile   = "Interface\\BUTTONS\\WHITE8X8",
+        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+        tile = true, tileSize = 16, edgeSize = 16,
+        insets = { left = 4, right = 4, top = 4, bottom = 4 }
+    })
+    instList:SetBackdropColor(0.05, 0.05, 0.05, 0.98)
+    instList:SetBackdropBorderColor(0.45, 0.45, 0.45, 1)
+    instList:SetPoint("TOPLEFT", instBtn, "BOTTOMLEFT", 0, -2)
+    instList:Hide()
+    f.instList = instList
+
+    local ITEM_H = 18
+    local yOff   = -4
+    for _, name in ipairs(SchlingelInc.Constants.RAID_INSTANCES) do
+        local btn = CreateFrame("Button", nil, instList)
+        btn:SetSize(INNER_W - 8, ITEM_H)
+        btn:SetPoint("TOPLEFT", instList, "TOPLEFT", 4, yOff)
+        local lbl = btn:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+        lbl:SetAllPoints()
+        lbl:SetJustifyH("LEFT")
+        lbl:SetWordWrap(false)
+        lbl:SetText(name)
+        lbl:SetTextColor(0.85, 0.85, 0.85, 1)
+        btn:SetScript("OnClick", function()
+            f.selectedInstance = name
+            instBtn:SetText(name)
+            instList:Hide()
+        end)
+        btn:SetScript("OnEnter", function() lbl:SetTextColor(1, 1, 0.7, 1) end)
+        btn:SetScript("OnLeave", function() lbl:SetTextColor(0.85, 0.85, 0.85, 1) end)
+        yOff = yOff - ITEM_H - 2
+    end
+    instList:SetHeight(math.abs(yOff) + 4)
+
+    instBtn:SetScript("OnClick", function()
+        instList:SetShown(not instList:IsShown())
+    end)
+
+    -- ── Datum / Uhrzeit ─────────────────────────────────────────────────────
+    local dateLbl = CreateLabel(f, "Datum (TT.MM):")
+    dateLbl:SetPoint("TOPLEFT", instBtn, "BOTTOMLEFT", 0, -10)
+
+    local dayEB = CreateEditBox(f, 40, 2, true)
+    dayEB:SetPoint("TOPLEFT", dateLbl, "BOTTOMLEFT", 0, -4)
+    f.dayEB = dayEB
+
+    local dotFs = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    dotFs:SetPoint("LEFT", dayEB, "RIGHT", 4, 0)
+    dotFs:SetText(".")
+
+    local monthEB = CreateEditBox(f, 40, 2, true)
+    monthEB:SetPoint("LEFT", dotFs, "RIGHT", 4, 0)
+    f.monthEB = monthEB
+
+    local timeLbl = CreateLabel(f, "Uhrzeit (HH:MM):")
+    timeLbl:SetPoint("TOPLEFT", dateLbl, "TOPLEFT", INNER_W / 2 + 10, 0)
+
+    local hourEB = CreateEditBox(f, 40, 2, true)
+    hourEB:SetPoint("TOPLEFT", dayEB, "TOPLEFT", INNER_W / 2 + 10, 0)
+    f.hourEB = hourEB
+
+    local colonFs = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    colonFs:SetPoint("LEFT", hourEB, "RIGHT", 4, 0)
+    colonFs:SetText(":")
+
+    local minuteEB = CreateEditBox(f, 40, 2, true)
+    minuteEB:SetPoint("LEFT", colonFs, "RIGHT", 4, 0)
+    f.minuteEB = minuteEB
+
+    -- ── Notiz ────────────────────────────────────────────────────────────────
+    local noteLbl = CreateLabel(f, "Notiz (optional):")
+    noteLbl:SetPoint("TOPLEFT", dayEB, "BOTTOMLEFT", 0, -10)
+
+    local noteEB = CreateEditBox(f, INNER_W, 80, false)
+    noteEB:SetPoint("TOPLEFT", noteLbl, "BOTTOMLEFT", 0, -4)
+    f.noteEB = noteEB
+
+    -- ── Fehler / Submit ─────────────────────────────────────────────────────
+    local errorFs = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    errorFs:SetPoint("TOPLEFT", noteEB, "BOTTOMLEFT", 0, -12)
+    errorFs:SetWidth(INNER_W)
+    errorFs:SetJustifyH("LEFT")
+    errorFs:SetTextColor(1, 0.3, 0.3, 1)
+    f.errorFs = errorFs
+
+    local submitBtn = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+    submitBtn:SetSize(120, 22)
+    submitBtn:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -16, 16)
+    f.submitBtn = submitBtn
+
+    local cancelBtn = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+    cancelBtn:SetSize(90, 22)
+    cancelBtn:SetPoint("RIGHT", submitBtn, "LEFT", -8, 0)
+    cancelBtn:SetText("Abbrechen")
+    cancelBtn:SetScript("OnClick", function() f:Hide() end)
+
+    submitBtn:SetScript("OnClick", function()
+        errorFs:SetText("")
+
+        local title = titleEB:GetText()
+        local instance = f.selectedInstance
+        if not instance then
+            errorFs:SetText("Bitte eine Instanz auswählen.")
+            return
+        end
+
+        local day    = tonumber(dayEB:GetText())
+        local month  = tonumber(monthEB:GetText())
+        local hour   = tonumber(hourEB:GetText()) or 0
+        local minute = tonumber(minuteEB:GetText()) or 0
+        if not day or not month or day < 1 or day > 31 or month < 1 or month > 12
+           or hour < 0 or hour > 23 or minute < 0 or minute > 59 then
+            errorFs:SetText("Bitte ein gültiges Datum/Uhrzeit angeben.")
+            return
+        end
+
+        local now = date("*t")
+        local timestamp = time({
+            year = now.year, month = month, day = day,
+            hour = hour, min = minute, sec = 0,
+        })
+
+        local note = noteEB:GetText()
+        local isNewPost = not f.editId
+        local ok, err
+        if f.editId then
+            ok, err = SchlingelInc.Raid:Edit(f.editId, title, instance, timestamp, note)
+        else
+            ok, err = SchlingelInc.Raid:Post(title, instance, timestamp, note)
+        end
+
+        if not ok then
+            errorFs:SetText(err or "Unbekannter Fehler.")
+            return
+        end
+
+        f:Hide()
+        if SchlingelInc.GuildPanel and SchlingelInc.GuildPanel.RefreshRaid then
+            SchlingelInc.GuildPanel:RefreshRaid()
+        end
+
+        if isNewPost then
+            local newEntry = SchlingelInc.Raid:GetEntry(ok)
+            if newEntry then
+                SchlingelInc.Popup:ShowRaidSignup(newEntry, nil)
+            end
+        end
+    end)
+
+    return f
+end
+
+function SchlingelInc.Popup:ShowRaidForm(existingEntry)
+    if not SchlingelInc.Popup.raidForm then
+        SchlingelInc.Popup.raidForm = BuildForm()
+    end
+    local f = SchlingelInc.Popup.raidForm
+
+    f.errorFs:SetText("")
+    f.instList:Hide()
+
+    if existingEntry then
+        f.editId = existingEntry.id
+        f.titleFs:SetText("Raid bearbeiten")
+        f.submitBtn:SetText("Speichern")
+        f.titleEB:SetText(existingEntry.title)
+        f.selectedInstance = existingEntry.instance
+        f.instBtn:SetText(existingEntry.instance)
+        local t = date("*t", existingEntry.timestamp)
+        f.dayEB:SetText(string.format("%02d", t.day))
+        f.monthEB:SetText(string.format("%02d", t.month))
+        f.hourEB:SetText(string.format("%02d", t.hour))
+        f.minuteEB:SetText(string.format("%02d", t.min))
+        f.noteEB:SetText(existingEntry.note or "")
+    else
+        f.editId = nil
+        f.titleFs:SetText("Raid posten")
+        f.submitBtn:SetText("Posten")
+        f.titleEB:SetText("")
+        f.selectedInstance = nil
+        f.instBtn:SetText("Auswählen...")
+        f.dayEB:SetText("")
+        f.monthEB:SetText("")
+        f.hourEB:SetText("")
+        f.minuteEB:SetText("")
+        f.noteEB:SetText("")
+    end
+
+    f:Show()
+end
