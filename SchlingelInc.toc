@@ -50,6 +50,7 @@ interfaces\popups\RaidSignupForm.lua
 interfaces\popups\AchievementAnnouncement.lua
 interfaces\popups\AchievementForm.lua
 interfaces\popups\AchievementGrantForm.lua
+interfaces\PopupEditMode.lua
 interfaces\DiscordHandlePrompt.lua
 interfaces\GuildJoinPrompt.lua
 interfaces\SetupWizard.lua
