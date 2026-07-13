@@ -35,7 +35,20 @@ StaticPopupDialogs["SCHLINGEL_SCHANDE_VIEWER_IMPOSE"] = {
         C_Timer.After(0.3, function() Fetch(self.data) end)
     end,
     EditBoxOnEnterPressed = function(self)
-        self:GetParent().button1:Click()
+        local dialog = self:GetParent()
+        if not dialog then return end
+
+        local button1 = (dialog.GetName and _G[dialog:GetName() .. "Button1"]) or dialog.button1
+        if button1 and button1.Click then
+            button1:Click()
+            return
+        end
+
+        local info = dialog.which and StaticPopupDialogs[dialog.which]
+        if info and info.OnAccept then
+            info.OnAccept(dialog)
+            dialog:Hide()
+        end
     end,
     EditBoxOnEscapePressed = function(self)
         self:GetParent():Hide()
