@@ -27,6 +27,7 @@ GuildProfiles.lua
 Schande.lua
 Raid.lua
 achievements\init.lua
+achievements\AchievementList.lua
 achievements\Catalog.lua
 achievements\Progress.lua
 achievements\LevelDetector.lua

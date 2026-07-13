@@ -26,6 +26,7 @@ SchlingelOwnAchievements.unlocked      = SchlingelOwnAchievements.unlocked      
 SchlingelOwnAchievements.killProgress  = SchlingelOwnAchievements.killProgress  or {} -- [id] = count
 
 function SchlingelInc.Achievements:Initialize()
+    SchlingelInc.Achievements.AchievementList:Initialize()
     SchlingelInc.Achievements.Catalog:Initialize()
     SchlingelInc.Achievements.Progress:Initialize()
     SchlingelInc.Achievements.LevelDetector:Initialize()
