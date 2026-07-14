@@ -1,9 +1,9 @@
 # 4.2.1
 
-- KILL_COUNT Achievements können jetzt temporär von Offis vergeben werden
-- Layering des Mitglieder- und des Offizier-Interface angepasst
+- KILL_COUNT-Achievements können jetzt temporär von Offis vergeben werden
+- Das Layering des Mitglieder- und Offizier-Interfaces wurde angepasst
 - Keybindings für beide Interfaces sind jetzt verfügbar
-- Die XP Leiste für Spieler am Cap wird jetzt im Offizier-Interface angezeigt
+- Die XP-Leiste für Spieler am Cap wird jetzt im Offizier-Interface angezeigt
 
 # 4.2.0
 
