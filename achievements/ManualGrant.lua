@@ -1,6 +1,9 @@
 -- Achievements/ManualGrant.lua
 -- Officer -> player whisper grant for `manual`-kind (RP) achievements, which have no
--- auto-detectable criteria. Mirrors Schande:Impose's officer-whisper pattern.
+-- auto-detectable criteria, and for `level`-kind milestones, so officers can resolve
+-- disputed auto-detection (e.g. a death-counter disagreement blocking an UNBROKEN
+-- achievement). `kill_count` stays auto-only. Mirrors Schande:Impose's officer-whisper
+-- pattern.
 
 local KIND = SchlingelInc.Achievements.KIND
 
@@ -9,7 +12,7 @@ local ManualGrant = SchlingelInc.Achievements.ManualGrant
 
 local MSG_GRANT = "ACH_GRANT"
 
--- Officer action: grant a `manual` achievement to targetName (must be online).
+-- Officer action: grant a `manual` or `level` achievement to targetName (must be online).
 function ManualGrant:Grant(targetName, achievementId)
     if not CanGuildInvite() then
         SchlingelInc:Print(SchlingelInc.Constants.COLORS.ERROR .. "Keine Berechtigung für diesen Befehl.|r")
@@ -18,7 +21,8 @@ function ManualGrant:Grant(targetName, achievementId)
     if not targetName or targetName == "" then return nil, "Kein Ziel gewählt." end
 
     local entry = SchlingelInc.Achievements.Catalog:Get(achievementId)
-    if not entry or entry.kind ~= KIND.MANUAL or entry.retired then
+    local grantable = entry and (entry.kind == KIND.MANUAL or entry.kind == KIND.LEVEL)
+    if not entry or not grantable or entry.retired then
         return nil, "Ungültiger Erfolg."
     end
 
