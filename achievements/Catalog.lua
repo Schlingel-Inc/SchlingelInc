@@ -78,6 +78,7 @@ function Catalog:Edit(id, name, description, points, critA, critB, isGlobal)
     if not CanGuildInvite() then return nil, "Keine Berechtigung für diesen Befehl." end
     local entry = SchlingelAchievementDB.entries[id]
     if not entry then return nil, "Erfolg nicht gefunden." end
+    if entry.createdBy == "builtin" then return nil, "Eingebaute Erfolge können nicht bearbeitet werden." end
     name = (name or ""):match("^%s*(.-)%s*$")
     if name == "" then return nil, "Name darf nicht leer sein." end
     points = tonumber(points)
@@ -100,6 +101,7 @@ function Catalog:Retire(id)
     if not CanGuildInvite() then return nil, "Keine Berechtigung für diesen Befehl." end
     local entry = SchlingelAchievementDB.entries[id]
     if not entry then return nil, "Erfolg nicht gefunden." end
+    if entry.createdBy == "builtin" then return nil, "Eingebaute Erfolge können nicht eingestellt werden." end
 
     entry.retired   = true
     entry.updatedAt = time()

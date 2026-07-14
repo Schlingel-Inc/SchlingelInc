@@ -1,5 +1,8 @@
 -- achievements/AchievementList.lua
--- A set of default achievements that are seeded into the catalog on first load. These are built-in and cannot be edited or retired.
+-- Level-milestone achievements, seeded into the catalog on first load. These are the
+-- only built-ins; everything else is created by officers in-game. Catalog:Edit/Retire
+-- reject entries with createdBy == "builtin", so this stays the sole way to add to
+-- this list going forward.
 
 local KIND = SchlingelInc.Achievements.KIND
 
@@ -8,7 +11,6 @@ local AchievementList = SchlingelInc.Achievements.AchievementList
 
 -- ── Default achievement definitions ────────────────────────────────────────────
 local DEFAULTS = {
-    -- ── Leveling ───────────────────────────────────────────────────────────────
     {
         id          = "builtin001",
         kind        = KIND.LEVEL,
@@ -149,18 +151,6 @@ local DEFAULTS = {
         critB       = 1,
         isGlobal    = false,
     },
-
-    -- ── Dungeon kills ─────────────────────────────────────────────────────────────
-    {
-        id          = "builtin003",
-        kind        = KIND.KILL_COUNT,
-        name        = "RFC: BAZZALAN",
-        description = "Besiege Bazzalan im Ragefireabgrund.",
-        points      = 10,
-        critA       = 11519,
-        critB       = 1,
-        isGlobal    = false,
-    }
 }
 
 -- ── Seeding ─────────────────────────────────────────────────────────────────────

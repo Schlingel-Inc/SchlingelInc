@@ -51,8 +51,11 @@ local function CreateCard(parent, cardW, entry)
     titleFs:SetPoint("TOPLEFT", card, "TOPLEFT", CARD_PAD, -CARD_PAD)
     titleFs:SetWidth(cardW - CARD_PAD * 2 - 160)
     titleFs:SetJustifyH("LEFT")
+    local isBuiltin = entry.createdBy == "builtin"
     local nameText = SchlingelInc:SanitizeText(entry.name) or "(ohne Namen)"
-    titleFs:SetText(nameText .. (entry.retired and "  |cff888888(Eingestellt)|r" or ""))
+    titleFs:SetText(nameText
+        .. (entry.retired and "  |cff888888(Eingestellt)|r" or "")
+        .. (isBuiltin and "  |cff888888(Systemerfolg)|r" or ""))
     titleFs:SetTextColor(1, 1, 1, 1)
 
     local kindFs = card:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
@@ -75,25 +78,27 @@ local function CreateCard(parent, cardW, entry)
 
     local height = CARD_PAD + 16 + descFs:GetStringHeight() + 3 + 14 + CARD_PAD
 
-    local editBtn = CreateFrame("Button", nil, card, "UIPanelButtonTemplate")
-    editBtn:SetSize(80, 20)
-    editBtn:SetPoint("TOPLEFT", critFs, "BOTTOMLEFT", 0, -6)
-    editBtn:SetText("Bearbeiten")
-    editBtn:SetScript("OnClick", function()
-        SchlingelInc.Popup:ShowAchievementForm(entry)
-    end)
-
-    if not entry.retired then
-        local retireBtn = CreateFrame("Button", nil, card, "UIPanelButtonTemplate")
-        retireBtn:SetSize(90, 20)
-        retireBtn:SetPoint("LEFT", editBtn, "RIGHT", 6, 0)
-        retireBtn:SetText("Einstellen")
-        retireBtn:SetScript("OnClick", function()
-            StaticPopup_Show("SCHLINGEL_ACHIEVEMENT_RETIRE", entry.name, nil, entry.id)
+    if not isBuiltin then
+        local editBtn = CreateFrame("Button", nil, card, "UIPanelButtonTemplate")
+        editBtn:SetSize(80, 20)
+        editBtn:SetPoint("TOPLEFT", critFs, "BOTTOMLEFT", 0, -6)
+        editBtn:SetText("Bearbeiten")
+        editBtn:SetScript("OnClick", function()
+            SchlingelInc.Popup:ShowAchievementForm(entry)
         end)
-    end
 
-    height = height + 20 + 6
+        if not entry.retired then
+            local retireBtn = CreateFrame("Button", nil, card, "UIPanelButtonTemplate")
+            retireBtn:SetSize(90, 20)
+            retireBtn:SetPoint("LEFT", editBtn, "RIGHT", 6, 0)
+            retireBtn:SetText("Einstellen")
+            retireBtn:SetScript("OnClick", function()
+                StaticPopup_Show("SCHLINGEL_ACHIEVEMENT_RETIRE", entry.name, nil, entry.id)
+            end)
+        end
+
+        height = height + 20 + 6
+    end
 
     card:SetHeight(height)
     return card
