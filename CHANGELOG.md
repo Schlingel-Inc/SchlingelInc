@@ -12,6 +12,13 @@
 - Gildenpanel und Offizier-Panel teilen sich jetzt eine gemeinsame Tab-Leisten-Komponente.
 - Addon-Nachrichten werden jetzt gedrosselt versendet, um Verbindungsprobleme und Aussetzer bei vielen Online-Mitgliedern zu vermeiden.
 - Der "Anfordern"-Button im Fortschritt-Tab prüft jetzt auch gleich die Addon-Versionen mit; der separate "Versionen"-Button wurde entfernt.
+- Neuer "Erfolge"-Tab im Gildenpanel für Mitglieder zum tracken ihrer Erfolge
+- Neuer "Erfolge"-Tab im Offizier-Panel um Benutzerdefinierte Erfolge anlegen zu können
+- Erfolge können über den "Mitglieder"-Tab vergeben werden
+- Standardset an Erfolgen für bestimmte Level, Boss-Kills u.v.m.
+- Anker für diverse Popups können jetzt über das Optionsmenü verschoben werden
+- Broadcast-Funktion für Offiziere um Nachrichten gut sichtbar an alle Mitglieder zu schicken
+- Erweiterung der Offiziers-Liste
 
 # 4.1.2
 

@@ -19,6 +19,7 @@ function SchlingelInc:OnLoad()
     SchlingelInc:InitializeSetupWizard()
     SchlingelInc:InitializeGuildJoinPrompt()
     SchlingelInc.GuildPanel:Initialize()
+    SchlingelInc.Broadcast:Initialize()
 
     SchlingelInc:InitializeOptionsDB()
 
