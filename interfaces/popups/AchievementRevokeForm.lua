@@ -1,15 +1,14 @@
--- interfaces/popups/AchievementGrantForm.lua
--- Small officer popup to manually grant a `manual`-kind (RP), `level`-kind, or
--- `kill_count` achievement to a specific target, opened via "Erfolg verleihen" in
--- MemberContextMenu.lua.
--- Card list mirrors OfficerPanel/TabAchievements.lua's catalog view.
+-- interfaces/popups/AchievementRevokeForm.lua
+-- Small officer popup to remove a previously unlocked `manual`-kind (RP),
+-- `level`-kind, or `kill_count` achievement from a specific target, opened via
+-- "Erfolg entziehen" in MemberContextMenu.lua.
 
 SchlingelInc.Popup = SchlingelInc.Popup or {}
 
 local KIND = SchlingelInc.Achievements.KIND
 
 local KIND_LABELS = {
-    [KIND.LEVEL]  = "Level",
+    [KIND.LEVEL] = "Level",
     [KIND.MANUAL] = "Manuell (RP)",
     [KIND.KILL_COUNT] = "Kill-Count"
 }
@@ -20,17 +19,17 @@ local CARD_GAP = 6
 local CARD_PAD = 8
 local STATUS_TIMEOUT = 5
 
-local currentGrantTarget = nil
+local currentRevokeTarget = nil
 
-StaticPopupDialogs["SCHLINGEL_ACHIEVEMENT_GRANT_CONFIRM"] = {
-    text = "Erfolg \"%s\" an %s verleihen?",
-    button1 = "Verleihen",
+StaticPopupDialogs["SCHLINGEL_ACHIEVEMENT_REVOKE_CONFIRM"] = {
+    text = "Erfolg \"%s\" von %s entfernen?",
+    button1 = "Entfernen",
     button2 = "Abbrechen",
     OnAccept = function(self)
         local data = self.data
-        SchlingelInc.Achievements.ManualGrant:Grant(data.target, data.id)
-        if SchlingelInc.Popup.achievementGrantForm then
-            SchlingelInc.Popup.achievementGrantForm:Hide()
+        SchlingelInc.Achievements.ManualGrant:Revoke(data.target, data.id)
+        if SchlingelInc.Popup.achievementRevokeForm then
+            SchlingelInc.Popup.achievementRevokeForm:Hide()
         end
     end,
     timeout = 0,
@@ -71,8 +70,8 @@ local function CreateCard(parent, cardW, entry, onClick)
     return card
 end
 
-local function BuildForm(frameName)
-    local f = CreateFrame("Frame", frameName, UIParent, "BackdropTemplate")
+local function BuildForm()
+    local f = CreateFrame("Frame", "SchlingelAchievementRevokeForm", UIParent, "BackdropTemplate")
     f:SetSize(FORM_W, FORM_H)
     f:SetFrameStrata("DIALOG")
     f:SetBackdrop(SchlingelInc.Constants.BACKDROP)
@@ -84,9 +83,9 @@ local function BuildForm(frameName)
     f:SetScript("OnDragStart", f.StartMoving)
     f:SetScript("OnDragStop", function(self)
         self:StopMovingOrSizing()
-        SchlingelInc:SaveFramePosition(self, "achievementgrantform_position")
+        SchlingelInc:SaveFramePosition(self, "achievementrevokeform_position")
     end)
-    SchlingelInc:RestoreFramePosition(f, "achievementgrantform_position", "CENTER", 0, 80)
+    SchlingelInc:RestoreFramePosition(f, "achievementrevokeform_position", "CENTER", 0, 80)
     SchlingelInc:RegisterFrameForEscape(f)
     f:Hide()
 
@@ -141,34 +140,34 @@ local function IsGrantableKind(kind)
     return kind == KIND.MANUAL or kind == KIND.LEVEL or kind == KIND.KILL_COUNT
 end
 
-local function RefreshGrantForm(f)
+local function Refresh(f)
     for _, c in ipairs(f.cards) do c:Hide() end
     wipe(f.cards)
 
     local cardW = math.max(1, f.scrollFrame:GetWidth())
     f.scrollChild:SetWidth(cardW)
 
-    local grantable = {}
-    for _, entry in ipairs(SchlingelInc.Achievements.Catalog:GetActive()) do
-        local stillReachable = not f.unreachedSet or f.unreachedSet[entry.id]
-        if IsGrantableKind(entry.kind) and stillReachable then
-            table.insert(grantable, entry)
+    local revokable = {}
+    for _, entry in ipairs(SchlingelInc.Achievements.Catalog:GetAll()) do
+        local isUnlocked = f.reachedSet and f.reachedSet[entry.id]
+        if IsGrantableKind(entry.kind) and isUnlocked then
+            table.insert(revokable, entry)
         end
     end
 
     local yOff = 0
-    if #grantable == 0 then
+    if #revokable == 0 then
         local msg = f.scrollChild:CreateFontString(nil, "OVERLAY", "GameFontNormal")
         msg:SetPoint("TOPLEFT", f.scrollChild, "TOPLEFT", 4, 0)
-        msg:SetText(f.unreachedSet and "Spieler hat bereits alle verleihbaren Erfolge." or "Keine verleihbaren Erfolge vorhanden.")
+        msg:SetText(f.reachedSet and "Spieler hat keine entziehbaren Erfolge." or "Keine entziehbaren Erfolge vorhanden.")
         msg:SetTextColor(0.6, 0.6, 0.6, 1)
         table.insert(f.cards, msg)
         yOff = -20
     else
-        for _, entry in ipairs(grantable) do
+        for _, entry in ipairs(revokable) do
             local card = CreateCard(f.scrollChild, cardW, entry, function(selected)
-                StaticPopup_Show("SCHLINGEL_ACHIEVEMENT_GRANT_CONFIRM", selected.name, currentGrantTarget,
-                    { target = currentGrantTarget, id = selected.id })
+                StaticPopup_Show("SCHLINGEL_ACHIEVEMENT_REVOKE_CONFIRM", selected.name, currentRevokeTarget,
+                    { target = currentRevokeTarget, id = selected.id })
             end)
             card:SetPoint("TOPLEFT", f.scrollChild, "TOPLEFT", 0, yOff)
             table.insert(f.cards, card)
@@ -179,45 +178,45 @@ local function RefreshGrantForm(f)
     f.scrollChild:SetHeight(math.max(1, -yOff))
 end
 
-function SchlingelInc.Popup:ShowAchievementGrantForm(targetName)
+function SchlingelInc.Popup:ShowAchievementRevokeForm(targetName)
     if not targetName or targetName == "" then return end
-    if not SchlingelInc.Popup.achievementGrantForm then
-        SchlingelInc.Popup.achievementGrantForm = BuildForm("SchlingelAchievementGrantForm")
+    if not SchlingelInc.Popup.achievementRevokeForm then
+        SchlingelInc.Popup.achievementRevokeForm = BuildForm()
     end
-    local f = SchlingelInc.Popup.achievementGrantForm
+    local f = SchlingelInc.Popup.achievementRevokeForm
 
     if f.timeoutTimer then f.timeoutTimer:Cancel() f.timeoutTimer = nil end
 
-    currentGrantTarget = targetName
-    f.unreachedSet = nil
-    f.titleFs:SetText("Erfolg verleihen: " .. targetName)
+    currentRevokeTarget = targetName
+    f.reachedSet = nil
+    f.titleFs:SetText("Erfolg entziehen: " .. targetName)
     f.statusFs:SetTextColor(0.8, 0.8, 0.4, 1)
     f.statusFs:SetText("Frage Freischaltungsstatus ab...")
-    RefreshGrantForm(f)
-    SchlingelInc:RestoreFramePosition(f, "achievementgrantform_position", "CENTER", 0, 80)
+    Refresh(f)
+    SchlingelInc:RestoreFramePosition(f, "achievementrevokeform_position", "CENTER", 0, 80)
     f:Show()
 
-    SchlingelInc.Achievements.Progress:RequestUnreached(targetName)
+    SchlingelInc.Achievements.Progress:RequestReached(targetName)
     f.timeoutTimer = C_Timer.NewTimer(STATUS_TIMEOUT, function()
         f.timeoutTimer = nil
-        if currentGrantTarget == targetName and not f.unreachedSet then
+        if currentRevokeTarget == targetName and not f.reachedSet then
             f.statusFs:SetTextColor(1, 0.4, 0.4, 1)
             f.statusFs:SetText("Status konnte nicht bestätigt werden — bitte beim Spieler nachfragen.")
         end
     end)
 end
 
--- Routes an incoming ACH_UNREACHED response to the popup if it's still open for
+-- Routes an incoming ACH_REACHED response to the revoke popup if it's still open for
 -- this sender; stale responses (form closed or reopened for someone else) are ignored.
-function SchlingelInc.Popup:OnUnreachedReceived(senderShort, ids)
-    local f = SchlingelInc.Popup.achievementGrantForm
-    if not f or not f:IsShown() or currentGrantTarget ~= senderShort then return end
+function SchlingelInc.Popup:OnReachedReceived(senderShort, ids)
+    local f = SchlingelInc.Popup.achievementRevokeForm
+    if not f or not f:IsShown() or currentRevokeTarget ~= senderShort then return end
 
     if f.timeoutTimer then f.timeoutTimer:Cancel() f.timeoutTimer = nil end
 
     local set = {}
     for _, id in ipairs(ids) do set[id] = true end
-    f.unreachedSet = set
+    f.reachedSet = set
     f.statusFs:SetText("")
-    RefreshGrantForm(f)
+    Refresh(f)
 end

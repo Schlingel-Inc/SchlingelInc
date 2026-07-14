@@ -19,6 +19,24 @@ local function OwnName()
     return UnitName("player")
 end
 
+local function SortEntries(entries)
+    table.sort(entries, function(a, b)
+        local nameA = string.lower(tostring(a and a.name or ""))
+        local nameB = string.lower(tostring(b and b.name or ""))
+        if nameA ~= nameB then
+            return nameA < nameB
+        end
+
+        local createdAtA = tonumber(a and a.createdAt) or 0
+        local createdAtB = tonumber(b and b.createdAt) or 0
+        if createdAtA ~= createdAtB then
+            return createdAtA < createdAtB
+        end
+
+        return tostring(a and a.id or "") < tostring(b and b.id or "")
+    end)
+end
+
 local function SanitizeForMessage(text)
     text = (text or ""):gsub("|", "/")
     return SchlingelInc:SanitizeText(text) or text
@@ -119,7 +137,7 @@ function Catalog:GetAll()
     for _, entry in pairs(SchlingelAchievementDB.entries) do
         table.insert(out, entry)
     end
-    table.sort(out, function(a, b) return a.createdAt < b.createdAt end)
+    SortEntries(out)
     return out
 end
 
@@ -129,7 +147,7 @@ function Catalog:GetActive()
     for _, entry in pairs(SchlingelAchievementDB.entries) do
         if not entry.retired then table.insert(out, entry) end
     end
-    table.sort(out, function(a, b) return a.createdAt < b.createdAt end)
+    SortEntries(out)
     return out
 end
 

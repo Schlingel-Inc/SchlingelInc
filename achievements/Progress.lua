@@ -10,6 +10,8 @@ local KIND = SchlingelInc.Achievements.KIND
 
 local MSG_UNREACHED_REQUEST = "ACH_UNREACHED_REQUEST"
 local MSG_UNREACHED         = "ACH_UNREACHED"
+local MSG_REACHED_REQUEST   = "ACH_REACHED_REQUEST"
+local MSG_REACHED           = "ACH_REACHED"
 
 local function IsGlobalFlag(value)
     return value == true or value == 1 or value == "1"
@@ -149,9 +151,33 @@ function Progress:Unlock(id)
     return true
 end
 
+-- Removes an unlock from the local character/account, clearing any stored kill
+-- progress alongside it so a mistaken grant does not immediately reappear.
+function Progress:Revoke(id)
+    EnsureStores()
+
+    local hadUnlock = SchlingelOwnAchievements.unlocked[id] ~= nil
+        or SchlingelAchievementDB.globalUnlocked[id] ~= nil
+    if not hadUnlock then return false end
+
+    SchlingelOwnAchievements.unlocked[id] = nil
+    SchlingelAchievementDB.globalUnlocked[id] = nil
+    SchlingelOwnAchievements.killProgress[id] = nil
+    SchlingelAchievementDB.globalKillProgress[id] = nil
+
+    if SchlingelInc.GuildProfiles then
+        SchlingelInc.GuildProfiles:Broadcast()
+    end
+    if SchlingelInc.GuildPanel and SchlingelInc.GuildPanel.RefreshAchievements then
+        SchlingelInc.GuildPanel:RefreshAchievements()
+    end
+
+    return true
+end
+
 -- Achievement kinds an officer can manually grant (mirrors ManualGrant's allow-list).
 local function IsGrantableKind(kind)
-    return kind == KIND.LEVEL or kind == KIND.MANUAL
+    return kind == KIND.LEVEL or kind == KIND.MANUAL or kind == KIND.KILL_COUNT
 end
 
 -- Own not-yet-unlocked grantable achievement ids, for the achievement-grant popup.
@@ -168,6 +194,18 @@ local function OwnUnreachedGrantableIds()
     return ids
 end
 
+-- Own currently unlocked grantable achievement ids, including retired entries so
+-- officers can still remove achievements that are no longer obtainable.
+local function OwnReachedGrantableIds()
+    local ids = {}
+    for _, entry in ipairs(SchlingelInc.Achievements.Catalog:GetAll()) do
+        if IsGrantableKind(entry.kind) and Progress:IsUnlocked(entry.id) then
+            table.insert(ids, entry.id)
+        end
+    end
+    return ids
+end
+
 -- Officer action: ask targetName's client which grantable achievements it hasn't
 -- unlocked yet. The response arrives asynchronously via HandleMessage and is routed
 -- to the achievement-grant popup if it's still open for this target.
@@ -176,9 +214,22 @@ function Progress:RequestUnreached(targetName)
     ChatThrottleLib:SendAddonMessage("NORMAL", SchlingelInc.prefix, MSG_UNREACHED_REQUEST, "WHISPER", targetName, "SchlingelInc-Achievements")
 end
 
+-- Officer action: ask targetName's client which grantable achievements it currently
+-- has unlocked, so the revoke popup can offer only removable entries.
+function Progress:RequestReached(targetName)
+    if not targetName or targetName == "" then return end
+    ChatThrottleLib:SendAddonMessage("NORMAL", SchlingelInc.prefix, MSG_REACHED_REQUEST, "WHISPER", targetName, "SchlingelInc-Achievements")
+end
+
 function Progress:HandleMessage(message, sender)
     if message == MSG_UNREACHED_REQUEST then
         local payload = table.concat({ MSG_UNREACHED, unpack(OwnUnreachedGrantableIds()) }, "|")
+        ChatThrottleLib:SendAddonMessage("NORMAL", SchlingelInc.prefix, payload, "WHISPER", sender, "SchlingelInc-Achievements")
+        return true
+    end
+
+    if message == MSG_REACHED_REQUEST then
+        local payload = table.concat({ MSG_REACHED, unpack(OwnReachedGrantableIds()) }, "|")
         ChatThrottleLib:SendAddonMessage("NORMAL", SchlingelInc.prefix, payload, "WHISPER", sender, "SchlingelInc-Achievements")
         return true
     end
@@ -189,6 +240,16 @@ function Progress:HandleMessage(message, sender)
         local senderShort = SchlingelInc:RemoveRealmFromName(sender)
         if SchlingelInc.Popup and SchlingelInc.Popup.OnUnreachedReceived then
             SchlingelInc.Popup:OnUnreachedReceived(senderShort, ids)
+        end
+        return true
+    end
+
+    if message == MSG_REACHED or message:match("^" .. MSG_REACHED .. "|") then
+        local ids = SchlingelInc:ParsePipeMessage(message)
+        table.remove(ids, 1) -- drop the MSG_REACHED tag
+        local senderShort = SchlingelInc:RemoveRealmFromName(sender)
+        if SchlingelInc.Popup and SchlingelInc.Popup.OnReachedReceived then
+            SchlingelInc.Popup:OnReachedReceived(senderShort, ids)
         end
         return true
     end

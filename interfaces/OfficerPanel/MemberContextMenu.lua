@@ -72,6 +72,15 @@ UIDropDownMenu_Initialize(contextMenu, function(self, level)
         SchlingelInc.Popup:ShowAchievementGrantForm(targetName)
     end
     UIDropDownMenu_AddButton(info, level)
+
+    info = UIDropDownMenu_CreateInfo()
+    info.notCheckable = true
+    info.text = "Erfolg entziehen"
+    info.func = function()
+        CloseDropDownMenus()
+        SchlingelInc.Popup:ShowAchievementRevokeForm(targetName)
+    end
+    UIDropDownMenu_AddButton(info, level)
 end, "MENU")
 
 -- Public API
