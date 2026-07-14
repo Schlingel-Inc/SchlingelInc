@@ -1,3 +1,10 @@
+# 4.2.1
+
+- KILL_COUNT Achievements können jetzt temporär von Offis vergeben werden
+- Layering des Mitglieder- und des Offizier-Interface angepasst
+- Keybindings für beide Interfaces sind jetzt verfügbar
+- Die XP Leiste für Spieler am Cap wird jetzt im Offizier-Interface angezeigt
+
 # 4.2.0
 
 - Neuer "Erfolge"-Tab im Gildenpanel: zeigt den gemeinsamen Erfolge-Katalog mit dem eigenen Freischalt-Status (nicht erreichte Erfolge grau dargestellt). Level-Erfolge (auch "ohne zu sterben") und Kill-Zähler-Erfolge werden automatisch erkannt, RP-Erfolge werden von Offizieren manuell verliehen. Offiziere verwalten den Katalog über einen neuen "Erfolge"-Tab im Offizier-Panel. Erfolgspunkte fließen in eine Erfolge-Punktzahl, die im Gildenprofil mitgesendet wird und im Spieler-Tooltip erscheint.

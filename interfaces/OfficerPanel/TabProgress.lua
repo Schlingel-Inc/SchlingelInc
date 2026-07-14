@@ -425,10 +425,10 @@ function OfficerPanel.BuildProgressTab(pc)
             barBg:SetColorTexture(0.15, 0.15, 0.15, 1)
 
             local fillW = 0
-            if atCap then
-                fillW = BAR_W
-            elseif entry.hasProgress then
+            if entry.hasProgress then
                 fillW = math.max(1, math.floor(BAR_W * entry.xpPct / 100))
+            elseif atCap then
+                fillW = BAR_W
             end
             local fill = row:CreateTexture(nil, "ARTWORK")
             fill:SetSize(fillW, 8)
@@ -441,15 +441,17 @@ function OfficerPanel.BuildProgressTab(pc)
             pctFs:SetPoint("LEFT", row, "LEFT", BAR_X + BAR_W + 4, 0)
             pctFs:SetWidth(41)
             pctFs:SetJustifyH("CENTER")
-            if atCap then
-                pctFs:SetText("Cap")
-                pctFs:SetTextColor(1, 0.82, 0, 1)
-            elseif not entry.hasProgress then
-                pctFs:SetText("\226\128\148")
-                pctFs:SetTextColor(0.55, 0.55, 0.55, 1)
+            if not entry.hasProgress then
+                if atCap then
+                    pctFs:SetText("Cap")
+                    pctFs:SetTextColor(1, 0.82, 0, 1)
+                else
+                    pctFs:SetText("\226\128\148")
+                    pctFs:SetTextColor(0.55, 0.55, 0.55, 1)
+                end
             else
                 pctFs:SetText(entry.xpPct .. "%")
-                pctFs:SetTextColor(1, 1, 1, 1)
+                pctFs:SetTextColor(atCap and 1 or 1, atCap and 0.82 or 1, atCap and 0 or 1, 1)
             end
 
             local goldFs = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")

@@ -10,7 +10,8 @@ local BACKDROP = {
 local function BuildPanel()
     local f = CreateFrame("Frame", "SchlingelIncOfficerPanel", UIParent, "BackdropTemplate")
     f:SetSize(OfficerPanel.PANEL_W, OfficerPanel.PANEL_H)
-    f:SetFrameStrata("MEDIUM")
+    f:SetFrameStrata("HIGH")
+    f:SetToplevel(true)
     f:SetMovable(true)
     f:EnableMouse(true)
     f:RegisterForDrag("LeftButton")
@@ -88,6 +89,7 @@ local function BuildPanel()
     OfficerPanel.tabBtns         = switcher.tabBtns
     OfficerPanel.tabContents     = switcher.tabContents
     OfficerPanel.tabFilterPanels = switcher.filterPanels
+    f.tabSwitcher                = switcher
 
     -- ── Build tab content ─────────────────────────────────────────────────
     OfficerPanel.BuildRulesTab(OfficerPanel.tabContents["rules"])
@@ -120,22 +122,30 @@ end
 
 -- ── Public API ────────────────────────────────────────────────────────────────
 
-function SchlingelInc.OfficerPanel:Toggle()
+function SchlingelInc.OfficerPanel:Create()
     if not CanGuildInvite() then return end
     if not OfficerPanel.frame then
         OfficerPanel.frame = BuildPanel()
     end
+    return OfficerPanel.frame
+end
+
+function SchlingelInc.OfficerPanel:Toggle()
+    if not CanGuildInvite() then return end
+    OfficerPanel.frame = self:Create()
     if OfficerPanel.frame:IsShown() then
         OfficerPanel.frame:Hide()
     else
         OfficerPanel.frame:Show()
+        OfficerPanel.frame:Raise()
     end
 end
 
 function SchlingelInc.OfficerPanel:ShowInvites()
     if not CanGuildInvite() then return end
-    if not OfficerPanel.frame then OfficerPanel.frame = BuildPanel() end
+    OfficerPanel.frame = self:Create()
     if not OfficerPanel.frame:IsShown() then OfficerPanel.frame:Show() end
+    OfficerPanel.frame:Raise()
     OfficerPanel.frame.SwitchToInvites()
 end
 

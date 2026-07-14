@@ -1,0 +1,8 @@
+<Bindings>
+    <Binding name="SCHLINGELINC_TOGGLE_GUILDPANEL" category="Schlingel Inc">
+        SchlingelInc_Binding_ToggleGuildPanel()
+    </Binding>
+    <Binding name="SCHLINGELINC_TOGGLE_OFFICERPANEL" category="Schlingel Inc">
+        SchlingelInc_Binding_ToggleOfficerPanel()
+    </Binding>
+</Bindings>

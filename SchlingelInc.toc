@@ -2,8 +2,9 @@
 ## Title: Schlingel Inc
 ## Notes: Visit DerHauges Discord for more information: https://discord.gg/KXkyUZW
 ## Author: Cricksu, Pudi, Canasterzaster
-## Version: 4.2.0
+## Version: 4.2.1
 ## IconTexture: Interface\AddOns\SchlingelInc\media\graphics\SI_Transp_512_x_512_px.tga
+## Bindings: Bindings.xml
 ## SavedVariablesPerCharacter: CharacterDeaths, SchlingelOptionsDB, SchlingelOwnProfile, SchlingelOwnSchande, SchlingelOwnAchievements
 ## SavedVariables: DiscordHandle, Pronouns, SchlingelGuildProfileCache, SchlingelGuildDB, SchlingelProgressDB, SchlingelRaidDB, SchlingelAchievementDB
 
@@ -81,6 +82,7 @@ interfaces\GuildPanel\TabSchande.lua
 interfaces\GuildPanel\TabRaid.lua
 interfaces\GuildPanel\TabAchievements.lua
 interfaces\GuildPanel\Frame.lua
+Bindings.lua
 death\Death.lua
 death\DeathCauseHandler.lua
 death\LastMessageHandler.lua
