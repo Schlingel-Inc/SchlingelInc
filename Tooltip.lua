@@ -50,6 +50,15 @@ _G.GameTooltip:HookScript("OnTooltipSetUnit", function(self)
         _G.GameTooltip:AddDoubleLine("Tode:", tostring(profile.deaths), 0.8, 0.2, 0.2, 0.8, 0.2, 0.2)
     end
 
+    -- Achievement rank + Schlingelpunkte
+    if profile.achievementScore and profile.achievementScore > 0 then
+        local rank = SchlingelInc.Achievements.Progress:GetRankForScore(profile.achievementScore)
+        if rank then
+            _G.GameTooltip:AddDoubleLine("Rang:", rank.name, 1, 0.82, 0, 1, 0.82, 0)
+        end
+        _G.GameTooltip:AddDoubleLine("Schlingelpunkte:", tostring(profile.achievementScore), 1, 0.82, 0, 1, 0.82, 0)
+    end
+
     -- Dev info: NPC ID shown only to players with the Devschlingel rank
     local _, myRank = _G.GetGuildInfo("player")
     if myRank == "Devschlingel" then

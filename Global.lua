@@ -234,14 +234,16 @@ function SchlingelInc:SaveFramePosition(frame, dbKey)
     SchlingelOptionsDB = SchlingelOptionsDB or {}
     local point, _, relPoint, x, y = frame:GetPoint()
     if not point then return end
+    relPoint = relPoint or point
     SchlingelOptionsDB[dbKey] = { point = point, relPoint = relPoint, x = x, y = y }
 end
 
 function SchlingelInc:RestoreFramePosition(frame, dbKey, defaultPoint, defaultX, defaultY)
     local p = SchlingelOptionsDB and SchlingelOptionsDB[dbKey]
-    if p and p.point and p.relPoint then
+    if p and p.point then
+        local relPoint = p.relPoint or p.point
         frame:ClearAllPoints()
-        frame:SetPoint(p.point, UIParent, p.relPoint, p.x, p.y)
+        frame:SetPoint(p.point, UIParent, relPoint, tonumber(p.x) or 0, tonumber(p.y) or 0)
     else
         frame:SetPoint(defaultPoint or "CENTER", UIParent, defaultPoint or "CENTER", defaultX or 0, defaultY or 0)
     end

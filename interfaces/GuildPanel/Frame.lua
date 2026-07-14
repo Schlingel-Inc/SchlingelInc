@@ -84,6 +84,11 @@ function SchlingelInc.GuildPanel:Create()
                   SchlingelInc.Raid:RequestSync()
                   SchlingelInc.GuildPanel:RefreshRaid()
               end },
+            { id = "achievements", label = "Erfolge",
+              onSelected = function()
+                  SchlingelInc.Achievements.Catalog:RequestSync()
+                  SchlingelInc.GuildPanel:RefreshAchievements()
+              end },
         },
         defaultTab = "roster",
     })
@@ -92,6 +97,7 @@ function SchlingelInc.GuildPanel:Create()
     GP.BuildRosterTab(switcher.tabContents["roster"], f)
     GP.BuildSchandeTab(switcher.tabContents["schande"])
     GP.BuildRaidTab(switcher.tabContents["raid"])
+    GP.BuildAchievementsTab(switcher.tabContents["achievements"])
 
     f:Hide()
     self.frame = f
@@ -231,6 +237,13 @@ end
 
 function SchlingelInc.GuildPanel:RefreshRaid()
     local content = self.frame and self.frame.tabSwitcher and self.frame.tabSwitcher.tabContents.raid
+    if content and content.Refresh then
+        content.Refresh()
+    end
+end
+
+function SchlingelInc.GuildPanel:RefreshAchievements()
+    local content = self.frame and self.frame.tabSwitcher and self.frame.tabSwitcher.tabContents.achievements
     if content and content.Refresh then
         content.Refresh()
     end

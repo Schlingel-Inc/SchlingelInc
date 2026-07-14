@@ -6,6 +6,10 @@ SchlingelOptionsDB = SchlingelOptionsDB or {}
 local AceConfig       = LibStub("AceConfig-3.0")
 local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 
+local function TogglePopupEditMode()
+    SchlingelInc.PopupEditMode:Toggle()
+end
+
 -- Generic getter/setter: arg key must match the SchlingelOptionsDB key
 local function get(info) return SchlingelOptionsDB[info[#info]] end
 local function set(info, val) SchlingelOptionsDB[info[#info]] = val end
@@ -46,6 +50,19 @@ local options = {
                     width = "full",
                     get   = get,
                     set   = set,
+                },
+                popup_edit_mode = {
+                    type  = "execute",
+                    name  = function()
+                        if SchlingelInc.PopupEditMode and SchlingelInc.PopupEditMode:IsEnabled() then
+                            return "Popup-Edit-Modus beenden"
+                        end
+                        return "Popup-Edit-Modus starten"
+                    end,
+                    desc  = "Zeigt Platzhalter für alle Popup-Fenster an, damit du ihre Positionen speichern kannst",
+                    order = 4,
+                    width = "full",
+                    func  = TogglePopupEditMode,
                 },
             },
         },
@@ -158,6 +175,30 @@ local options = {
                         },
                     },
                 },
+                achievement = {
+                    type   = "group",
+                    name   = "Erfolge-Meldungen",
+                    inline = true,
+                    order  = 5,
+                    args   = {
+                        achievementmessages = {
+                            type  = "toggle",
+                            name  = "Aktiviert",
+                            desc  = "Aktiviert die Erfolge-Meldungen",
+                            order = 1,
+                            get   = get,
+                            set   = set,
+                        },
+                        achievementmessages_sound = {
+                            type  = "toggle",
+                            name  = "Ton",
+                            desc  = "Aktiviert den Ton für die Erfolge-Meldungen",
+                            order = 2,
+                            get   = get,
+                            set   = set,
+                        },
+                    },
+                },
             },
         },
         sound = {
@@ -214,10 +255,12 @@ function SchlingelInc:InitializeOptionsDB()
         deathframe_always_small = false,
         levelmessages       = true,
         levelmessages_sound = true,
-        capmessages         = true,
-        capmessages_sound   = true,
-        sound_pack          = "standard",
-        sound_channel       = "Master",
+        capmessages               = true,
+        capmessages_sound         = true,
+        achievementmessages       = true,
+        achievementmessages_sound = true,
+        sound_pack                = "standard",
+        sound_channel             = "Master",
     }
     for key, value in pairs(defaults) do
         if SchlingelOptionsDB[key] == nil then

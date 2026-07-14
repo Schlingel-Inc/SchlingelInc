@@ -14,7 +14,20 @@ StaticPopupDialogs["SCHLINGEL_DEATHSET_SET"] = {
         SchlingelInc.Death:SetRemote(self.data, self.EditBox:GetText())
     end,
     EditBoxOnEnterPressed = function(self)
-        self:GetParent().button1:Click()
+        local dialog = self:GetParent()
+        if not dialog then return end
+
+        local button1 = (dialog.GetName and _G[dialog:GetName() .. "Button1"]) or dialog.button1
+        if button1 and button1.Click then
+            button1:Click()
+            return
+        end
+
+        local info = dialog.which and StaticPopupDialogs[dialog.which]
+        if info and info.OnAccept then
+            info.OnAccept(dialog)
+            dialog:Hide()
+        end
     end,
     EditBoxOnEscapePressed = function(self)
         self:GetParent():Hide()
@@ -48,6 +61,15 @@ UIDropDownMenu_Initialize(contextMenu, function(self, level)
     info.func = function()
         CloseDropDownMenus()
         StaticPopup_Show("SCHLINGEL_DEATHSET_SET", targetName, nil, targetName)
+    end
+    UIDropDownMenu_AddButton(info, level)
+
+    info = UIDropDownMenu_CreateInfo()
+    info.notCheckable = true
+    info.text = "Erfolg verleihen"
+    info.func = function()
+        CloseDropDownMenus()
+        SchlingelInc.Popup:ShowAchievementGrantForm(targetName)
     end
     UIDropDownMenu_AddButton(info, level)
 end, "MENU")

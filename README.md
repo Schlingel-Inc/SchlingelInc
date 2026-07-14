@@ -57,6 +57,21 @@ Das Addon gratuliert automatisch bei wichtigen Level-Meilensteinen.
 - Automatische Guild Chat Benachrichtigung bei Meilensteinen
 - Nachricht: "Spieler hat Level X erreicht! Schlingel! Schlingel! Schlingel!"
 
+### Erfolge (Achievements)
+
+Ein gildenweiter Erfolge-Katalog im Gildenpanel ("Erfolge"-Tab), mit dem eigenen Freischalt-Status.
+
+**Erfolgs-Arten:**
+- **Level-Erfolge:** Automatisch erkannt, sobald du das jeweilige Level erreichst – inklusive "ohne zu sterben"-Varianten. Alle klassischen Level-Meilensteine (10/20/25/30/40/50/60) sind ab Werk als Erfolge vorhanden, auch rückwirkend für bereits höherstufige Charaktere
+- **Kill-Zähler-Erfolge:** Automatisch erkannt über den Kampf-Log (z.B. "Besiege Boss X")
+- **RP-Erfolge:** Keine automatischen Kriterien – werden von Offizieren per Rechtsklick im Mitglieder-Tab manuell verliehen
+
+**Weitere Features:**
+- Jeder Erfolg gibt Punkte, die zu einer Erfolge-Punktzahl aufsummiert werden – sichtbar im Gildenprofil und im Spieler-Tooltip, inklusive Rang (z.B. "Schlingel-Neuling" bis "Schlingel-Legende")
+- Offiziere verwalten den Katalog über einen eigenen "Erfolge"-Tab im Offizier-Panel (anlegen, bearbeiten, einstellen) – die ab Werk vorhandenen Level-Meilensteine sind als Systemerfolge geschützt und können nicht verändert werden
+- Erfolge können pro Charakter oder "Global" (account-weit) laufen
+- Offiziere können Level-Erfolge auch manuell verleihen (z.B. um einen strittigen Death-Counter-Fall zu klären) – das Verleihen-Fenster fragt beim Zielspieler live ab, was noch nicht erreicht wurde, und zeigt nur diese Erfolge zur Auswahl an
+
 ### Rules Enforcement
 
 Das Addon erzwingt automatisch die Gilden-Regeln (konfiguriert über Gildeninfo).
@@ -97,6 +112,31 @@ Discord Handles werden für die Gilden-Kommunikation gespeichert.
 
 > **Einrichtung:** Beim ersten Login erscheint automatisch ein Fenster. Gib einfach deinen Discord Namen ein. Später kannst du ihn mit `/setHandle` ändern.
 
+### Raid-Planung (LFG-light)
+
+Ein "Raid"-Tab im Gildenpanel zum unkomplizierten Organisieren von Raids innerhalb der Gilde.
+
+**Features:**
+- Raids posten mit Titel, Instanz, Datum/Uhrzeit und optionaler Notiz
+- Per Klick mit Rolle zusagen
+- Einträge werden gildenweit synchronisiert und laufen nach dem Termin automatisch ab
+
+### Schande-System
+
+Ein RP-Tribunal-System: Offiziere können einem Charakter eine "Schande" (Verfehlung/Aufgabe) auferlegen, die im eigenen "Schande"-Tab im Gildenpanel sichtbar ist.
+
+**Features:**
+- Eigener "Schande"-Tab im Gildenpanel zeigt Anzahl, Status und Aufgabe
+- Offiziere verhängen und heben Schande direkt über die Schande-Ansicht im Mitglieder-Tab auf (Rechtsklick auf einen Spieler)
+
+### Gilden-Broadcast
+
+Offiziere können eine Nachricht gut sichtbar an alle Online-Mitglieder schicken (Bildschirmmitte als Raid-Warnung plus Chatausgabe).
+
+**Slash Commands:**
+- `/si broadcast <Nachricht>`
+- `/sib <Nachricht>` (Kurzform)
+
 ### Tooltip Erweiterungen
 
 Erweitert Tooltips mit nützlichen Informationen.
@@ -129,7 +169,8 @@ Spezielle Funktionen für Gildenoffiziere.
 - **Regeln konfigurieren:** Briefkasten, Auktionshaus, Handel, Gruppierung, SoD-Händler, Duelle und Level Cap direkt im Spiel ein-/ausschalten
 - **Gildeninfo aktualisieren:** Änderungen werden mit einem Klick in die Gildeninfo geschrieben und sofort von allen Mitgliedern geladen
 - **Inaktive Mitglieder:** Zeigt Mitglieder die 10+ Tage offline sind, mit Name, Level, Rang und Offline-Dauer sowie direktem Entfernen-Button
-- **Fortschritt:** Übersicht über Level und XP-Fortschritt aller Gildenmitglieder – wird automatisch aktualisiert wenn Mitglieder einloggen, die Zone wechseln oder aktiv leveln. Daten bleiben über Reloads hinweg erhalten
+- **Mitglieder:** Übersicht über Level und XP-Fortschritt aller Gildenmitglieder – wird automatisch aktualisiert wenn Mitglieder einloggen, die Zone wechseln oder aktiv leveln. Daten bleiben über Reloads hinweg erhalten. Rechtsklick auf einen Spieler öffnet ein Kontextmenü mit "Schande-Ansicht öffnen", "Deathset setzen" und "Erfolg verleihen"
+- **Erfolge:** Katalog der Gilden-Erfolge anlegen, bearbeiten und einstellen (ab Werk vorhandene Level-Meilensteine sind geschützt und nicht editierbar)
 - **Beitrittsanfragen:** Eingehende Anfragen mit Name, Level, XP, Gold und Zone anzeigen und per Klick annehmen oder ablehnen
 
 ### Automatische Optimierungen
@@ -167,11 +208,14 @@ Das Addon hat einige optionale Einstellungen die du im WoW Options-Menü unter "
 | **Level-Up Ton** | Aktiviert/Deaktiviert den Ton bei Level-Up Meldungen |
 | **Cap-Meldungen** | Aktiviert/Deaktiviert Popups beim Erreichen des Level Caps |
 | **Cap Ton** | Aktiviert/Deaktiviert den Ton bei Cap-Meldungen |
+| **Erfolge-Meldungen** | Aktiviert/Deaktiviert die Popup-Benachrichtigung bei freigeschalteten Erfolgen |
+| **Erfolge-Meldungen Ton** | Aktiviert/Deaktiviert den Ton bei Erfolge-Meldungen |
 | **Soundpaket** | Standard WoW Sounds oder Torro Sounds |
 | **Soundkanal** | Wähle den ingame Lautstärkeregler für Schlingel-Sounds |
 | **Duelle ablehnen** | Duell-Anfragen automatisch ablehnen |
 | **Discord Handle im Chat** | Discord Handle in Gildenchat-Nachrichten anzeigen |
 | **Version anzeigen** | Zeigt Addon-Versionen im Gildenchat an |
+| **Popup-Edit-Modus** | Zeigt Platzhalter für alle Popup-Fenster an, um deren Positionen unabhängig vom eigentlichen Auslöser zu setzen und zu speichern |
 
 ---
 
@@ -183,18 +227,22 @@ Das Addon hat einige optionale Einstellungen die du im WoW Options-Menü unter "
 - **Discord Handle ändern:** `/setHandle <handle>` um den Discord Handle zu ändern
 - **Gildenbeitritt:** Linksklick auf Minimap-Icon – erst Profil einrichten, dann Beitrittsanfrage senden
 - **Todeszähler setzen:** Rechtsklick auf einen Spieler im Mitglieder-Tab (Offizier-Panel) → "Deathset setzen"
+- **Erfolg manuell verleihen:** Rechtsklick auf einen Spieler im Mitglieder-Tab (Offizier-Panel) → "Erfolg verleihen"
+- **Gilden-Broadcast senden:** `/si broadcast <Nachricht>` oder `/sib <Nachricht>`
 
 ---
 
 ## Technische Details
 
 - **Interface-Version:** 11508 (WoW Season of Discovery)
-- **Addon-Version:** 4.0.0
+- **Addon-Version:** 4.2.0
 
 **SavedVariables (per Character):**
 - `SchlingelOptionsDB` - Einstellungen und UI-Positionen
 - `CharacterDeaths` - Todeszähler
 - `SchlingelOwnProfile` - Eigenes Profil (Rolle, Berufe)
+- `SchlingelOwnSchande` - Eigene Schande-Einträge
+- `SchlingelOwnAchievements` - Eigener Erfolge-Fortschritt (nicht-globale Erfolge)
 
 **SavedVariables (Account-wide):**
 - `DiscordHandle` - Discord Handle
@@ -202,14 +250,20 @@ Das Addon hat einige optionale Einstellungen die du im WoW Options-Menü unter "
 - `SchlingelGuildProfileCache` - Profilcache aller Gildenmitglieder
 - `SchlingelGuildDB` - Gilden-Konfiguration (Offiziersränge)
 - `SchlingelProgressDB` - Level- und XP-Fortschritt aller Mitglieder (nur Offiziere)
+- `SchlingelRaidDB` - Gepostete Raid-Einträge und Zusagen
+- `SchlingelAchievementDB` - Erfolge-Katalog sowie globale Freischaltungen
 
 **Addon Message Prefixes:**
 - `SchlingelInc` - Guild Communication
 
 **Libraries:**
 - LibStub
+- CallbackHandler-1.0
 - LibDataBroker-1.1
 - LibDBIcon-1.0
+- ChatThrottleLib-1.0
+- AceConfig-3.0
+- AceGUI-3.0
 
 ---
 
