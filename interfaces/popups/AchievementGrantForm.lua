@@ -17,6 +17,7 @@ local FORM_W  = 340
 local FORM_H  = 420
 local CARD_GAP = 6
 local CARD_PAD = 8
+local UNREACHED_TIMEOUT = 5
 
 local currentTarget = nil
 
@@ -99,16 +100,26 @@ local function BuildForm()
     local closeBtn = CreateFrame("Button", nil, f, "UIPanelCloseButton")
     closeBtn:SetSize(20, 20)
     closeBtn:SetPoint("TOPRIGHT", f, "TOPRIGHT", -2, -2)
-    closeBtn:SetScript("OnClick", function() f:Hide() end)
+    closeBtn:SetScript("OnClick", function()
+        if f.timeoutTimer then f.timeoutTimer:Cancel() f.timeoutTimer = nil end
+        f:Hide()
+    end)
+
+    local statusFs = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    statusFs:SetPoint("TOP", f, "TOP", 0, -32)
+    statusFs:SetPoint("LEFT", f, "LEFT", 10, 0)
+    statusFs:SetPoint("RIGHT", f, "RIGHT", -10, 0)
+    statusFs:SetJustifyH("CENTER")
+    f.statusFs = statusFs
 
     local divider = f:CreateTexture(nil, "ARTWORK")
     divider:SetHeight(1)
     divider:SetColorTexture(0.4, 0.4, 0.4, 0.7)
-    divider:SetPoint("TOPLEFT",  f, "TOPLEFT",  10, -38)
-    divider:SetPoint("TOPRIGHT", f, "TOPRIGHT", -10, -38)
+    divider:SetPoint("TOPLEFT",  f, "TOPLEFT",  10, -46)
+    divider:SetPoint("TOPRIGHT", f, "TOPRIGHT", -10, -46)
 
     local scrollFrame = CreateFrame("ScrollFrame", nil, f, "UIPanelScrollFrameTemplate")
-    scrollFrame:SetPoint("TOPLEFT",     f, "TOPLEFT",     10, -44)
+    scrollFrame:SetPoint("TOPLEFT",     f, "TOPLEFT",     10, -52)
     scrollFrame:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -30, 14)
     scrollFrame:EnableMouseWheel(true)
     scrollFrame:SetScript("OnMouseWheel", function(sf, delta)
@@ -137,7 +148,9 @@ local function Refresh(f)
 
     local grantable = {}
     for _, entry in ipairs(SchlingelInc.Achievements.Catalog:GetActive()) do
-        if entry.kind == KIND.MANUAL or entry.kind == KIND.LEVEL then
+        local isGrantableKind = entry.kind == KIND.MANUAL or entry.kind == KIND.LEVEL
+        local stillReachable = not f.unreachedSet or f.unreachedSet[entry.id]
+        if isGrantableKind and stillReachable then
             table.insert(grantable, entry)
         end
     end
@@ -146,7 +159,7 @@ local function Refresh(f)
     if #grantable == 0 then
         local msg = f.scrollChild:CreateFontString(nil, "OVERLAY", "GameFontNormal")
         msg:SetPoint("TOPLEFT", f.scrollChild, "TOPLEFT", 4, 0)
-        msg:SetText("Keine verleihbaren Erfolge vorhanden.")
+        msg:SetText(f.unreachedSet and "Spieler hat bereits alle verleihbaren Erfolge." or "Keine verleihbaren Erfolge vorhanden.")
         msg:SetTextColor(0.6, 0.6, 0.6, 1)
         table.insert(f.cards, msg)
         yOff = -20
@@ -169,9 +182,38 @@ function SchlingelInc.Popup:ShowAchievementGrantForm(targetName)
     end
     local f = SchlingelInc.Popup.achievementGrantForm
 
+    if f.timeoutTimer then f.timeoutTimer:Cancel() f.timeoutTimer = nil end
+
     currentTarget = targetName
+    f.unreachedSet = nil
     f.titleFs:SetText("Erfolg verleihen: " .. targetName)
+    f.statusFs:SetTextColor(0.8, 0.8, 0.4, 1)
+    f.statusFs:SetText("Frage Freischaltungsstatus ab...")
     Refresh(f)
     SchlingelInc:RestoreFramePosition(f, "achievementgrantform_position", "CENTER", 0, 80)
     f:Show()
+
+    SchlingelInc.Achievements.Progress:RequestUnreached(targetName)
+    f.timeoutTimer = C_Timer.NewTimer(UNREACHED_TIMEOUT, function()
+        f.timeoutTimer = nil
+        if currentTarget == targetName and not f.unreachedSet then
+            f.statusFs:SetTextColor(1, 0.4, 0.4, 1)
+            f.statusFs:SetText("Status konnte nicht bestätigt werden — bitte beim Spieler nachfragen.")
+        end
+    end)
+end
+
+-- Routes an incoming ACH_UNREACHED response to the popup if it's still open for
+-- this sender; stale responses (form closed or reopened for someone else) are ignored.
+function SchlingelInc.Popup:OnUnreachedReceived(senderShort, ids)
+    local f = SchlingelInc.Popup.achievementGrantForm
+    if not f or not f:IsShown() or currentTarget ~= senderShort then return end
+
+    if f.timeoutTimer then f.timeoutTimer:Cancel() f.timeoutTimer = nil end
+
+    local set = {}
+    for _, id in ipairs(ids) do set[id] = true end
+    f.unreachedSet = set
+    f.statusFs:SetText("")
+    Refresh(f)
 end

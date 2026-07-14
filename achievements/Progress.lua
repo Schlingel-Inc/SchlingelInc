@@ -6,6 +6,11 @@
 SchlingelInc.Achievements.Progress = {}
 local Progress = SchlingelInc.Achievements.Progress
 
+local KIND = SchlingelInc.Achievements.KIND
+
+local MSG_UNREACHED_REQUEST = "ACH_UNREACHED_REQUEST"
+local MSG_UNREACHED         = "ACH_UNREACHED"
+
 local function IsGlobalFlag(value)
     return value == true or value == 1 or value == "1"
 end
@@ -144,6 +149,57 @@ function Progress:Unlock(id)
     return true
 end
 
+-- Achievement kinds an officer can manually grant (mirrors ManualGrant's allow-list).
+local function IsGrantableKind(kind)
+    return kind == KIND.LEVEL or kind == KIND.MANUAL
+end
+
+-- Own not-yet-unlocked grantable achievement ids, for the achievement-grant popup.
+-- Sending the "still missing" set rather than the "already have" set keeps the
+-- response short for veteran characters, who are exactly the ones with the most
+-- unlocked achievements to otherwise list.
+local function OwnUnreachedGrantableIds()
+    local ids = {}
+    for _, entry in ipairs(SchlingelInc.Achievements.Catalog:GetActive()) do
+        if IsGrantableKind(entry.kind) and not Progress:IsUnlocked(entry.id) then
+            table.insert(ids, entry.id)
+        end
+    end
+    return ids
+end
+
+-- Officer action: ask targetName's client which grantable achievements it hasn't
+-- unlocked yet. The response arrives asynchronously via HandleMessage and is routed
+-- to the achievement-grant popup if it's still open for this target.
+function Progress:RequestUnreached(targetName)
+    if not targetName or targetName == "" then return end
+    ChatThrottleLib:SendAddonMessage("NORMAL", SchlingelInc.prefix, MSG_UNREACHED_REQUEST, "WHISPER", targetName, "SchlingelInc-Achievements")
+end
+
+function Progress:HandleMessage(message, sender)
+    if message == MSG_UNREACHED_REQUEST then
+        local payload = table.concat({ MSG_UNREACHED, unpack(OwnUnreachedGrantableIds()) }, "|")
+        ChatThrottleLib:SendAddonMessage("NORMAL", SchlingelInc.prefix, payload, "WHISPER", sender, "SchlingelInc-Achievements")
+        return true
+    end
+
+    if message == MSG_UNREACHED or message:match("^" .. MSG_UNREACHED .. "|") then
+        local ids = SchlingelInc:ParsePipeMessage(message)
+        table.remove(ids, 1) -- drop the MSG_UNREACHED tag
+        local senderShort = SchlingelInc:RemoveRealmFromName(sender)
+        if SchlingelInc.Popup and SchlingelInc.Popup.OnUnreachedReceived then
+            SchlingelInc.Popup:OnUnreachedReceived(senderShort, ids)
+        end
+        return true
+    end
+
+    return false
+end
+
 function Progress:Initialize()
-    -- No events of its own; LevelDetector/KillDetector/ManualGrant drive Unlock().
+    SchlingelInc.EventManager:RegisterHandler("CHAT_MSG_ADDON",
+        function(_, prefix, message, _, sender)
+            if prefix ~= SchlingelInc.prefix then return end
+            Progress:HandleMessage(message, sender)
+        end, 0, "AchievementProgressAddonMessage")
 end
