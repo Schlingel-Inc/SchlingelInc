@@ -136,6 +136,17 @@ local function CreateCard(parent, cardW, entry)
                 SchlingelInc.Raid:Cancel(entry.id)
                 SchlingelInc.GuildPanel:RefreshRaid()
             end)
+
+            -- Same underlying action as "Absagen" (hides the entry immediately instead of
+            -- waiting out the grace period) — separate button so the wording matches intent.
+            local doneBtn = CreateFrame("Button", nil, card, "UIPanelButtonTemplate")
+            doneBtn:SetSize(90, 20)
+            doneBtn:SetPoint("LEFT", cancelBtn, "RIGHT", 6, 0)
+            doneBtn:SetText("Erledigt")
+            doneBtn:SetScript("OnClick", function()
+                SchlingelInc.Raid:Cancel(entry.id)
+                SchlingelInc.GuildPanel:RefreshRaid()
+            end)
         end
 
         height = height + 20 + CARD_PAD

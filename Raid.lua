@@ -1,8 +1,8 @@
 -- Raid.lua
 -- "Raid Panel mit LFG-light": guild members post raid entries and others signal
--- interest with a role. Each client owns and broadcasts the entries/signals it
--- created; everyone else merges what they receive into a shared, account-wide
--- cache (SchlingelRaidDB).
+-- interest with a role. Everyone merges what they receive into a shared,
+-- account-wide cache (SchlingelRaidDB); any online member can relay cached
+-- entries/signals to others, since the original poster/signaler may be offline.
 
 SchlingelInc.Raid = {}
 
@@ -20,7 +20,6 @@ local TITLE_MAX_LEN = 60
 local NOTE_MAX_LEN  = 80
 
 local EXPIRE_GRACE_SECONDS = 3 * 3600
-local PURGE_AFTER_SECONDS  = 24 * 3600
 
 -- "|" is the message field separator, so it can't appear in free-text fields.
 local function SanitizeForMessage(text)
@@ -48,19 +47,26 @@ local function IsValidRole(role)
     return false
 end
 
+local function IsEntryActive(entry)
+    if not entry or entry.cancelled then return false end
+    return time() - entry.timestamp <= EXPIRE_GRACE_SECONDS
+end
+
+-- No history is kept, so anything no longer active (cancelled, or past its grace
+-- period) is dropped right away instead of lingering in the DB.
 local function PurgeStale()
-    local now = time()
     for id, entry in pairs(SchlingelRaidDB.entries) do
-        if now - entry.timestamp > EXPIRE_GRACE_SECONDS + PURGE_AFTER_SECONDS then
+        if not IsEntryActive(entry) then
             SchlingelRaidDB.entries[id] = nil
             SchlingelRaidDB.signals[id] = nil
         end
     end
 end
 
-local function IsEntryActive(entry)
-    if not entry or entry.cancelled then return false end
-    return time() - entry.timestamp <= EXPIRE_GRACE_SECONDS
+local function RefreshRaidUI()
+    if SchlingelInc.GuildPanel and SchlingelInc.GuildPanel.RefreshRaid then
+        SchlingelInc.GuildPanel:RefreshRaid()
+    end
 end
 
 -- ── Outgoing messages ────────────────────────────────────────────────────────────
@@ -77,13 +83,14 @@ local function BroadcastCancel(id)
     ChatThrottleLib:SendAddonMessage("NORMAL", SchlingelInc.prefix, MSG_CANCEL .. "|" .. id, "GUILD", nil, "SchlingelInc-Raid")
 end
 
-local function BroadcastSignal(id, signal)
-    local payload = table.concat({ MSG_SIGNAL, id, signal.role }, "|")
+local function BroadcastSignal(id, signal, signalerName)
+    local payload = table.concat({ MSG_SIGNAL, id, signal.role, signalerName }, "|")
     ChatThrottleLib:SendAddonMessage("NORMAL", SchlingelInc.prefix, payload, "GUILD", nil, "SchlingelInc-Raid")
 end
 
-local function BroadcastUnsignal(id)
-    ChatThrottleLib:SendAddonMessage("NORMAL", SchlingelInc.prefix, MSG_UNSIGNAL .. "|" .. id, "GUILD", nil, "SchlingelInc-Raid")
+local function BroadcastUnsignal(id, signalerName)
+    local payload = table.concat({ MSG_UNSIGNAL, id, signalerName }, "|")
+    ChatThrottleLib:SendAddonMessage("NORMAL", SchlingelInc.prefix, payload, "GUILD", nil, "SchlingelInc-Raid")
 end
 
 -- ── Public API ───────────────────────────────────────────────────────────────────
@@ -150,14 +157,14 @@ function SchlingelInc.Raid:Signal(id, role)
     local signal = { role = role, updatedAt = time() }
     SchlingelRaidDB.signals[id] = SchlingelRaidDB.signals[id] or {}
     SchlingelRaidDB.signals[id][OwnName()] = signal
-    BroadcastSignal(id, signal)
+    BroadcastSignal(id, signal, OwnName())
     return true
 end
 
 function SchlingelInc.Raid:Unsignal(id)
     local forId = SchlingelRaidDB.signals[id]
     if forId then forId[OwnName()] = nil end
-    BroadcastUnsignal(id)
+    BroadcastUnsignal(id, OwnName())
 end
 
 function SchlingelInc.Raid:GetEntry(id)
@@ -202,20 +209,20 @@ function SchlingelInc.Raid:RequestSync()
     ChatThrottleLib:SendAddonMessage("NORMAL", SchlingelInc.prefix, MSG_SYNC_REQUEST, "GUILD", nil, "SchlingelInc-Raid")
 end
 
--- A signal keyed under the local player's name can only have been created by the
--- local player, so scanning for it is safe even against a merged/shared cache.
-local function BroadcastOwnState()
+-- Relays the whole local cache, not just what this client posted/signaled itself,
+-- so a peer can catch someone up even if the original poster/signaler is offline.
+local function BroadcastKnownState()
     if not IsInGuild() then return end
-    local own = OwnName()
     for _, entry in pairs(SchlingelRaidDB.entries) do
-        if entry.poster == own and IsEntryActive(entry) then
+        if IsEntryActive(entry) then
             BroadcastPost(entry)
         end
     end
     for id, forId in pairs(SchlingelRaidDB.signals) do
-        local signal = forId[own]
-        if signal and IsEntryActive(SchlingelRaidDB.entries[id]) then
-            BroadcastSignal(id, signal)
+        if IsEntryActive(SchlingelRaidDB.entries[id]) then
+            for signalerName, signal in pairs(forId) do
+                BroadcastSignal(id, signal, signalerName)
+            end
         end
     end
 end
@@ -226,22 +233,20 @@ function SchlingelInc.Raid:HandleMessage(message, sender)
     local senderShort = SchlingelInc:RemoveRealmFromName(sender)
 
     if message == MSG_SYNC_REQUEST then
-        BroadcastOwnState()
+        BroadcastKnownState()
         return true
     end
 
     local id, title, instance, timestampStr, note =
         message:match("^" .. MSG_POST .. "|([^|]+)|([^|]*)|([^|]*)|(%d+)|(.*)$")
     if id then
-        -- id's own poster prefix must match the sender too, guarding against a spoofed poster.
+        -- poster comes from the id (set at creation), not the sender, since a relay isn't the poster
         local idPoster = id:match("^(.-)-%d+$")
-        if idPoster ~= senderShort or not IsValidInstance(instance) then return true end
-        local existing = SchlingelRaidDB.entries[id]
-        if existing and existing.poster ~= senderShort then return true end
+        if not idPoster or idPoster == "" or not IsValidInstance(instance) then return true end
 
         SchlingelRaidDB.entries[id] = {
             id        = id,
-            poster    = senderShort,
+            poster    = idPoster,
             title     = title,
             instance  = instance,
             timestamp = tonumber(timestampStr),
@@ -249,9 +254,7 @@ function SchlingelInc.Raid:HandleMessage(message, sender)
             cancelled = false,
             updatedAt = time(),
         }
-        if SchlingelInc.GuildPanel and SchlingelInc.GuildPanel.RefreshRaid then
-            SchlingelInc.GuildPanel:RefreshRaid()
-        end
+        RefreshRaidUI()
         return true
     end
 
@@ -261,32 +264,27 @@ function SchlingelInc.Raid:HandleMessage(message, sender)
         if entry and entry.poster == senderShort then
             entry.cancelled = true
             entry.updatedAt = time()
-            if SchlingelInc.GuildPanel and SchlingelInc.GuildPanel.RefreshRaid then
-                SchlingelInc.GuildPanel:RefreshRaid()
-            end
+            RefreshRaidUI()
         end
         return true
     end
 
-    local signalId, role = message:match("^" .. MSG_SIGNAL .. "|([^|]+)|([^|]*)$")
+    -- signalerName is the real owner, since sender may just be relaying
+    local signalId, role, signalerName = message:match("^" .. MSG_SIGNAL .. "|([^|]+)|([^|]*)|([^|]+)$")
     if signalId then
         if IsValidRole(role) then
             SchlingelRaidDB.signals[signalId] = SchlingelRaidDB.signals[signalId] or {}
-            SchlingelRaidDB.signals[signalId][senderShort] = { role = role, updatedAt = time() }
-            if SchlingelInc.GuildPanel and SchlingelInc.GuildPanel.RefreshRaid then
-                SchlingelInc.GuildPanel:RefreshRaid()
-            end
+            SchlingelRaidDB.signals[signalId][signalerName] = { role = role, updatedAt = time() }
+            RefreshRaidUI()
         end
         return true
     end
 
-    local unsignalId = message:match("^" .. MSG_UNSIGNAL .. "|(.+)$")
+    local unsignalId, unsignalerName = message:match("^" .. MSG_UNSIGNAL .. "|([^|]+)|([^|]+)$")
     if unsignalId then
         local forId = SchlingelRaidDB.signals[unsignalId]
-        if forId then forId[senderShort] = nil end
-        if SchlingelInc.GuildPanel and SchlingelInc.GuildPanel.RefreshRaid then
-            SchlingelInc.GuildPanel:RefreshRaid()
-        end
+        if forId then forId[unsignalerName] = nil end
+        RefreshRaidUI()
         return true
     end
 
@@ -302,13 +300,15 @@ function SchlingelInc.Raid:Initialize()
             SchlingelInc.Raid:HandleMessage(message, sender)
         end, 0, "RaidAddonMessage")
 
+    -- Only request sync here; BroadcastKnownState() already fires as every online
+    -- peer's reply, so also blasting our own full cache on login would just double
+    -- guild-wide traffic without helping anyone catch up faster.
     SchlingelInc.EventManager:RegisterHandler("PLAYER_ENTERING_WORLD",
         function()
             C_Timer.After(6, function()
                 if IsInGuild() then
-                    BroadcastOwnState()
                     SchlingelInc.Raid:RequestSync()
                 end
             end)
-        end, 0, "RaidBroadcastAndSync")
+        end, 0, "RaidRequestSync")
 end
