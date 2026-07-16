@@ -43,9 +43,6 @@ function SchlingelInc.Shared.CreateFilterPanel(cfg)
     fp:SetBackdropBorderColor(0.45, 0.45, 0.45, 1)
     fp:SetPoint("TOPLEFT", anchor, "TOPRIGHT", 6, 0)
     fp:Hide()
-    fp:SetScript("OnHide", function()
-        if fp.profList then fp.profList:Hide() end
-    end)
     SchlingelInc:RegisterFrameForEscape(fp)
 
     -- ── Title ────────────────────────────────────────────────────────────────
@@ -233,6 +230,7 @@ function SchlingelInc.Shared.CreateFilterPanel(cfg)
 
         prevWidget  = profBtn
         fp.profList = profList
+        SchlingelInc:RegisterOutsideClickClose(profList, fp)
     end
 
     -- ── Reset ─────────────────────────────────────────────────────────────────

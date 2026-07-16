@@ -20,6 +20,7 @@ function OfficerPanel.BuildRulesTab(rc)
     local mailDropdown = CreateFrame("Frame", "SchlingelIncMailDropdown", rc, "UIDropDownMenuTemplate")
     mailDropdown:SetPoint("TOPLEFT", rc, "TOPLEFT", 140, -5)
     UIDropDownMenu_SetWidth(mailDropdown, 235)
+    SchlingelInc:RegisterDropdownAutoClose(mailDropdown)
     UIDropDownMenu_Initialize(mailDropdown, function()
         for _, option in ipairs(mailRuleOptions) do
             local value, label = option.value, option.label
