@@ -9,6 +9,31 @@ local FC = SchlingelInc.Constants.FORM_COLORS
 local FORM_W  = 280
 local INNER_W = FORM_W - 32
 local MAX_SUGGESTIONS = 8
+local MAX_ROLES = #SchlingelInc.Constants.ROLES
+
+-- Roles a given roster member has configured in their guild profile ("Tank/Heal"
+-- style, "/"-delimited), in canonical ROLES order. Empty if no profile or no roles set.
+local function GetProfileRoles(name)
+    local profile = SchlingelGuildProfileCache and SchlingelGuildProfileCache[name]
+    local raw = profile and profile.role or ""
+    local set = {}
+    for part in raw:gmatch("[^/]+") do set[part] = true end
+    local out = {}
+    for _, r in ipairs(SchlingelInc.Constants.ROLES) do
+        if set[r] then table.insert(out, r) end
+    end
+    return out
+end
+
+local function ResolveRosterName(typed)
+    typed = typed:match("^%s*(.-)%s*$")
+    for _, member in ipairs(SchlingelInc.GuildCache:GetFullRoster()) do
+        if member.name:lower() == typed:lower() then
+            return member.name
+        end
+    end
+    return nil
+end
 
 local function CreateEditBox(parent, width, maxLetters)
     local eb = CreateFrame("EditBox", nil, parent, BackdropTemplateMixin and "BackdropTemplate")
@@ -23,6 +48,34 @@ local function CreateEditBox(parent, width, maxLetters)
     eb:SetScript("OnEscapePressed", function(box) box:ClearFocus() end)
     eb:SetScript("OnEnterPressed", function(box) box:ClearFocus() end)
     return eb
+end
+
+-- Shows only the given roles' buttons (in order), keeping the previous selection
+-- if it's still among them, auto-selecting when only one choice remains.
+local function ApplyRoleChoices(f, choices)
+    local previousSelection = f.selectedRole
+    local rbW = math.floor((INNER_W - 4 * (#choices - 1)) / #choices)
+    for i, btn in ipairs(f.roleBtns) do
+        if i <= #choices then
+            btn.roleName = choices[i]
+            btn.lbl:SetText(choices[i])
+            btn:ClearAllPoints()
+            btn:SetSize(rbW, 22)
+            btn:SetPoint("TOPLEFT", f.roleLbl, "BOTTOMLEFT", (i - 1) * (rbW + 4), -4)
+            btn:Show()
+        else
+            btn:Hide()
+        end
+    end
+
+    if #choices == 1 then
+        f.selectedRole = choices[1]
+    else
+        local stillValid = false
+        for _, r in ipairs(choices) do if r == previousSelection then stillValid = true end end
+        f.selectedRole = stillValid and previousSelection or nil
+    end
+    for _, b in ipairs(f.roleBtns) do b.UpdateAppearance() end
 end
 
 local function CreateLabel(parent, text)
@@ -105,13 +158,15 @@ local function BuildForm()
     suggestList:SetBackdropBorderColor(unpack(FC.FORM_BORDER))
     suggestList:SetPoint("TOPLEFT", nameEB, "BOTTOMLEFT", 0, -2)
     suggestList:Hide()
-    -- A full-screen click-catcher (like the other dropdown lists use) would also
-    -- swallow clicks meant for nameEB itself, so close on focus-lost instead —
-    -- delayed slightly so a click on a suggestion button still registers first.
+    -- Outside-click catcher (the same convention every other dropdown list in this
+    -- addon uses) excludes nameEB itself, so clicking back into the box to keep
+    -- typing doesn't fight with it — but Escape/Enter still clear keyboard focus
+    -- without a click, so also close on focus-lost as a fallback, delayed slightly
+    -- so a click on a suggestion button still registers first.
+    SchlingelInc:RegisterOutsideClickClose(suggestList, f, nameEB)
     nameEB:SetScript("OnEditFocusLost", function()
         C_Timer.After(0.15, function() suggestList:Hide() end)
     end)
-    f:HookScript("OnHide", function() suggestList:Hide() end)
 
     local ITEM_H = 18
     local function RefreshSuggestions()
@@ -145,20 +200,18 @@ local function BuildForm()
         suggestList:SetHeight(math.abs(yOff) + 4)
         suggestList:Show()
     end
-    nameEB:SetScript("OnTextChanged", RefreshSuggestions)
-    nameEB:SetScript("OnEditFocusGained", RefreshSuggestions)
-
     -- ── Rolle ────────────────────────────────────────────────────────────────
     local roleLbl = CreateLabel(f, "Rolle:")
     roleLbl:SetPoint("TOPLEFT", nameEB, "BOTTOMLEFT", 0, -14)
+    f.roleLbl = roleLbl
 
+    -- Fixed pool of buttons, sized in ApplyRoleChoices() to whichever subset of
+    -- roles applies to the currently typed name (their profile roles, or the full
+    -- list if unresolved / no profile roles set).
     local roleBtns = {}
-    local roles = SchlingelInc.Constants.ROLES
-    local rbW   = math.floor((INNER_W - 4 * (#roles - 1)) / #roles)
-    for i, roleName in ipairs(roles) do
+    for i = 1, MAX_ROLES do
         local btn = CreateFrame("Button", nil, f)
-        btn:SetSize(rbW, 22)
-        btn:SetPoint("TOPLEFT", roleLbl, "BOTTOMLEFT", (i - 1) * (rbW + 4), -4)
+        btn:SetSize(10, 22)
         btn:EnableMouse(true)
 
         local bg = btn:CreateTexture(nil, "BACKGROUND")
@@ -168,10 +221,10 @@ local function BuildForm()
         local lbl = btn:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
         lbl:SetAllPoints()
         lbl:SetJustifyH("CENTER")
-        lbl:SetText(roleName)
+        btn.lbl = lbl
 
         local function UpdateBtn()
-            if f.selectedRole == roleName then
+            if f.selectedRole == btn.roleName then
                 bg:SetColorTexture(unpack(FC.OPTION_BG_SELECTED))
                 lbl:SetTextColor(unpack(FC.TITLE))
             else
@@ -180,10 +233,9 @@ local function BuildForm()
             end
         end
         btn.UpdateAppearance = UpdateBtn
-        UpdateBtn()
 
         btn:SetScript("OnClick", function()
-            f.selectedRole = roleName
+            f.selectedRole = btn.roleName
             for _, b in ipairs(roleBtns) do b.UpdateAppearance() end
         end)
         btn:SetScript("OnEnter", function() lbl:SetTextColor(unpack(FC.HOVER)) end)
@@ -192,6 +244,21 @@ local function BuildForm()
         roleBtns[i] = btn
     end
     f.roleBtns = roleBtns
+
+    local function RefreshRoleChoices()
+        local resolvedName = ResolveRosterName(nameEB:GetText())
+        local choices = resolvedName and GetProfileRoles(resolvedName) or {}
+        if #choices == 0 then
+            choices = { unpack(SchlingelInc.Constants.ROLES) }
+        end
+        ApplyRoleChoices(f, choices)
+    end
+
+    nameEB:SetScript("OnTextChanged", function()
+        RefreshSuggestions()
+        RefreshRoleChoices()
+    end)
+    nameEB:SetScript("OnEditFocusGained", RefreshSuggestions)
 
     local errorFs = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     errorFs:SetPoint("TOPLEFT", roleLbl, "BOTTOMLEFT", 0, -34)
@@ -214,14 +281,7 @@ local function BuildForm()
     addBtn:SetScript("OnClick", function()
         errorFs:SetText("")
 
-        local typed = nameEB:GetText():match("^%s*(.-)%s*$")
-        local resolvedName = nil
-        for _, member in ipairs(SchlingelInc.GuildCache:GetFullRoster()) do
-            if member.name:lower() == typed:lower() then
-                resolvedName = member.name
-                break
-            end
-        end
+        local resolvedName = ResolveRosterName(nameEB:GetText())
         if not resolvedName then
             errorFs:SetText("Bitte einen gültigen Namen aus der Gilde auswählen.")
             return

@@ -57,14 +57,20 @@ end
 -- ownerFrame (the popup/panel it belongs to) is hidden. listFrame must use a
 -- higher strata than "FULLSCREEN_DIALOG" (e.g. "TOOLTIP", the convention used by
 -- every dropdown list in this addon) so the catcher never swallows item clicks.
-function SchlingelInc:RegisterOutsideClickClose(listFrame, ownerFrame)
+-- excludeFrame (optional) lets clicks on that frame pass through without closing
+-- the list — e.g. an EditBox the list is suggesting against, so clicking it to
+-- keep typing/reposition the cursor doesn't fight with the outside-click catcher.
+function SchlingelInc:RegisterOutsideClickClose(listFrame, ownerFrame, excludeFrame)
     local catcher = CreateFrame("Button", nil, UIParent)
     catcher:SetAllPoints(UIParent)
     catcher:SetFrameStrata("FULLSCREEN_DIALOG")
     catcher:EnableMouse(true)
     catcher:RegisterForClicks("LeftButtonUp", "RightButtonUp")
     catcher:Hide()
-    catcher:SetScript("OnClick", function() listFrame:Hide() end)
+    catcher:SetScript("OnClick", function()
+        if excludeFrame and excludeFrame:IsMouseOver() then return end
+        listFrame:Hide()
+    end)
 
     listFrame:HookScript("OnShow", function() catcher:Show() end)
     listFrame:HookScript("OnHide", function() catcher:Hide() end)
@@ -86,7 +92,7 @@ function SchlingelInc:RegisterDropdownAutoClose(dropdownFrame, onCloseFn)
     catcher:EnableMouse(true)
     catcher:RegisterForClicks("LeftButtonUp", "RightButtonUp")
     catcher:Hide()
-    catcher:SetScript("OnClick", CloseDropDownMenus)
+    catcher:SetScript("OnClick", function() CloseDropDownMenus() end)
 
     DropDownList1:HookScript("OnShow", function()
         if UIDROPDOWNMENU_OPEN_MENU == dropdownFrame then
