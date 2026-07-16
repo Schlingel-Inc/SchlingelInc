@@ -3,6 +3,8 @@
 
 SchlingelInc.Popup = SchlingelInc.Popup or {}
 
+local FC = SchlingelInc.Constants.FORM_COLORS
+
 local FORM_W  = 460
 local INNER_W = FORM_W - 32
 
@@ -10,8 +12,8 @@ local function CreateEditBox(parent, width, maxLetters, numeric)
     local eb = CreateFrame("EditBox", nil, parent, BackdropTemplateMixin and "BackdropTemplate")
     eb:SetSize(width, 22)
     eb:SetBackdrop(SchlingelInc.Constants.POPUPBACKDROP)
-    eb:SetBackdropColor(0.1, 0.1, 0.1, 0.9)
-    eb:SetBackdropBorderColor(0.4, 0.4, 0.4, 1)
+    eb:SetBackdropColor(unpack(FC.EDITBOX_BG))
+    eb:SetBackdropBorderColor(unpack(FC.EDITBOX_BORDER))
     eb:SetFontObject("GameFontHighlight")
     eb:SetTextInsets(6, 6, 0, 0)
     eb:SetAutoFocus(false)
@@ -25,7 +27,7 @@ end
 local function CreateLabel(parent, text)
     local lbl = parent:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     lbl:SetText(text)
-    lbl:SetTextColor(0.8, 0.8, 0.8, 1)
+    lbl:SetTextColor(unpack(FC.LABEL))
     return lbl
 end
 
@@ -34,8 +36,8 @@ local function BuildForm()
     f:SetSize(FORM_W, 380)
     f:SetFrameStrata("DIALOG")
     f:SetBackdrop(SchlingelInc.Constants.BACKDROP)
-    f:SetBackdropColor(0.07, 0.07, 0.07, 0.98)
-    f:SetBackdropBorderColor(0.45, 0.45, 0.45, 1)
+    f:SetBackdropColor(unpack(FC.FORM_BG))
+    f:SetBackdropBorderColor(unpack(FC.FORM_BORDER))
     f:SetMovable(true)
     f:EnableMouse(true)
     f:RegisterForDrag("LeftButton")
@@ -50,7 +52,7 @@ local function BuildForm()
 
     local titleFs = f:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     titleFs:SetPoint("TOP", f, "TOP", 0, -16)
-    titleFs:SetTextColor(1, 0.82, 0, 1)
+    titleFs:SetTextColor(unpack(FC.TITLE))
     f.titleFs = titleFs
 
     local closeBtn = CreateFrame("Button", nil, f, "UIPanelCloseButton")
@@ -82,14 +84,9 @@ local function BuildForm()
     local instList = CreateFrame("Frame", "SchlingelRaidPostFormInstList", UIParent, "BackdropTemplate")
     instList:SetSize(INNER_W, 10)
     instList:SetFrameStrata("TOOLTIP")
-    instList:SetBackdrop({
-        bgFile   = "Interface\\BUTTONS\\WHITE8X8",
-        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-        tile = true, tileSize = 16, edgeSize = 16,
-        insets = { left = 4, right = 4, top = 4, bottom = 4 }
-    })
-    instList:SetBackdropColor(0.05, 0.05, 0.05, 0.98)
-    instList:SetBackdropBorderColor(0.45, 0.45, 0.45, 1)
+    instList:SetBackdrop(SchlingelInc.Constants.DROPDOWNBACKDROP)
+    instList:SetBackdropColor(unpack(FC.LIST_BG))
+    instList:SetBackdropBorderColor(unpack(FC.FORM_BORDER))
     instList:SetPoint("TOPLEFT", instBtn, "BOTTOMLEFT", 0, -2)
     instList:Hide()
     f.instList = instList
@@ -106,14 +103,14 @@ local function BuildForm()
         lbl:SetJustifyH("LEFT")
         lbl:SetWordWrap(false)
         lbl:SetText(name)
-        lbl:SetTextColor(0.85, 0.85, 0.85, 1)
+        lbl:SetTextColor(unpack(FC.LIST_ITEM_TEXT))
         btn:SetScript("OnClick", function()
             f.selectedInstance = name
             instBtn:SetText(name)
             instList:Hide()
         end)
-        btn:SetScript("OnEnter", function() lbl:SetTextColor(1, 1, 0.7, 1) end)
-        btn:SetScript("OnLeave", function() lbl:SetTextColor(0.85, 0.85, 0.85, 1) end)
+        btn:SetScript("OnEnter", function() lbl:SetTextColor(unpack(FC.HOVER)) end)
+        btn:SetScript("OnLeave", function() lbl:SetTextColor(unpack(FC.LIST_ITEM_TEXT)) end)
         yOff = yOff - ITEM_H - 2
     end
     instList:SetHeight(math.abs(yOff) + 4)
@@ -166,7 +163,7 @@ local function BuildForm()
     errorFs:SetPoint("TOPLEFT", noteEB, "BOTTOMLEFT", 0, -12)
     errorFs:SetWidth(INNER_W)
     errorFs:SetJustifyH("LEFT")
-    errorFs:SetTextColor(1, 0.3, 0.3, 1)
+    errorFs:SetTextColor(unpack(FC.ERROR))
     f.errorFs = errorFs
 
     local submitBtn = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")

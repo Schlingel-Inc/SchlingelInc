@@ -138,6 +138,33 @@ SchlingelInc.Constants.POPUPBACKDROP = {
 	insets = { left = 4, right = 4, top = 4, bottom = 4 }
 }
 
+-- Floating dropdown/suggestion list backdrop (instance/kind/profession/name pickers)
+SchlingelInc.Constants.DROPDOWNBACKDROP = {
+	bgFile = "Interface\\BUTTONS\\WHITE8X8",
+	edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+	tile = true, tileSize = 16, edgeSize = 16,
+	insets = { left = 4, right = 4, top = 4, bottom = 4 }
+}
+
+-- Shared widget colors for popup forms (title/label/error text, option buttons,
+-- dropdown lists), so every form looks consistent instead of each file picking
+-- its own shades. {r, g, b, a} tuples, use with unpack().
+SchlingelInc.Constants.FORM_COLORS = {
+	TITLE               = {1,    0.82, 0,    1},
+	LABEL               = {0.8,  0.8,  0.8,  1},
+	ERROR               = {1,    0.3,  0.3,  1},
+	HOVER               = {1,    1,    0.7,  1},
+	FORM_BG             = {0.07, 0.07, 0.07, 0.98},
+	FORM_BORDER         = {0.45, 0.45, 0.45, 1},
+	EDITBOX_BG          = {0.1,  0.1,  0.1,  0.9},
+	EDITBOX_BORDER      = {0.4,  0.4,  0.4,  1},
+	LIST_BG             = {0.05, 0.05, 0.05, 0.98},
+	LIST_ITEM_TEXT      = {0.85, 0.85, 0.85, 1},
+	OPTION_BG           = {0.18, 0.18, 0.18, 0.9},
+	OPTION_BG_SELECTED  = {0.28, 0.20, 0.0,  1},
+	OPTION_TEXT         = {0.6,  0.6,  0.6,  1},
+}
+
 -- Inactivity threshold (days)
 SchlingelInc.Constants.INACTIVE_DAYS_THRESHOLD = 10
 

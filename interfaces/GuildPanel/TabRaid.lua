@@ -102,9 +102,27 @@ local function CreateCard(parent, cardW, entry)
             for _, s in ipairs(signups) do
                 local rowFs = card:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
                 rowFs:SetPoint("TOPLEFT", card, "TOPLEFT", CARD_PAD, -height)
-                rowFs:SetWidth(cardW - CARD_PAD * 2)
+                rowFs:SetWidth(cardW - CARD_PAD * 2 - (isOwn and 16 or 0))
                 rowFs:SetJustifyH("LEFT")
                 rowFs:SetText(SchlingelInc:SanitizeText(s.name) .. " |cff6699ff(" .. s.role .. ")|r")
+
+                if isOwn then
+                    local removeBtn = CreateFrame("Button", nil, card)
+                    removeBtn:SetSize(14, 14)
+                    removeBtn:SetPoint("TOPRIGHT", card, "TOPRIGHT", -CARD_PAD, -height - 1)
+                    local removeFs = removeBtn:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+                    removeFs:SetAllPoints()
+                    removeFs:SetJustifyH("CENTER")
+                    removeFs:SetText("x")
+                    removeFs:SetTextColor(0.7, 0.3, 0.3, 1)
+                    removeBtn:SetScript("OnClick", function()
+                        SchlingelInc.Raid:RemoveParticipant(entry.id, s.name)
+                        SchlingelInc.GuildPanel:RefreshRaid()
+                    end)
+                    removeBtn:SetScript("OnEnter", function() removeFs:SetTextColor(1, 0.4, 0.4, 1) end)
+                    removeBtn:SetScript("OnLeave", function() removeFs:SetTextColor(0.7, 0.3, 0.3, 1) end)
+                end
+
                 height = height + ROW_H
             end
         end
@@ -146,6 +164,16 @@ local function CreateCard(parent, cardW, entry)
             doneBtn:SetScript("OnClick", function()
                 SchlingelInc.Raid:Cancel(entry.id)
                 SchlingelInc.GuildPanel:RefreshRaid()
+            end)
+
+            height = height + 20 + 6
+
+            local addParticipantBtn = CreateFrame("Button", nil, card, "UIPanelButtonTemplate")
+            addParticipantBtn:SetSize(120, 20)
+            addParticipantBtn:SetPoint("TOPLEFT", card, "TOPLEFT", CARD_PAD, -height)
+            addParticipantBtn:SetText("+ Teilnehmer")
+            addParticipantBtn:SetScript("OnClick", function()
+                SchlingelInc.Popup:ShowRaidAddParticipantForm(entry)
             end)
         end
 
