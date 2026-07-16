@@ -50,6 +50,7 @@ interfaces\popups\GuildInvites.lua
 interfaces\popups\PvPFrame.lua
 interfaces\popups\RaidPostForm.lua
 interfaces\popups\RaidSignupForm.lua
+interfaces\popups\RaidAddParticipantForm.lua
 interfaces\popups\AchievementAnnouncement.lua
 interfaces\popups\AchievementForm.lua
 interfaces\popups\AchievementGrantForm.lua

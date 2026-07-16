@@ -6,6 +6,8 @@
 
 SchlingelInc.Popup = SchlingelInc.Popup or {}
 
+local FC = SchlingelInc.Constants.FORM_COLORS
+
 local FORM_W    = 260
 local INNER_W   = FORM_W - 32
 local MAX_ROLES = #SchlingelInc.Constants.ROLES
@@ -26,8 +28,8 @@ local function BuildForm()
     f:SetSize(FORM_W, 150)
     f:SetFrameStrata("DIALOG")
     f:SetBackdrop(SchlingelInc.Constants.BACKDROP)
-    f:SetBackdropColor(0.07, 0.07, 0.07, 0.98)
-    f:SetBackdropBorderColor(0.45, 0.45, 0.45, 1)
+    f:SetBackdropColor(unpack(FC.FORM_BG))
+    f:SetBackdropBorderColor(unpack(FC.FORM_BORDER))
     f:SetMovable(true)
     f:EnableMouse(true)
     f:RegisterForDrag("LeftButton")
@@ -43,7 +45,7 @@ local function BuildForm()
     local titleFs = f:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     titleFs:SetPoint("TOP", f, "TOP", 0, -16)
     titleFs:SetText("Zusagen")
-    titleFs:SetTextColor(1, 0.82, 0, 1)
+    titleFs:SetTextColor(unpack(FC.TITLE))
 
     local closeBtn = CreateFrame("Button", nil, f, "UIPanelCloseButton")
     closeBtn:SetSize(20, 20)
@@ -60,7 +62,7 @@ local function BuildForm()
     local roleLbl = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     roleLbl:SetPoint("TOPLEFT", f, "TOPLEFT", 16, -68)
     roleLbl:SetText("Rolle:")
-    roleLbl:SetTextColor(0.8, 0.8, 0.8, 1)
+    roleLbl:SetTextColor(unpack(FC.LABEL))
 
     local soloFs = f:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     soloFs:SetPoint("TOPLEFT", roleLbl, "BOTTOMLEFT", 2, -6)
@@ -74,7 +76,7 @@ local function BuildForm()
 
         local bg = btn:CreateTexture(nil, "BACKGROUND")
         bg:SetAllPoints()
-        bg:SetColorTexture(0.18, 0.18, 0.18, 0.9)
+        bg:SetColorTexture(unpack(FC.OPTION_BG))
 
         local lbl = btn:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
         lbl:SetAllPoints()
@@ -83,11 +85,11 @@ local function BuildForm()
 
         local function UpdateBtn()
             if f.selectedRole == btn.roleName then
-                bg:SetColorTexture(0.28, 0.20, 0.0, 1)
-                lbl:SetTextColor(1, 0.82, 0, 1)
+                bg:SetColorTexture(unpack(FC.OPTION_BG_SELECTED))
+                lbl:SetTextColor(unpack(FC.TITLE))
             else
-                bg:SetColorTexture(0.18, 0.18, 0.18, 0.9)
-                lbl:SetTextColor(0.6, 0.6, 0.6, 1)
+                bg:SetColorTexture(unpack(FC.OPTION_BG))
+                lbl:SetTextColor(unpack(FC.OPTION_TEXT))
             end
         end
         btn.UpdateAppearance = UpdateBtn
@@ -96,7 +98,7 @@ local function BuildForm()
             f.selectedRole = btn.roleName
             for _, b in ipairs(roleBtns) do b.UpdateAppearance() end
         end)
-        btn:SetScript("OnEnter", function() lbl:SetTextColor(1, 1, 0.7, 1) end)
+        btn:SetScript("OnEnter", function() lbl:SetTextColor(unpack(FC.HOVER)) end)
         btn:SetScript("OnLeave", UpdateBtn)
 
         roleBtns[i] = btn
@@ -108,7 +110,7 @@ local function BuildForm()
     errorFs:SetPoint("TOPLEFT", roleLbl, "BOTTOMLEFT", 0, -34)
     errorFs:SetWidth(INNER_W)
     errorFs:SetJustifyH("LEFT")
-    errorFs:SetTextColor(1, 0.3, 0.3, 1)
+    errorFs:SetTextColor(unpack(FC.ERROR))
     f.errorFs = errorFs
 
     local confirmBtn = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")

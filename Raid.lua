@@ -167,6 +167,33 @@ function SchlingelInc.Raid:Unsignal(id)
     BroadcastUnsignal(id, OwnName())
 end
 
+-- Lets the poster sign someone else up (e.g. a Discord-only signup) or remove any
+-- participant, reusing the same signal protocol as a normal self-signup/withdrawal.
+function SchlingelInc.Raid:AddParticipant(id, name, role)
+    local entry = SchlingelRaidDB.entries[id]
+    if not entry or entry.poster ~= OwnName() then return nil, "Kein eigener Raid-Eintrag." end
+    if not IsEntryActive(entry) then return nil, "Raid nicht (mehr) aktiv." end
+    name = (name or ""):match("^%s*(.-)%s*$")
+    if name == "" then return nil, "Name darf nicht leer sein." end
+    if not IsValidRole(role) then return nil, "Ungültige Rolle." end
+
+    local signal = { role = role, updatedAt = time() }
+    SchlingelRaidDB.signals[id] = SchlingelRaidDB.signals[id] or {}
+    SchlingelRaidDB.signals[id][name] = signal
+    BroadcastSignal(id, signal, name)
+    return true
+end
+
+function SchlingelInc.Raid:RemoveParticipant(id, name)
+    local entry = SchlingelRaidDB.entries[id]
+    if not entry or entry.poster ~= OwnName() then return nil, "Kein eigener Raid-Eintrag." end
+
+    local forId = SchlingelRaidDB.signals[id]
+    if forId then forId[name] = nil end
+    BroadcastUnsignal(id, name)
+    return true
+end
+
 function SchlingelInc.Raid:GetEntry(id)
     return SchlingelRaidDB.entries[id]
 end
