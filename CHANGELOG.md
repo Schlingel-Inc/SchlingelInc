@@ -1,3 +1,10 @@
+# 4.2.2
+
+- Raid-Postings und Zusagen werden jetzt vollständig relayed, nicht nur die eigenen. Neuer "Erledigt"-Button entfernt abgeschlossene Raids sofort statt erst nach Ablauf der Schonfrist.
+- Dropdown-Menüs und Listen schließen jetzt bei Klick außerhalb (Kontextmenü, Mail-Dropdown, Raid-Instanz-, Erfolgsart- und Berufsauswahl).
+- Raid-Poster können Teilnehmende jetzt manuell hinzufügen oder entfernen. Namensauswahl per Autocomplete gegen Roster/Discord-Handle, Rollenauswahl beschränkt auf die im Gildenprofil hinterlegten Rollen.
+- Bugfix: Todesursache zeigte manchmal einen Gegner aus einem älteren, überstandenen Kampf statt der tatsächlichen Ursache.
+
 # 4.2.1
 
 - KILL_COUNT-Achievements können jetzt temporär von Offis vergeben werden
