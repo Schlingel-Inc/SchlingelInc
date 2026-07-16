@@ -53,6 +53,52 @@ function SchlingelInc:RegisterFrameForEscape(frame)
     table.insert(UISpecialFrames, frameName)
 end
 
+-- Closes a floating dropdown-style list on any click outside it, and whenever
+-- ownerFrame (the popup/panel it belongs to) is hidden. listFrame must use a
+-- higher strata than "FULLSCREEN_DIALOG" (e.g. "TOOLTIP", the convention used by
+-- every dropdown list in this addon) so the catcher never swallows item clicks.
+function SchlingelInc:RegisterOutsideClickClose(listFrame, ownerFrame)
+    local catcher = CreateFrame("Button", nil, UIParent)
+    catcher:SetAllPoints(UIParent)
+    catcher:SetFrameStrata("FULLSCREEN_DIALOG")
+    catcher:EnableMouse(true)
+    catcher:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+    catcher:Hide()
+    catcher:SetScript("OnClick", function() listFrame:Hide() end)
+
+    listFrame:HookScript("OnShow", function() catcher:Show() end)
+    listFrame:HookScript("OnHide", function() catcher:Hide() end)
+    if ownerFrame then
+        ownerFrame:HookScript("OnHide", function() listFrame:Hide() end)
+    end
+end
+
+-- Closes a Blizzard UIDropDownMenuTemplate dropdown (context menu or combo box) on any
+-- click outside it — needed because clicking another same/higher-strata addon frame
+-- (e.g. our own panels) eats the click before Blizzard's own auto-close logic ever sees
+-- it. onCloseFn (optional) runs extra cleanup whenever the dropdown closes.
+function SchlingelInc:RegisterDropdownAutoClose(dropdownFrame, onCloseFn)
+    if not DropDownList1 then return end
+
+    local catcher = CreateFrame("Button", nil, UIParent)
+    catcher:SetAllPoints(UIParent)
+    catcher:SetFrameStrata("DIALOG")
+    catcher:EnableMouse(true)
+    catcher:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+    catcher:Hide()
+    catcher:SetScript("OnClick", CloseDropDownMenus)
+
+    DropDownList1:HookScript("OnShow", function()
+        if UIDROPDOWNMENU_OPEN_MENU == dropdownFrame then
+            catcher:Show()
+        end
+    end)
+    DropDownList1:HookScript("OnHide", function()
+        catcher:Hide()
+        if onCloseFn then onCloseFn() end
+    end)
+end
+
 SchlingelInc.lastPvPAlert = {}
 
 SchlingelInc.Global = {}

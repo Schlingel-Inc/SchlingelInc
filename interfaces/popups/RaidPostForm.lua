@@ -93,6 +93,7 @@ local function BuildForm()
     instList:SetPoint("TOPLEFT", instBtn, "BOTTOMLEFT", 0, -2)
     instList:Hide()
     f.instList = instList
+    SchlingelInc:RegisterOutsideClickClose(instList, f)
 
     local ITEM_H = 18
     local yOff   = -4

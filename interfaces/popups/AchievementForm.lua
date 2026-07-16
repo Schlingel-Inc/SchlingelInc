@@ -126,6 +126,7 @@ local function BuildForm()
     kindList:SetPoint("TOPLEFT", kindBtn, "BOTTOMLEFT", 0, -2)
     kindList:Hide()
     f.kindList = kindList
+    SchlingelInc:RegisterOutsideClickClose(kindList, f)
 
     -- ── Kriterien (dynamic per kind, all anchored at the same point) ────────
     local criteriaAnchor = CreateFrame("Frame", nil, f)

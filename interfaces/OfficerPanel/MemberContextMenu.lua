@@ -40,26 +40,8 @@ StaticPopupDialogs["SCHLINGEL_DEATHSET_SET"] = {
 
 local contextMenu = CreateFrame("Frame", "SchlingelIncMemberContextMenu", UIParent, "UIDropDownMenuTemplate")
 local contextMenuTarget = nil
-local contextMenuClickCatcher = CreateFrame("Button", nil, UIParent)
 
-contextMenuClickCatcher:SetAllPoints(UIParent)
-contextMenuClickCatcher:SetFrameStrata("HIGH")
-contextMenuClickCatcher:EnableMouse(true)
-contextMenuClickCatcher:RegisterForClicks("LeftButtonUp", "RightButtonUp")
-contextMenuClickCatcher:SetScript("OnClick", function()
-    CloseDropDownMenus()
-    contextMenuClickCatcher:Hide()
-    contextMenuTarget = nil
-end)
-contextMenuClickCatcher:Hide()
-
-if DropDownList1 and not DropDownList1.SchlingelIncCloseHooked then
-    DropDownList1:HookScript("OnHide", function()
-        contextMenuClickCatcher:Hide()
-        contextMenuTarget = nil
-    end)
-    DropDownList1.SchlingelIncCloseHooked = true
-end
+SchlingelInc:RegisterDropdownAutoClose(contextMenu, function() contextMenuTarget = nil end)
 
 UIDropDownMenu_Initialize(contextMenu, function(self, level)
     if not contextMenuTarget then return end
@@ -109,10 +91,4 @@ function OfficerPanel:ShowMemberContextMenu(targetName)
     if not targetName or targetName == "" then return end
     contextMenuTarget = targetName
     ToggleDropDownMenu(1, nil, contextMenu, "cursor", 0, 0)
-    if DropDownList1 and DropDownList1:IsShown() then
-        contextMenuClickCatcher:Show()
-    else
-        contextMenuClickCatcher:Hide()
-        contextMenuTarget = nil
-    end
 end
