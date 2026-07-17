@@ -41,7 +41,6 @@ SchlingelInc.Constants.INSTANCE_TYPES = {
 -- Sound IDs
 SchlingelInc.Constants.SOUNDS = {
 	-- Standard WoW sounds (sound_pack = "standard")
-	PVP_ALERT = 8174,
 	DEATH_ANNOUNCEMENT = 8192,
 	LEVELUP_ANNOUNCEMENT = 888,
 	CAP_ANNOUNCEMENT_STANDARD = 8574,  -- Achievement sound
@@ -66,7 +65,6 @@ SchlingelInc.Constants.COLORS = {
 
 -- Cooldowns (in seconds)
 SchlingelInc.Constants.COOLDOWNS = {
-	PVP_ALERT = 10,
 	INVITE_REQUEST = 300,  -- 5 minutes
 	GUILD_ROSTER_CACHE = 60,  -- 1 minute
 	DEATH_ANNOUNCEMENT = 10,

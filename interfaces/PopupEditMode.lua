@@ -10,8 +10,7 @@ local SPECS = {
     { label = "Death Announcement", dbKey = "deathannouncement_position", w = 380, h = 200, point = "TOP", x = 0, y = 0 },
     { label = "Small Death", dbKey = "smalldeathannouncement_position", w = 220, h = 40, point = "TOPRIGHT", x = -20, y = -200 },
     { label = "Level Up", dbKey = "levelupannouncement_position", w = 380, h = 200, point = "TOP", x = 0, y = 0 },
-    { label = "Guild Invites", dbKey = "guildinvites_popup_position", w = 350, h = 100, point = "TOPRIGHT", x = -60, y = -200 },
-    { label = "PvP Warning", dbKey = "pvpwarning_position", w = 320, h = 110, point = "CENTER", x = 0, y = 0 },
+    { label = "Guild Invites", dbKey = "guildinvites_popup_position", w = 260, h = 64, point = "TOPRIGHT", x = -60, y = -200 },
     { label = "Achievement Announcement", dbKey = "achievementannouncement_position", w = 220, h = 40, point = "TOPRIGHT", x = -20, y = -260 },
     { label = "Guild Join Prompt", dbKey = "guildjoinprompt_position", w = 300, h = 130, point = "CENTER", x = 0, y = 0 },
 }

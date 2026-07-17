@@ -71,30 +71,6 @@ local options = {
             type  = "group",
             order = 2,
             args  = {
-                pvp = {
-                    type   = "group",
-                    name   = "PVP Warnung",
-                    inline = true,
-                    order  = 1,
-                    args   = {
-                        pvp_alert = {
-                            type  = "toggle",
-                            name  = "Aktiviert",
-                            desc  = "Aktiviert die PVP Warnung",
-                            order = 1,
-                            get   = get,
-                            set   = set,
-                        },
-                        pvp_alert_sound = {
-                            type  = "toggle",
-                            name  = "Ton",
-                            desc  = "Aktiviert den Ton für die PVP Warnung",
-                            order = 2,
-                            get   = get,
-                            set   = set,
-                        },
-                    },
-                },
                 death = {
                     type   = "group",
                     name   = "Todesmeldungen",
@@ -248,8 +224,6 @@ function SchlingelInc:InitializeOptionsDB()
         show_version        = false,
         auto_decline_duels  = false,
         show_discord_handle = false,
-        pvp_alert           = true,
-        pvp_alert_sound     = true,
         deathmessages       = true,
         deathmessages_sound = true,
         deathframe_always_small = false,

@@ -23,9 +23,6 @@ function SchlingelInc:OnLoad()
 
     SchlingelInc:InitializeOptionsDB()
 
-    -- Create and initialize the PvP warning frame.
-    SchlingelInc:CreatePvPWarningFrame()
-
     -- Initialize minimap icon functionality.
     SchlingelInc:InitMinimapIcon()
 end

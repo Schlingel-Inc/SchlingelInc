@@ -105,22 +105,10 @@ function SchlingelInc:RegisterDropdownAutoClose(dropdownFrame, onCloseFn)
     end)
 end
 
-SchlingelInc.lastPvPAlert = {}
-
 SchlingelInc.Global = {}
 
 function SchlingelInc.Global:Initialize()
 	C_ChatInfo.RegisterAddonMessagePrefix(SchlingelInc.prefix)
-
-	SchlingelInc.EventManager:RegisterHandler("PLAYER_TARGET_CHANGED",
-		function()
-			if SchlingelOptionsDB["pvp_alert"] == false then
-				return
-			end
-			if not SchlingelInc:IsInBattleground() then
-				SchlingelInc:CheckTargetPvP()
-			end
-		end, 0, "PvPTargetChecker")
 
 	local newestVersionSeen = SchlingelInc.version
 	SchlingelInc.EventManager:RegisterHandler("CHAT_MSG_ADDON",
@@ -157,11 +145,6 @@ end
 
 function SchlingelInc:Print(message)
     print(SchlingelInc.colorCode .. "[" .. SchlingelInc.name .. "]|r " .. message)
-end
-
-function SchlingelInc:IsInBattleground()
-    local inInstance, instanceType = IsInInstance()
-    return inInstance and instanceType == SchlingelInc.Constants.INSTANCE_TYPES.PVP
 end
 
 function SchlingelInc:IsInRaid()
