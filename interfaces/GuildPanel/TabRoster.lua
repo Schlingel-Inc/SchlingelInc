@@ -78,7 +78,7 @@ function GP.BuildRosterTab(content, f)
 
     local divider = content:CreateTexture(nil, "ARTWORK")
     divider:SetHeight(1)
-    divider:SetColorTexture(0.4, 0.4, 0.4, 0.7)
+    divider:SetColorTexture(unpack(SchlingelInc.Constants.FORM_COLORS.DIVIDER))
     divider:SetPoint("TOPLEFT",  content, "TOPLEFT",  0, -(TOP_H + GP.COL_H + 2))
     divider:SetPoint("TOPRIGHT", content, "TOPRIGHT", 0, -(TOP_H + GP.COL_H + 2))
 

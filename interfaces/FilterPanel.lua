@@ -39,8 +39,8 @@ function SchlingelInc.Shared.CreateFilterPanel(cfg)
         tile = true, tileSize = 16, edgeSize = 16,
         insets = { left = 4, right = 4, top = 4, bottom = 4 }
     })
-    fp:SetBackdropColor(0.07, 0.07, 0.07, 0.97)
-    fp:SetBackdropBorderColor(0.45, 0.45, 0.45, 1)
+    fp:SetBackdropColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BG))
+    fp:SetBackdropBorderColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BORDER))
     fp:SetPoint("TOPLEFT", anchor, "TOPRIGHT", 6, 0)
     fp:Hide()
     SchlingelInc:RegisterFrameForEscape(fp)
@@ -61,8 +61,8 @@ function SchlingelInc.Shared.CreateFilterPanel(cfg)
     nameEB:SetSize(INNER_W, 22)
     nameEB:SetPoint("TOPLEFT", nameLbl, "BOTTOMLEFT", 0, -4)
     nameEB:SetBackdrop(SchlingelInc.Constants.POPUPBACKDROP)
-    nameEB:SetBackdropColor(0.1, 0.1, 0.1, 0.9)
-    nameEB:SetBackdropBorderColor(0.4, 0.4, 0.4, 1)
+    nameEB:SetBackdropColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BG))
+    nameEB:SetBackdropBorderColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BORDER))
     nameEB:SetFontObject("GameFontHighlight")
     nameEB:SetTextInsets(6, 6, 0, 0)
     nameEB:SetAutoFocus(false)
@@ -95,7 +95,7 @@ function SchlingelInc.Shared.CreateFilterPanel(cfg)
 
             local bg = btn:CreateTexture(nil, "BACKGROUND")
             bg:SetAllPoints()
-            bg:SetColorTexture(0.18, 0.18, 0.18, 0.9)
+            bg:SetColorTexture(unpack(SchlingelInc.Constants.FORM_COLORS.OPTION_BG))
 
             local lbl = btn:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
             lbl:SetAllPoints()
@@ -105,10 +105,10 @@ function SchlingelInc.Shared.CreateFilterPanel(cfg)
             btn._active = false
             local function UpdateBtn()
                 if btn._active then
-                    bg:SetColorTexture(0.28, 0.20, 0.0, 1)
+                    bg:SetColorTexture(unpack(SchlingelInc.Constants.FORM_COLORS.OPTION_BG_SELECTED))
                     lbl:SetTextColor(1, 0.82, 0, 1)
                 else
-                    bg:SetColorTexture(0.18, 0.18, 0.18, 0.9)
+                    bg:SetColorTexture(unpack(SchlingelInc.Constants.FORM_COLORS.OPTION_BG))
                     lbl:SetTextColor(0.6, 0.6, 0.6, 1)
                 end
             end
@@ -152,8 +152,8 @@ function SchlingelInc.Shared.CreateFilterPanel(cfg)
             tile = true, tileSize = 16, edgeSize = 16,
             insets = { left = 4, right = 4, top = 4, bottom = 4 }
         })
-        profList:SetBackdropColor(0.05, 0.05, 0.05, 0.98)
-        profList:SetBackdropBorderColor(0.45, 0.45, 0.45, 1)
+        profList:SetBackdropColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BG))
+        profList:SetBackdropBorderColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BORDER))
         profList:SetPoint("TOPLEFT", profBtn, "BOTTOMLEFT", 0, -2)
         profList:Hide()
         profList.btns = {}

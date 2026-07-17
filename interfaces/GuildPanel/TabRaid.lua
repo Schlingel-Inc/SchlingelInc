@@ -32,8 +32,8 @@ local function CreateCard(parent, cardW, entry)
         tile = true, tileSize = 16, edgeSize = 12,
         insets = { left = 3, right = 3, top = 3, bottom = 3 }
     })
-    card:SetBackdropColor(0.12, 0.12, 0.12, 0.9)
-    card:SetBackdropBorderColor(0.4, 0.4, 0.4, 1)
+    card:SetBackdropColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BG))
+    card:SetBackdropBorderColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BORDER))
     card:SetWidth(cardW)
     card:EnableMouse(true)
 
@@ -77,7 +77,7 @@ local function CreateCard(parent, cardW, entry)
     if isExpanded then
         local divider = card:CreateTexture(nil, "ARTWORK")
         divider:SetHeight(1)
-        divider:SetColorTexture(0.35, 0.35, 0.35, 0.8)
+        divider:SetColorTexture(unpack(SchlingelInc.Constants.FORM_COLORS.DIVIDER))
         divider:SetPoint("TOPLEFT",  badgeFs, "BOTTOMLEFT",  0, -(CARD_PAD))
         divider:SetPoint("TOPRIGHT", card, "TOPRIGHT", -CARD_PAD, -(height - CARD_PAD))
         height = height + 6
@@ -187,7 +187,7 @@ local function CreateCard(parent, cardW, entry)
         SchlingelInc.GuildPanel:RefreshRaid()
     end)
     card:SetScript("OnEnter", function() card:SetBackdropBorderColor(0.6, 0.6, 0.6, 1) end)
-    card:SetScript("OnLeave", function() card:SetBackdropBorderColor(0.4, 0.4, 0.4, 1) end)
+    card:SetScript("OnLeave", function() card:SetBackdropBorderColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BORDER)) end)
 
     return card
 end
@@ -203,7 +203,7 @@ function GP.BuildRaidTab(content)
 
     local divider = content:CreateTexture(nil, "ARTWORK")
     divider:SetHeight(1)
-    divider:SetColorTexture(0.4, 0.4, 0.4, 0.7)
+    divider:SetColorTexture(unpack(SchlingelInc.Constants.FORM_COLORS.DIVIDER))
     divider:SetPoint("TOPLEFT",  content, "TOPLEFT",  0, -28)
     divider:SetPoint("TOPRIGHT", content, "TOPRIGHT", 0, -28)
 

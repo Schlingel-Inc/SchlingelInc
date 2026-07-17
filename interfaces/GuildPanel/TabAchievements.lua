@@ -59,8 +59,8 @@ local function CreateCard(parent, cardW, entry)
         tile = true, tileSize = 16, edgeSize = 12,
         insets = { left = 3, right = 3, top = 3, bottom = 3 }
     })
-    card:SetBackdropColor(0.12, 0.12, 0.12, 0.9)
-    card:SetBackdropBorderColor(0.4, 0.4, 0.4, 1)
+    card:SetBackdropColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BG))
+    card:SetBackdropBorderColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BORDER))
     card:SetWidth(cardW)
 
     local Progress = SchlingelInc.Achievements.Progress
@@ -138,8 +138,8 @@ function GP.BuildAchievementsTab(content)
         tile = true, tileSize = 16, edgeSize = 8,
         insets = { left = 2, right = 2, top = 2, bottom = 2 }
     })
-    rankBar:SetBackdropColor(0.1, 0.1, 0.1, 0.9)
-    rankBar:SetBackdropBorderColor(0.4, 0.4, 0.4, 1)
+    rankBar:SetBackdropColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BG))
+    rankBar:SetBackdropBorderColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BORDER))
 
     local rankBarFs = rankBar:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     rankBarFs:SetPoint("CENTER", rankBar, "CENTER", 0, 0)
@@ -164,7 +164,7 @@ function GP.BuildAchievementsTab(content)
 
     local divider = content:CreateTexture(nil, "ARTWORK")
     divider:SetHeight(1)
-    divider:SetColorTexture(0.4, 0.4, 0.4, 0.7)
+    divider:SetColorTexture(unpack(SchlingelInc.Constants.FORM_COLORS.DIVIDER))
     divider:SetPoint("TOPLEFT",  content, "TOPLEFT",  0, -RANK_BAR_H)
     divider:SetPoint("TOPRIGHT", content, "TOPRIGHT", 0, -RANK_BAR_H)
 

@@ -30,8 +30,8 @@ function SchlingelInc.GuildPanel:Create()
         tile = true, tileSize = 16, edgeSize = 16,
         insets = { left = 4, right = 4, top = 4, bottom = 4 }
     })
-    f:SetBackdropColor(0.07, 0.07, 0.07, 0.96)
-    f:SetBackdropBorderColor(0.45, 0.45, 0.45, 1)
+    f:SetBackdropColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BG))
+    f:SetBackdropBorderColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BORDER))
 
     f:SetScript("OnDragStart", f.StartMoving)
     f:SetScript("OnDragStop", function(self)
@@ -48,7 +48,7 @@ function SchlingelInc.GuildPanel:Create()
     titleBg:SetPoint("TOPLEFT",  f, "TOPLEFT",  4, -4)
     titleBg:SetPoint("TOPRIGHT", f, "TOPRIGHT", -4, -4)
     titleBg:SetHeight(GP.TITLE_H - 4)
-    titleBg:SetColorTexture(0.12, 0.12, 0.12, 1)
+    titleBg:SetColorTexture(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BG))
 
     -- Schlingel icon
     local titleIcon = f:CreateTexture(nil, "OVERLAY")

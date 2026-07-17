@@ -50,7 +50,7 @@ function OfficerPanel.BuildInactiveTab(ic)
 
     local hdrDiv = ic:CreateTexture(nil, "ARTWORK")
     hdrDiv:SetHeight(1)
-    hdrDiv:SetColorTexture(0.4, 0.4, 0.4, 0.7)
+    hdrDiv:SetColorTexture(unpack(SchlingelInc.Constants.FORM_COLORS.DIVIDER))
     hdrDiv:SetPoint("TOPLEFT",  ic, "TOPLEFT",  4, -22)
     hdrDiv:SetPoint("TOPRIGHT", ic, "TOPRIGHT", -4, -22)
 
@@ -122,7 +122,7 @@ function OfficerPanel.BuildInactiveTab(ic)
             if idx % 2 == 0 then
                 local bg = row:CreateTexture(nil, "BACKGROUND")
                 bg:SetAllPoints()
-                bg:SetColorTexture(1, 1, 1, 0.03)
+                bg:SetColorTexture(unpack(SchlingelInc.Constants.FORM_COLORS.ROW_STRIPE))
             end
 
             local function Cell(text, xPos, w, r, g, b)

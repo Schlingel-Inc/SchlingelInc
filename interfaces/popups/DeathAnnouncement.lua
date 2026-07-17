@@ -19,7 +19,7 @@ SchlingelInc:RestoreFramePosition(DeathMessageFrame, "deathannouncement_position
 DeathMessageFrame:Hide()
 
 DeathMessageFrame:SetBackdrop(SchlingelInc.Constants.POPUPBACKDROP)
-DeathMessageFrame:SetBackdropColor(0.12, 0, 0, 0.92)
+DeathMessageFrame:SetBackdropColor(0.12, 0, 0, 0.85)
 DeathMessageFrame:SetBackdropBorderColor(1, 0.15, 0.15, 1)
 
 -- Icon

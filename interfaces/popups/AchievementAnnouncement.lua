@@ -22,7 +22,7 @@ Frame:Hide()
 
 Frame:SetBackdrop(SchlingelInc.Constants.POPUPBACKDROP)
 Frame:SetBackdropColor(0.12, 0.09, 0, 0.85)
-Frame:SetBackdropBorderColor(1, 0.82, 0, 1)
+Frame:SetBackdropBorderColor(unpack(SchlingelInc.Constants.FORM_COLORS.TITLE))
 
 Frame.text = Frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 Frame.text:SetPoint("TOPLEFT",     Frame, "TOPLEFT",     8, -6)

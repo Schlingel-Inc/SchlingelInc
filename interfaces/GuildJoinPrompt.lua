@@ -8,8 +8,8 @@ local function BuildPrompt()
     local f = CreateFrame("Frame", "SchlingelGuildJoinPrompt", UIParent, "BackdropTemplate")
     f:SetSize(300, 130)
     f:SetBackdrop(SchlingelInc.Constants.BACKDROP)
-    f:SetBackdropColor(0, 0, 0, 0.85)
-    f:SetBackdropBorderColor(1, 0.55, 0.73, 1)
+    f:SetBackdropColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BG))
+    f:SetBackdropBorderColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BORDER))
     f:SetFrameStrata("DIALOG")
     f:SetMovable(true)
     f:EnableMouse(true)
@@ -25,7 +25,7 @@ local function BuildPrompt()
     local lbl = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     lbl:SetPoint("TOP", f, "TOP", 0, -22)
     lbl:SetText("Du bist noch nicht in der Gilde!")
-    lbl:SetTextColor(1, 0.55, 0.73)
+    lbl:SetTextColor(unpack(SchlingelInc.Constants.FORM_COLORS.TITLE))
 
     local btn = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
     btn:SetSize(210, 28)
@@ -39,7 +39,7 @@ local function BuildPrompt()
     local hint = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     hint:SetPoint("TOP", btn, "BOTTOM", 0, -10)
     hint:SetText("Keine Mods zum Einladen verfügbar")
-    hint:SetTextColor(1, 0.3, 0.3)
+    hint:SetTextColor(unpack(SchlingelInc.Constants.FORM_COLORS.ERROR))
     f.hint = hint
 
     local closeBtn = CreateFrame("Button", nil, f, "UIPanelCloseButton")
@@ -52,7 +52,7 @@ end
 function SchlingelInc:ShowGuildJoinPrompt()
     promptFrame = promptFrame or BuildPrompt()
     promptFrame.hint:SetText("Keine Mods zum Einladen verfügbar")
-    promptFrame.hint:SetTextColor(1, 0.3, 0.3)
+    promptFrame.hint:SetTextColor(unpack(SchlingelInc.Constants.FORM_COLORS.ERROR))
     if not promptFrame:IsShown() then
         promptFrame:Show()
     end
@@ -71,7 +71,7 @@ function SchlingelInc:InitializeGuildJoinPrompt()
             promptFrame.hint:SetTextColor(0.3, 1, 0.3)
         else
             promptFrame.hint:SetText("Keine Mods zum Einladen verfügbar")
-            promptFrame.hint:SetTextColor(1, 0.3, 0.3)
+            promptFrame.hint:SetTextColor(unpack(SchlingelInc.Constants.FORM_COLORS.ERROR))
         end
     end, 0, "GuildJoinPromptOfficerCheck")
 end

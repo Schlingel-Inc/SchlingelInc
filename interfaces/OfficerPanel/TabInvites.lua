@@ -32,7 +32,7 @@ function OfficerPanel.BuildInvitesTab(vc)
 
     local vhdrDiv = vc:CreateTexture(nil, "ARTWORK")
     vhdrDiv:SetHeight(1)
-    vhdrDiv:SetColorTexture(0.4, 0.4, 0.4, 0.7)
+    vhdrDiv:SetColorTexture(unpack(SchlingelInc.Constants.FORM_COLORS.DIVIDER))
     vhdrDiv:SetPoint("TOPLEFT",  vc, "TOPLEFT",  4, -22)
     vhdrDiv:SetPoint("TOPRIGHT", vc, "TOPRIGHT", -4, -22)
 
@@ -84,7 +84,7 @@ function OfficerPanel.BuildInvitesTab(vc)
             if idx % 2 == 0 then
                 local bg = row:CreateTexture(nil, "BACKGROUND")
                 bg:SetAllPoints()
-                bg:SetColorTexture(1, 1, 1, 0.03)
+                bg:SetColorTexture(unpack(SchlingelInc.Constants.FORM_COLORS.ROW_STRIPE))
             end
 
             local function Cell(text, xPos, w, r, g, b)

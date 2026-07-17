@@ -141,7 +141,7 @@ function OfficerPanel.BuildProgressTab(pc)
 
     local phdrDiv = pc:CreateTexture(nil, "ARTWORK")
     phdrDiv:SetHeight(1)
-    phdrDiv:SetColorTexture(0.4, 0.4, 0.4, 0.7)
+    phdrDiv:SetColorTexture(unpack(SchlingelInc.Constants.FORM_COLORS.DIVIDER))
     phdrDiv:SetPoint("TOPLEFT",  pc, "TOPLEFT",  4, -44)
     phdrDiv:SetPoint("TOPRIGHT", pc, "TOPRIGHT", -4, -44)
 
@@ -378,7 +378,7 @@ function OfficerPanel.BuildProgressTab(pc)
             elseif idx % 2 == 0 then
                 local bg = row:CreateTexture(nil, "BACKGROUND")
                 bg:SetAllPoints()
-                bg:SetColorTexture(1, 1, 1, 0.03)
+                bg:SetColorTexture(unpack(SchlingelInc.Constants.FORM_COLORS.ROW_STRIPE))
             end
 
             local hoverTex = row:CreateTexture(nil, "BACKGROUND")

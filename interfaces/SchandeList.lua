@@ -18,8 +18,8 @@ local function CreateCard(parent, cardW, entry, opts)
         tile = true, tileSize = 16, edgeSize = 12,
         insets = { left = 3, right = 3, top = 3, bottom = 3 }
     })
-    card:SetBackdropColor(0.12, 0.12, 0.12, 0.9)
-    card:SetBackdropBorderColor(0.4, 0.4, 0.4, 1)
+    card:SetBackdropColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BG))
+    card:SetBackdropBorderColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BORDER))
     card:SetWidth(cardW)
 
     local idText = card:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")

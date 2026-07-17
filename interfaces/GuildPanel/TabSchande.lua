@@ -18,7 +18,7 @@ function GP.BuildSchandeTab(content)
 
     local divider = content:CreateTexture(nil, "ARTWORK")
     divider:SetHeight(1)
-    divider:SetColorTexture(0.4, 0.4, 0.4, 0.7)
+    divider:SetColorTexture(unpack(SchlingelInc.Constants.FORM_COLORS.DIVIDER))
     divider:SetPoint("TOPLEFT",  listHeaderLbl, "BOTTOMLEFT", 0, -4)
     divider:SetPoint("RIGHT",    content, "RIGHT", -8, 0)
 

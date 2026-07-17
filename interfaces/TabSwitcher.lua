@@ -58,7 +58,7 @@ function SchlingelInc.Shared.CreateTabSwitcher(cfg)
         activeLine:SetHeight(2)
         activeLine:SetPoint("BOTTOMLEFT",  btn, "BOTTOMLEFT",  2, 0)
         activeLine:SetPoint("BOTTOMRIGHT", btn, "BOTTOMRIGHT", -2, 0)
-        activeLine:SetColorTexture(1, 0.82, 0, 1)
+        activeLine:SetColorTexture(unpack(SchlingelInc.Constants.FORM_COLORS.TITLE))
         activeLine:Hide()
         btn.activeLine = activeLine
 
@@ -79,7 +79,7 @@ function SchlingelInc.Shared.CreateTabSwitcher(cfg)
 
     local divider = parent:CreateTexture(nil, "ARTWORK")
     divider:SetHeight(1)
-    divider:SetColorTexture(0.4, 0.4, 0.4, 0.7)
+    divider:SetColorTexture(unpack(SchlingelInc.Constants.FORM_COLORS.DIVIDER))
     divider:SetPoint("TOPLEFT",  parent, "TOPLEFT",  8, contentTop + 2)
     divider:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -8, contentTop + 2)
 

@@ -14,7 +14,7 @@ function GP.CreateRow(parent, index)
     if index % 2 == 0 then
         local stripe = row:CreateTexture(nil, "BACKGROUND")
         stripe:SetAllPoints()
-        stripe:SetColorTexture(1, 1, 1, 0.04)
+        stripe:SetColorTexture(unpack(SchlingelInc.Constants.FORM_COLORS.ROW_STRIPE))
     end
 
     -- Hover highlight (gold tint, hidden by default)

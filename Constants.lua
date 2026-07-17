@@ -156,13 +156,13 @@ SchlingelInc.Constants.FORM_COLORS = {
 	HOVER               = {1,    1,    0.7,  1},
 	FORM_BG             = {0.07, 0.07, 0.07, 0.98},
 	FORM_BORDER         = {0.45, 0.45, 0.45, 1},
-	EDITBOX_BG          = {0.1,  0.1,  0.1,  0.9},
-	EDITBOX_BORDER      = {0.4,  0.4,  0.4,  1},
-	LIST_BG             = {0.05, 0.05, 0.05, 0.98},
+	ACCENT_BORDER       = {1,    0.55, 0.73, 1},
 	LIST_ITEM_TEXT      = {0.85, 0.85, 0.85, 1},
 	OPTION_BG           = {0.18, 0.18, 0.18, 0.9},
 	OPTION_BG_SELECTED  = {0.28, 0.20, 0.0,  1},
 	OPTION_TEXT         = {0.6,  0.6,  0.6,  1},
+	DIVIDER             = {0.4,  0.4,  0.4,  0.7},
+	ROW_STRIPE          = {1,    1,    1,    0.03},
 }
 
 -- Inactivity threshold (days)

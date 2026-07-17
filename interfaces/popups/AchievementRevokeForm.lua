@@ -46,8 +46,8 @@ local function CreateCard(parent, cardW, entry, onClick)
         tile = true, tileSize = 16, edgeSize = 12,
         insets = { left = 3, right = 3, top = 3, bottom = 3 }
     })
-    card:SetBackdropColor(0.12, 0.12, 0.12, 0.9)
-    card:SetBackdropBorderColor(0.4, 0.4, 0.4, 1)
+    card:SetBackdropColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BG))
+    card:SetBackdropBorderColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BORDER))
     card:SetWidth(cardW)
     card:SetHeight(40)
 
@@ -63,8 +63,8 @@ local function CreateCard(parent, cardW, entry, onClick)
     metaFs:SetText((entry.points or 0) .. " Punkte — " .. (KIND_LABELS[entry.kind] or entry.kind))
     metaFs:SetTextColor(0.6, 0.8, 1, 1)
 
-    card:SetScript("OnEnter", function() card:SetBackdropBorderColor(1, 0.82, 0, 1) end)
-    card:SetScript("OnLeave", function() card:SetBackdropBorderColor(0.4, 0.4, 0.4, 1) end)
+    card:SetScript("OnEnter", function() card:SetBackdropBorderColor(unpack(SchlingelInc.Constants.FORM_COLORS.TITLE)) end)
+    card:SetScript("OnLeave", function() card:SetBackdropBorderColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BORDER)) end)
     card:SetScript("OnClick", function() onClick(entry) end)
 
     return card
@@ -75,8 +75,8 @@ local function BuildForm()
     f:SetSize(FORM_W, FORM_H)
     f:SetFrameStrata("DIALOG")
     f:SetBackdrop(SchlingelInc.Constants.BACKDROP)
-    f:SetBackdropColor(0.07, 0.07, 0.07, 0.98)
-    f:SetBackdropBorderColor(0.45, 0.45, 0.45, 1)
+    f:SetBackdropColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BG))
+    f:SetBackdropBorderColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BORDER))
     f:SetMovable(true)
     f:EnableMouse(true)
     f:RegisterForDrag("LeftButton")
@@ -111,7 +111,7 @@ local function BuildForm()
 
     local divider = f:CreateTexture(nil, "ARTWORK")
     divider:SetHeight(1)
-    divider:SetColorTexture(0.4, 0.4, 0.4, 0.7)
+    divider:SetColorTexture(unpack(SchlingelInc.Constants.FORM_COLORS.DIVIDER))
     divider:SetPoint("TOPLEFT",  f, "TOPLEFT",  10, -46)
     divider:SetPoint("TOPRIGHT", f, "TOPRIGHT", -10, -46)
 

@@ -19,7 +19,7 @@ function OfficerPanel.BuildDiscordTab(dc)
 
     local dhdrDiv = dc:CreateTexture(nil, "ARTWORK")
     dhdrDiv:SetHeight(1)
-    dhdrDiv:SetColorTexture(0.4, 0.4, 0.4, 0.7)
+    dhdrDiv:SetColorTexture(unpack(SchlingelInc.Constants.FORM_COLORS.DIVIDER))
     dhdrDiv:SetPoint("TOPLEFT",  dc, "TOPLEFT",  4, -22)
     dhdrDiv:SetPoint("TOPRIGHT", dc, "TOPRIGHT", -4, -22)
 
@@ -139,7 +139,7 @@ function OfficerPanel.BuildDiscordTab(dc)
             if idx % 2 == 0 then
                 local bg = row:CreateTexture(nil, "BACKGROUND")
                 bg:SetAllPoints()
-                bg:SetColorTexture(1, 1, 1, 0.03)
+                bg:SetColorTexture(unpack(SchlingelInc.Constants.FORM_COLORS.ROW_STRIPE))
             end
 
             local function Cell(text, xPos, w, r, g, b)
