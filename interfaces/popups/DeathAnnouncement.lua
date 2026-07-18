@@ -3,24 +3,20 @@
 
 SchlingelInc.DeathAnnouncement = {}
 
-local DeathMessageFrame = CreateFrame("Frame", "DeathMessageFrame", UIParent, "BackdropTemplate")
-DeathMessageFrame:SetSize(380, 200)
-DeathMessageFrame:SetFrameStrata("FULLSCREEN_DIALOG")
+local DeathMessageFrame = SchlingelInc.Shared.CreateStandardFrame({
+	name         = "DeathMessageFrame",
+	width        = 380,
+	height       = 200,
+	strata       = "FULLSCREEN_DIALOG",
+	backdrop     = SchlingelInc.Constants.POPUPBACKDROP,
+	bgColor      = { 0.12, 0, 0, 0.85 },
+	borderColor  = { 1, 0.15, 0.15, 1 },
+	positionKey  = "deathannouncement_position",
+	defaultPoint = "TOP",
+	defaultX     = 0,
+	defaultY     = 0,
+})
 DeathMessageFrame:SetFrameLevel(1000)
-DeathMessageFrame:SetMovable(true)
-DeathMessageFrame:EnableMouse(true)
-DeathMessageFrame:RegisterForDrag("LeftButton")
-DeathMessageFrame:SetScript("OnDragStart", DeathMessageFrame.StartMoving)
-DeathMessageFrame:SetScript("OnDragStop", function(self)
-	self:StopMovingOrSizing()
-	SchlingelInc:SaveFramePosition(self, "deathannouncement_position")
-end)
-SchlingelInc:RestoreFramePosition(DeathMessageFrame, "deathannouncement_position", "TOP", 0, 0)
-DeathMessageFrame:Hide()
-
-DeathMessageFrame:SetBackdrop(SchlingelInc.Constants.POPUPBACKDROP)
-DeathMessageFrame:SetBackdropColor(0.12, 0, 0, 0.85)
-DeathMessageFrame:SetBackdropBorderColor(1, 0.15, 0.15, 1)
 
 -- Icon
 local icon = DeathMessageFrame:CreateTexture(nil, "ARTWORK")
@@ -98,24 +94,20 @@ end
 
 -- Compact death notification for when the local player is in an instance.
 -- Shown top-right, small frame, short text: "NAME ist gestorben."
-local SmallDeathFrame = CreateFrame("Frame", "SchlingelSmallDeathFrame", UIParent, "BackdropTemplate")
-SmallDeathFrame:SetSize(220, 40)
-SmallDeathFrame:SetFrameStrata("FULLSCREEN_DIALOG")
+local SmallDeathFrame = SchlingelInc.Shared.CreateStandardFrame({
+	name         = "SchlingelSmallDeathFrame",
+	width        = 220,
+	height       = 40,
+	strata       = "FULLSCREEN_DIALOG",
+	backdrop     = SchlingelInc.Constants.POPUPBACKDROP,
+	bgColor      = { 0.12, 0, 0, 0.85 },
+	borderColor  = { 1, 0.15, 0.15, 1 },
+	positionKey  = "smalldeathannouncement_position",
+	defaultPoint = "TOPRIGHT",
+	defaultX     = -20,
+	defaultY     = -200,
+})
 SmallDeathFrame:SetFrameLevel(1000)
-SmallDeathFrame:SetMovable(true)
-SmallDeathFrame:EnableMouse(true)
-SmallDeathFrame:RegisterForDrag("LeftButton")
-SmallDeathFrame:SetScript("OnDragStart", SmallDeathFrame.StartMoving)
-SmallDeathFrame:SetScript("OnDragStop", function(self)
-	self:StopMovingOrSizing()
-	SchlingelInc:SaveFramePosition(self, "smalldeathannouncement_position")
-end)
-SchlingelInc:RestoreFramePosition(SmallDeathFrame, "smalldeathannouncement_position", "TOPRIGHT", -20, -200)
-SmallDeathFrame:Hide()
-
-SmallDeathFrame:SetBackdrop(SchlingelInc.Constants.POPUPBACKDROP)
-SmallDeathFrame:SetBackdropColor(0.12, 0, 0, 0.85)
-SmallDeathFrame:SetBackdropBorderColor(1, 0.15, 0.15, 1)
 
 SmallDeathFrame.text = SmallDeathFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 SmallDeathFrame.text:SetPoint("TOPLEFT",     SmallDeathFrame, "TOPLEFT",     8, -6)
