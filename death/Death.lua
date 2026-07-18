@@ -161,7 +161,7 @@ function SchlingelInc.Death:Initialize()
 						zone,
 						SchlingelInc.DeathCauseHandler.DeathCause,
 					}, "|")
-					ChatThrottleLib:SendAddonMessage("BULK", SchlingelInc.prefix, addonDeathMsg, "GUILD", nil, "SchlingelInc-Announce")
+					ChatThrottleLib:SendAddonMessage("ALERT", SchlingelInc.prefix, addonDeathMsg, "GUILD", nil, "SchlingelInc-Announce")
 				end
 			end
 
