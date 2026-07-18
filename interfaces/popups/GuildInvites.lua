@@ -4,29 +4,22 @@
 
 SchlingelInc.GuildInvites = {}
 
-local InviteMessageFrame = CreateFrame("Button", "InviteMessageFrame", UIParent, "BackdropTemplate")
-InviteMessageFrame:SetSize(260, 64)
-SchlingelInc:RestoreFramePosition(InviteMessageFrame, "guildinvites_popup_position", "TOPRIGHT", -60, -200)
-InviteMessageFrame:SetFrameStrata("FULLSCREEN_DIALOG")
+local InviteMessageFrame = SchlingelInc.Shared.CreateStandardFrame({
+    frameType    = "Button",
+    name         = "InviteMessageFrame",
+    width        = 260,
+    height       = 64,
+    strata       = "FULLSCREEN_DIALOG",
+    backdrop     = SchlingelInc.Constants.POPUPBACKDROP,
+    borderColor  = SchlingelInc.Constants.FORM_COLORS.ACCENT_BORDER,
+    positionKey  = "guildinvites_popup_position",
+    defaultPoint = "TOPRIGHT",
+    defaultX     = -60,
+    defaultY     = -200,
+    closeButton  = true,
+})
 InviteMessageFrame:SetFrameLevel(1000)
 InviteMessageFrame:RegisterForClicks("LeftButtonUp")
-InviteMessageFrame:RegisterForDrag("LeftButton")
-InviteMessageFrame:SetMovable(true)
-InviteMessageFrame:EnableMouse(true)
-InviteMessageFrame:Hide()
-
-InviteMessageFrame:SetScript("OnDragStart", function(self)
-    self:StartMoving()
-end)
-
-InviteMessageFrame:SetScript("OnDragStop", function(self)
-    self:StopMovingOrSizing()
-    SchlingelInc:SaveFramePosition(self, "guildinvites_popup_position")
-end)
-
-InviteMessageFrame:SetBackdrop(SchlingelInc.Constants.POPUPBACKDROP)
-InviteMessageFrame:SetBackdropColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BG))
-InviteMessageFrame:SetBackdropBorderColor(unpack(SchlingelInc.Constants.FORM_COLORS.ACCENT_BORDER))
 
 local header = InviteMessageFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 header:SetPoint("TOPLEFT", InviteMessageFrame, "TOPLEFT", 10, -10)
@@ -47,11 +40,6 @@ countText:SetPoint("RIGHT",   InviteMessageFrame, "RIGHT",   -10, 0)
 countText:SetJustifyH("LEFT")
 countText:SetShadowColor(0, 0, 0, 1)
 countText:SetShadowOffset(1, -1)
-
-local closeBtn = CreateFrame("Button", nil, InviteMessageFrame, "UIPanelCloseButton")
-closeBtn:SetSize(20, 20)
-closeBtn:SetPoint("TOPRIGHT", InviteMessageFrame, "TOPRIGHT", -2, -2)
-closeBtn:SetScript("OnClick", function() InviteMessageFrame:Hide() end)
 
 local animGroup = InviteMessageFrame:CreateAnimationGroup()
 local fadeIn = animGroup:CreateAnimation("Alpha")
