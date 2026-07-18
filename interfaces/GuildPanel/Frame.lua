@@ -18,30 +18,20 @@ function SchlingelInc.GuildPanel:Create()
         if SchlingelInc.GuildPanel.filterProfList then SchlingelInc.GuildPanel.filterProfList:Hide() end
     end
 
-    local f = CreateFrame("Frame", GP.PANEL_NAME, UIParent, "BackdropTemplate")
-    f:SetSize(GP.FRAME_W, GP.FRAME_H)
-    f:SetFrameStrata("MEDIUM")
-    f:SetMovable(true)
-    f:EnableMouse(true)
-    f:RegisterForDrag("LeftButton")
-    f:SetBackdrop({
-        bgFile   = "Interface\\BUTTONS\\WHITE8X8",
-        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-        tile = true, tileSize = 16, edgeSize = 16,
-        insets = { left = 4, right = 4, top = 4, bottom = 4 }
+    local f = SchlingelInc.Shared.CreateStandardFrame({
+        name          = GP.PANEL_NAME,
+        width         = GP.FRAME_W,
+        height        = GP.FRAME_H,
+        strata        = "MEDIUM",
+        backdrop      = SchlingelInc.Constants.POPUPBACKDROP,
+        positionKey   = "guildpanel_position",
+        defaultPoint  = "CENTER",
+        defaultX      = 0,
+        defaultY      = 0,
+        registerEscape = true,
+        closeButton   = true,
+        onHide        = HideFilterFrames,
     })
-    f:SetBackdropColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BG))
-    f:SetBackdropBorderColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BORDER))
-
-    f:SetScript("OnDragStart", f.StartMoving)
-    f:SetScript("OnDragStop", function(self)
-        self:StopMovingOrSizing()
-        SchlingelInc:SaveFramePosition(self, "guildpanel_position")
-    end)
-    f:SetScript("OnHide", HideFilterFrames)
-    SchlingelInc:RegisterFrameForEscape(f)
-
-    SchlingelInc:RestoreFramePosition(f, "guildpanel_position", "CENTER", 0, 0)
 
     -- ── Title bar ──────────────────────────────────────────────────────────
     local titleBg = f:CreateTexture(nil, "BACKGROUND")
@@ -60,13 +50,6 @@ function SchlingelInc.GuildPanel:Create()
     titleText:SetPoint("LEFT", titleIcon, "RIGHT", 4, 0)
     titleText:SetText("Schlingel Inc")
     titleText:SetTextColor(1, 0.82, 0, 1)
-
-    local closeBtn = CreateFrame("Button", nil, f, "UIPanelCloseButton")
-    closeBtn:SetSize(20, 20)
-    closeBtn:SetPoint("TOPRIGHT", f, "TOPRIGHT", -2, -2)
-    closeBtn:SetScript("OnClick", function()
-        f:Hide()
-    end)
 
     -- ── Tabs (shared factory) ──────────────────────────────────────────────
     local switcher = SchlingelInc.Shared.CreateTabSwitcher({
@@ -99,7 +82,6 @@ function SchlingelInc.GuildPanel:Create()
     GP.BuildRaidTab(switcher.tabContents["raid"])
     GP.BuildAchievementsTab(switcher.tabContents["achievements"])
 
-    f:Hide()
     self.frame = f
 end
 
