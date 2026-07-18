@@ -23,6 +23,7 @@ Global.lua
 MiniMapIcon.lua
 Constants.lua
 interfaces\Shared\Frame.lua
+interfaces\Shared\ScrollFrame.lua
 EventManager.lua
 GuildCache.lua
 GuildProfiles.lua
