@@ -5,22 +5,18 @@
 local promptFrame
 
 local function BuildPrompt()
-    local f = CreateFrame("Frame", "SchlingelGuildJoinPrompt", UIParent, "BackdropTemplate")
-    f:SetSize(300, 130)
-    f:SetBackdrop(SchlingelInc.Constants.BACKDROP)
-    f:SetBackdropColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BG))
-    f:SetBackdropBorderColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BORDER))
-    f:SetFrameStrata("DIALOG")
-    f:SetMovable(true)
-    f:EnableMouse(true)
-    f:RegisterForDrag("LeftButton")
-    f:SetScript("OnDragStart", f.StartMoving)
-    f:SetScript("OnDragStop", function(self)
-        self:StopMovingOrSizing()
-        SchlingelInc:SaveFramePosition(self, "guildjoinprompt_position")
-    end)
-    SchlingelInc:RestoreFramePosition(f, "guildjoinprompt_position", "CENTER", 0, 0)
-    SchlingelInc:RegisterFrameForEscape(f)
+    local f = SchlingelInc.Shared.CreateStandardFrame({
+        name          = "SchlingelGuildJoinPrompt",
+        width         = 300,
+        height        = 130,
+        strata        = "DIALOG",
+        positionKey   = "guildjoinprompt_position",
+        defaultPoint  = "CENTER",
+        defaultX      = 0,
+        defaultY      = 0,
+        registerEscape = true,
+        closeButton   = true,
+    })
 
     local lbl = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     lbl:SetPoint("TOP", f, "TOP", 0, -22)
@@ -41,10 +37,6 @@ local function BuildPrompt()
     hint:SetText("Keine Mods zum Einladen verfügbar")
     hint:SetTextColor(unpack(SchlingelInc.Constants.FORM_COLORS.ERROR))
     f.hint = hint
-
-    local closeBtn = CreateFrame("Button", nil, f, "UIPanelCloseButton")
-    closeBtn:SetPoint("TOPRIGHT", f, "TOPRIGHT", 0, 0)
-    closeBtn:SetScript("OnClick", function() f:Hide() end)
 
     return f
 end
