@@ -77,20 +77,13 @@ local function BuildForm(frameName)
     divider:SetPoint("TOPLEFT",  f, "TOPLEFT",  10, -46)
     divider:SetPoint("TOPRIGHT", f, "TOPRIGHT", -10, -46)
 
-    local scrollFrame = CreateFrame("ScrollFrame", nil, f, "UIPanelScrollFrameTemplate")
+    local scrollFrame, scrollChild = SchlingelInc.Shared.CreateScrollFrame({
+        parent   = f,
+        template = "UIPanelScrollFrameTemplate",
+    })
     scrollFrame:SetPoint("TOPLEFT",     f, "TOPLEFT",     10, -52)
     scrollFrame:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -30, 14)
-    scrollFrame:EnableMouseWheel(true)
-    scrollFrame:SetScript("OnMouseWheel", function(sf, delta)
-        sf:SetVerticalScroll(
-            math.max(0, math.min(sf:GetVerticalScrollRange(), sf:GetVerticalScroll() - delta * 24))
-        )
-    end)
     f.scrollFrame = scrollFrame
-
-    local scrollChild = CreateFrame("Frame", nil, scrollFrame)
-    scrollChild:SetHeight(1)
-    scrollFrame:SetScrollChild(scrollChild)
     f.scrollChild = scrollChild
 
     f.cards = {}
