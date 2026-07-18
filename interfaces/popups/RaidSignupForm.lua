@@ -24,33 +24,23 @@ local function GetOwnRoles()
 end
 
 local function BuildForm()
-    local f = CreateFrame("Frame", "SchlingelRaidSignupForm", UIParent, "BackdropTemplate")
-    f:SetSize(FORM_W, 150)
-    f:SetFrameStrata("DIALOG")
-    f:SetBackdrop(SchlingelInc.Constants.BACKDROP)
-    f:SetBackdropColor(unpack(FC.FORM_BG))
-    f:SetBackdropBorderColor(unpack(FC.FORM_BORDER))
-    f:SetMovable(true)
-    f:EnableMouse(true)
-    f:RegisterForDrag("LeftButton")
-    f:SetScript("OnDragStart", f.StartMoving)
-    f:SetScript("OnDragStop", function(self)
-        self:StopMovingOrSizing()
-        SchlingelInc:SaveFramePosition(self, "raidsignupform_position")
-    end)
-    SchlingelInc:RestoreFramePosition(f, "raidsignupform_position", "CENTER", 0, 40)
-    SchlingelInc:RegisterFrameForEscape(f)
-    f:Hide()
+    local f = SchlingelInc.Shared.CreateStandardFrame({
+        name          = "SchlingelRaidSignupForm",
+        width         = FORM_W,
+        height        = 150,
+        strata        = "DIALOG",
+        positionKey   = "raidsignupform_position",
+        defaultPoint  = "CENTER",
+        defaultX      = 0,
+        defaultY      = 40,
+        registerEscape = true,
+        closeButton   = true,
+    })
 
     local titleFs = f:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     titleFs:SetPoint("TOP", f, "TOP", 0, -16)
     titleFs:SetText("Zusagen")
     titleFs:SetTextColor(unpack(FC.TITLE))
-
-    local closeBtn = CreateFrame("Button", nil, f, "UIPanelCloseButton")
-    closeBtn:SetSize(20, 20)
-    closeBtn:SetPoint("TOPRIGHT", f, "TOPRIGHT", -2, -2)
-    closeBtn:SetScript("OnClick", function() f:Hide() end)
 
     local raidFs = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     raidFs:SetPoint("TOP", titleFs, "BOTTOM", 0, -6)
