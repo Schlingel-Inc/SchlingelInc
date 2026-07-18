@@ -54,20 +54,14 @@ function OfficerPanel.BuildInactiveTab(ic)
     hdrDiv:SetPoint("TOPLEFT",  ic, "TOPLEFT",  4, -22)
     hdrDiv:SetPoint("TOPRIGHT", ic, "TOPRIGHT", -4, -22)
 
-    local scrollFrame = CreateFrame("ScrollFrame", nil, ic, "UIPanelScrollFrameTemplate")
+    local scrollFrame, scrollChild = SchlingelInc.Shared.CreateScrollFrame({
+        parent     = ic,
+        template   = "UIPanelScrollFrameTemplate",
+        step       = 20,
+        childWidth = SCROLL_W,
+    })
     scrollFrame:SetPoint("TOPLEFT",     ic, "TOPLEFT",     4, -26)
     scrollFrame:SetPoint("BOTTOMRIGHT", ic, "BOTTOMRIGHT", -20, 36)
-    scrollFrame:EnableMouseWheel(true)
-    scrollFrame:SetScript("OnMouseWheel", function(sf, delta)
-        sf:SetVerticalScroll(
-            math.max(0, math.min(sf:GetVerticalScrollRange(), sf:GetVerticalScroll() - delta * 20))
-        )
-    end)
-
-    local scrollChild = CreateFrame("Frame", nil, scrollFrame)
-    scrollChild:SetWidth(SCROLL_W)
-    scrollChild:SetHeight(1)
-    scrollFrame:SetScrollChild(scrollChild)
 
     ic.scrollChild  = scrollChild
     ic.inactiveRows = {}
