@@ -25,17 +25,7 @@ local function RoleCountsText(id)
 end
 
 local function CreateCard(parent, cardW, entry)
-    local card = CreateFrame("Button", nil, parent, "BackdropTemplate")
-    card:SetBackdrop({
-        bgFile   = "Interface\\BUTTONS\\WHITE8X8",
-        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-        tile = true, tileSize = 16, edgeSize = 12,
-        insets = { left = 3, right = 3, top = 3, bottom = 3 }
-    })
-    card:SetBackdropColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BG))
-    card:SetBackdropBorderColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BORDER))
-    card:SetWidth(cardW)
-    card:EnableMouse(true)
+    local card = SchlingelInc.Shared.CreateCardFrame(parent, cardW, { clickable = true })
 
     local isOwn       = entry.poster == UnitName("player")
     local ownSignal    = SchlingelInc.Raid:GetOwnSignal(entry.id)
@@ -186,8 +176,6 @@ local function CreateCard(parent, cardW, entry)
         expanded[entry.id] = not isExpanded or nil
         SchlingelInc.GuildPanel:RefreshRaid()
     end)
-    card:SetScript("OnEnter", function() card:SetBackdropBorderColor(0.6, 0.6, 0.6, 1) end)
-    card:SetScript("OnLeave", function() card:SetBackdropBorderColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BORDER)) end)
 
     return card
 end

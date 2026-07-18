@@ -42,6 +42,7 @@ GuildRecruitment.lua
 LevelUp.lua
 AnnouncementQueue.lua
 Broadcast.lua
+interfaces\CardFrame.lua
 interfaces\popups\GenericPopup.lua
 interfaces\popups\DeathAnnouncement.lua
 interfaces\popups\LevelUpAnnouncement.lua

@@ -52,16 +52,7 @@ local function CreateCard(parent, cardW, entry)
     local safePoints = tonumber(entry.points) or 0
     local isGlobal = entry.isGlobal == true or entry.isGlobal == 1 or entry.isGlobal == "1"
 
-    local card = CreateFrame("Frame", nil, parent, "BackdropTemplate")
-    card:SetBackdrop({
-        bgFile   = "Interface\\BUTTONS\\WHITE8X8",
-        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-        tile = true, tileSize = 16, edgeSize = 12,
-        insets = { left = 3, right = 3, top = 3, bottom = 3 }
-    })
-    card:SetBackdropColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BG))
-    card:SetBackdropBorderColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BORDER))
-    card:SetWidth(cardW)
+    local card = SchlingelInc.Shared.CreateCardFrame(parent, cardW)
 
     local Progress = SchlingelInc.Achievements.Progress
     local unlocked = safeId and Progress:IsUnlocked(safeId) or false

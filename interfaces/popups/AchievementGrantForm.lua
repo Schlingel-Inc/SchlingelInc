@@ -17,7 +17,6 @@ local KIND_LABELS = {
 local FORM_W  = 340
 local FORM_H  = 420
 local CARD_GAP = 6
-local CARD_PAD = 8
 local STATUS_TIMEOUT = 5
 
 local currentGrantTarget = nil
@@ -38,38 +37,6 @@ StaticPopupDialogs["SCHLINGEL_ACHIEVEMENT_GRANT_CONFIRM"] = {
     hideOnEscape = true,
     preferredIndex = 3,
 }
-
-local function CreateCard(parent, cardW, entry, onClick)
-    local card = CreateFrame("Button", nil, parent, "BackdropTemplate")
-    card:SetBackdrop({
-        bgFile   = "Interface\\BUTTONS\\WHITE8X8",
-        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-        tile = true, tileSize = 16, edgeSize = 12,
-        insets = { left = 3, right = 3, top = 3, bottom = 3 }
-    })
-    card:SetBackdropColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BG))
-    card:SetBackdropBorderColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BORDER))
-    card:SetWidth(cardW)
-    card:SetHeight(40)
-
-    local nameFs = card:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    nameFs:SetPoint("TOPLEFT", card, "TOPLEFT", CARD_PAD, -CARD_PAD)
-    nameFs:SetPoint("RIGHT", card, "RIGHT", -CARD_PAD, 0)
-    nameFs:SetJustifyH("LEFT")
-    nameFs:SetText(SchlingelInc:SanitizeText(entry.name) or "(ohne Namen)")
-    nameFs:SetTextColor(1, 1, 1, 1)
-
-    local metaFs = card:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    metaFs:SetPoint("TOPLEFT", nameFs, "BOTTOMLEFT", 0, -3)
-    metaFs:SetText((entry.points or 0) .. " Punkte — " .. (KIND_LABELS[entry.kind] or entry.kind))
-    metaFs:SetTextColor(0.6, 0.8, 1, 1)
-
-    card:SetScript("OnEnter", function() card:SetBackdropBorderColor(unpack(SchlingelInc.Constants.FORM_COLORS.TITLE)) end)
-    card:SetScript("OnLeave", function() card:SetBackdropBorderColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BORDER)) end)
-    card:SetScript("OnClick", function() onClick(entry) end)
-
-    return card
-end
 
 local function BuildForm(frameName)
     local f = CreateFrame("Frame", frameName, UIParent, "BackdropTemplate")
@@ -166,7 +133,7 @@ local function RefreshGrantForm(f)
         yOff = -20
     else
         for _, entry in ipairs(grantable) do
-            local card = CreateCard(f.scrollChild, cardW, entry, function(selected)
+            local card = SchlingelInc.Shared.CreateAchievementPickerCard(f.scrollChild, cardW, entry, KIND_LABELS, function(selected)
                 StaticPopup_Show("SCHLINGEL_ACHIEVEMENT_GRANT_CONFIRM", selected.name, currentGrantTarget,
                     { target = currentGrantTarget, id = selected.id })
             end)
