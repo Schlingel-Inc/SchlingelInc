@@ -32,20 +32,14 @@ function OfficerPanel.BuildDiscordTab(dc)
         if fp then fp:SetShown(not fp:IsShown()) end
     end)
 
-    local dScrollFrame = CreateFrame("ScrollFrame", nil, dc, "UIPanelScrollFrameTemplate")
+    local dScrollFrame, dScrollChild = SchlingelInc.Shared.CreateScrollFrame({
+        parent     = dc,
+        template   = "UIPanelScrollFrameTemplate",
+        step       = 20,
+        childWidth = SCROLL_W,
+    })
     dScrollFrame:SetPoint("TOPLEFT",     dc, "TOPLEFT",     4, -26)
     dScrollFrame:SetPoint("BOTTOMRIGHT", dc, "BOTTOMRIGHT", -20, 36)
-    dScrollFrame:EnableMouseWheel(true)
-    dScrollFrame:SetScript("OnMouseWheel", function(sf, delta)
-        sf:SetVerticalScroll(
-            math.max(0, math.min(sf:GetVerticalScrollRange(), sf:GetVerticalScroll() - delta * 20))
-        )
-    end)
-
-    local dScrollChild = CreateFrame("Frame", nil, dScrollFrame)
-    dScrollChild:SetWidth(SCROLL_W)
-    dScrollChild:SetHeight(1)
-    dScrollFrame:SetScrollChild(dScrollChild)
 
     dc.dScrollChild = dScrollChild
     dc.discordRows  = {}
