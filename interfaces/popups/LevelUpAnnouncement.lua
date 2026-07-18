@@ -4,22 +4,18 @@
 
 SchlingelInc.LevelUpAnnouncement = {}
 
-local LevelUpFrame = CreateFrame("Frame", "LevelUpFrame", UIParent, "BackdropTemplate")
-LevelUpFrame:SetSize(380, 200)
-LevelUpFrame:SetFrameStrata("FULLSCREEN_DIALOG")
+local LevelUpFrame = SchlingelInc.Shared.CreateStandardFrame({
+	name         = "LevelUpFrame",
+	width        = 380,
+	height       = 200,
+	strata       = "FULLSCREEN_DIALOG",
+	backdrop     = SchlingelInc.Constants.POPUPBACKDROP,
+	positionKey  = "levelupannouncement_position",
+	defaultPoint = "TOP",
+	defaultX     = 0,
+	defaultY     = 0,
+})
 LevelUpFrame:SetFrameLevel(999)
-LevelUpFrame:SetMovable(true)
-LevelUpFrame:EnableMouse(true)
-LevelUpFrame:RegisterForDrag("LeftButton")
-LevelUpFrame:SetScript("OnDragStart", LevelUpFrame.StartMoving)
-LevelUpFrame:SetScript("OnDragStop", function(self)
-	self:StopMovingOrSizing()
-	SchlingelInc:SaveFramePosition(self, "levelupannouncement_position")
-end)
-SchlingelInc:RestoreFramePosition(LevelUpFrame, "levelupannouncement_position", "TOP", 0, 0)
-LevelUpFrame:Hide()
-
-LevelUpFrame:SetBackdrop(SchlingelInc.Constants.POPUPBACKDROP)
 
 -- Icon
 local icon = LevelUpFrame:CreateTexture(nil, "ARTWORK")
