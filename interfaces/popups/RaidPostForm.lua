@@ -8,29 +8,6 @@ local FC = SchlingelInc.Constants.FORM_COLORS
 local FORM_W  = 460
 local INNER_W = FORM_W - 32
 
-local function CreateEditBox(parent, width, maxLetters, numeric)
-    local eb = CreateFrame("EditBox", nil, parent, BackdropTemplateMixin and "BackdropTemplate")
-    eb:SetSize(width, 22)
-    eb:SetBackdrop(SchlingelInc.Constants.POPUPBACKDROP)
-    eb:SetBackdropColor(unpack(FC.FORM_BG))
-    eb:SetBackdropBorderColor(unpack(FC.FORM_BORDER))
-    eb:SetFontObject("GameFontHighlight")
-    eb:SetTextInsets(6, 6, 0, 0)
-    eb:SetAutoFocus(false)
-    eb:SetMaxLetters(maxLetters)
-    if numeric then eb:SetNumeric(true) end
-    eb:SetScript("OnEscapePressed", function(box) box:ClearFocus() end)
-    eb:SetScript("OnEnterPressed", function(box) box:ClearFocus() end)
-    return eb
-end
-
-local function CreateLabel(parent, text)
-    local lbl = parent:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    lbl:SetText(text)
-    lbl:SetTextColor(unpack(FC.LABEL))
-    return lbl
-end
-
 local function BuildForm()
     local f = SchlingelInc.Shared.CreateStandardFrame({
         name          = "SchlingelRaidPostForm",
@@ -51,15 +28,15 @@ local function BuildForm()
     f.titleFs = titleFs
 
     -- ── Titel ────────────────────────────────────────────────────────────────
-    local titleLbl = CreateLabel(f, "Titel:")
+    local titleLbl = SchlingelInc.Shared.CreateLabel(f, "Titel:")
     titleLbl:SetPoint("TOPLEFT", f, "TOPLEFT", 16, -48)
 
-    local titleEB = CreateEditBox(f, INNER_W, 60, false)
+    local titleEB = SchlingelInc.Shared.CreateEditBox(f, INNER_W, 60, false)
     titleEB:SetPoint("TOPLEFT", titleLbl, "BOTTOMLEFT", 0, -4)
     f.titleEB = titleEB
 
     -- ── Instanz (dropdown) ──────────────────────────────────────────────────
-    local instLbl = CreateLabel(f, "Instanz:")
+    local instLbl = SchlingelInc.Shared.CreateLabel(f, "Instanz:")
     instLbl:SetPoint("TOPLEFT", titleEB, "BOTTOMLEFT", 0, -10)
 
     local instBtn = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
@@ -110,10 +87,10 @@ local function BuildForm()
     end)
 
     -- ── Datum / Uhrzeit ─────────────────────────────────────────────────────
-    local dateLbl = CreateLabel(f, "Datum (TT.MM):")
+    local dateLbl = SchlingelInc.Shared.CreateLabel(f, "Datum (TT.MM):")
     dateLbl:SetPoint("TOPLEFT", instBtn, "BOTTOMLEFT", 0, -10)
 
-    local dayEB = CreateEditBox(f, 40, 2, true)
+    local dayEB = SchlingelInc.Shared.CreateEditBox(f, 40, 2, true)
     dayEB:SetPoint("TOPLEFT", dateLbl, "BOTTOMLEFT", 0, -4)
     f.dayEB = dayEB
 
@@ -121,14 +98,14 @@ local function BuildForm()
     dotFs:SetPoint("LEFT", dayEB, "RIGHT", 4, 0)
     dotFs:SetText(".")
 
-    local monthEB = CreateEditBox(f, 40, 2, true)
+    local monthEB = SchlingelInc.Shared.CreateEditBox(f, 40, 2, true)
     monthEB:SetPoint("LEFT", dotFs, "RIGHT", 4, 0)
     f.monthEB = monthEB
 
-    local timeLbl = CreateLabel(f, "Uhrzeit (HH:MM):")
+    local timeLbl = SchlingelInc.Shared.CreateLabel(f, "Uhrzeit (HH:MM):")
     timeLbl:SetPoint("TOPLEFT", dateLbl, "TOPLEFT", INNER_W / 2 + 10, 0)
 
-    local hourEB = CreateEditBox(f, 40, 2, true)
+    local hourEB = SchlingelInc.Shared.CreateEditBox(f, 40, 2, true)
     hourEB:SetPoint("TOPLEFT", dayEB, "TOPLEFT", INNER_W / 2 + 10, 0)
     f.hourEB = hourEB
 
@@ -136,15 +113,15 @@ local function BuildForm()
     colonFs:SetPoint("LEFT", hourEB, "RIGHT", 4, 0)
     colonFs:SetText(":")
 
-    local minuteEB = CreateEditBox(f, 40, 2, true)
+    local minuteEB = SchlingelInc.Shared.CreateEditBox(f, 40, 2, true)
     minuteEB:SetPoint("LEFT", colonFs, "RIGHT", 4, 0)
     f.minuteEB = minuteEB
 
     -- ── Notiz ────────────────────────────────────────────────────────────────
-    local noteLbl = CreateLabel(f, "Notiz (optional):")
+    local noteLbl = SchlingelInc.Shared.CreateLabel(f, "Notiz (optional):")
     noteLbl:SetPoint("TOPLEFT", dayEB, "BOTTOMLEFT", 0, -10)
 
-    local noteEB = CreateEditBox(f, INNER_W, 80, false)
+    local noteEB = SchlingelInc.Shared.CreateEditBox(f, INNER_W, 80, false)
     noteEB:SetPoint("TOPLEFT", noteLbl, "BOTTOMLEFT", 0, -4)
     f.noteEB = noteEB
 
