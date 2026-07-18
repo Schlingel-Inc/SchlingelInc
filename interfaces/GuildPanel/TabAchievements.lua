@@ -159,19 +159,12 @@ function GP.BuildAchievementsTab(content)
     divider:SetPoint("TOPLEFT",  content, "TOPLEFT",  0, -RANK_BAR_H)
     divider:SetPoint("TOPRIGHT", content, "TOPRIGHT", 0, -RANK_BAR_H)
 
-    local scrollFrame = CreateFrame("ScrollFrame", nil, content, "UIPanelScrollFrameTemplate")
+    local scrollFrame, scrollChild = SchlingelInc.Shared.CreateScrollFrame({
+        parent   = content,
+        template = "UIPanelScrollFrameTemplate",
+    })
     scrollFrame:SetPoint("TOPLEFT",     content, "TOPLEFT",     0, -(RANK_BAR_H + 6))
     scrollFrame:SetPoint("BOTTOMRIGHT", content, "BOTTOMRIGHT", -20, 0)
-    scrollFrame:EnableMouseWheel(true)
-    scrollFrame:SetScript("OnMouseWheel", function(sf, delta)
-        sf:SetVerticalScroll(
-            math.max(0, math.min(sf:GetVerticalScrollRange(), sf:GetVerticalScroll() - delta * 24))
-        )
-    end)
-
-    local scrollChild = CreateFrame("Frame", nil, scrollFrame)
-    scrollChild:SetHeight(1)
-    scrollFrame:SetScrollChild(scrollChild)
 
     local cards = {}
 
