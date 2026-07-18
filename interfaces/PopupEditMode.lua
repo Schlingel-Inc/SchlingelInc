@@ -64,18 +64,28 @@ local function SnapToHorizontalCenter(frame)
     return false
 end
 
+-- Movement here is custom (drag-to-snap onto the horizontal center guide), so
+-- this only borrows CreateStandardFrame for the chrome/position bits, not its
+-- generic drag handler.
 local function BuildOverlay(spec)
-    local f = CreateFrame("Frame", nil, UIParent, "BackdropTemplate")
-    f:SetSize(spec.w, spec.h)
-    f:SetFrameStrata("FULLSCREEN_DIALOG")
+    local f = SchlingelInc.Shared.CreateStandardFrame({
+        parent      = UIParent,
+        width       = spec.w,
+        height      = spec.h,
+        strata      = "FULLSCREEN_DIALOG",
+        backdrop    = SchlingelInc.Constants.POPUPBACKDROP,
+        bgColor     = { 0.24, 0.08, 0.15, 0.35 },
+        borderColor = { BRAND_R, BRAND_G, BRAND_B, 1 },
+        movable     = false,
+        positionKey = spec.dbKey,
+        defaultPoint = spec.point,
+        defaultX     = spec.x,
+        defaultY     = spec.y,
+    })
     f:SetFrameLevel(1992)
     f:SetMovable(true)
     f:EnableMouse(true)
     f:RegisterForDrag("LeftButton")
-
-    f:SetBackdrop(SchlingelInc.Constants.POPUPBACKDROP)
-    f:SetBackdropColor(0.24, 0.08, 0.15, 0.35)
-    f:SetBackdropBorderColor(BRAND_R, BRAND_G, BRAND_B, 1)
 
     f:SetScript("OnDragStart", function(self)
         self:StartMoving()
@@ -98,8 +108,6 @@ local function BuildOverlay(spec)
         SnapToHorizontalCenter(self)
         SchlingelInc:SaveFramePosition(self, spec.dbKey)
     end)
-
-    SchlingelInc:RestoreFramePosition(f, spec.dbKey, spec.point, spec.x, spec.y)
 
     local title = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     title:SetPoint("TOP", f, "TOP", 0, -8)
