@@ -35,21 +35,6 @@ local function ResolveRosterName(typed)
     return nil
 end
 
-local function CreateEditBox(parent, width, maxLetters)
-    local eb = CreateFrame("EditBox", nil, parent, BackdropTemplateMixin and "BackdropTemplate")
-    eb:SetSize(width, 22)
-    eb:SetBackdrop(SchlingelInc.Constants.POPUPBACKDROP)
-    eb:SetBackdropColor(unpack(FC.FORM_BG))
-    eb:SetBackdropBorderColor(unpack(FC.FORM_BORDER))
-    eb:SetFontObject("GameFontHighlight")
-    eb:SetTextInsets(6, 6, 0, 0)
-    eb:SetAutoFocus(false)
-    eb:SetMaxLetters(maxLetters)
-    eb:SetScript("OnEscapePressed", function(box) box:ClearFocus() end)
-    eb:SetScript("OnEnterPressed", function(box) box:ClearFocus() end)
-    return eb
-end
-
 -- Shows only the given roles' buttons (in order), keeping the previous selection
 -- if it's still among them, auto-selecting when only one choice remains.
 local function ApplyRoleChoices(f, choices)
@@ -76,13 +61,6 @@ local function ApplyRoleChoices(f, choices)
         f.selectedRole = stillValid and previousSelection or nil
     end
     for _, b in ipairs(f.roleBtns) do b.UpdateAppearance() end
-end
-
-local function CreateLabel(parent, text)
-    local lbl = parent:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    lbl:SetText(text)
-    lbl:SetTextColor(unpack(FC.LABEL))
-    return lbl
 end
 
 -- Matches roster members by character name OR by the Discord handle stored in their
@@ -133,10 +111,10 @@ local function BuildForm()
     f.raidFs = raidFs
 
     -- ── Name (autocomplete against Charaktername + Discord-Handle) ──────────
-    local nameLbl = CreateLabel(f, "Name oder Discord:")
+    local nameLbl = SchlingelInc.Shared.CreateLabel(f, "Name oder Discord:")
     nameLbl:SetPoint("TOPLEFT", f, "TOPLEFT", 16, -66)
 
-    local nameEB = CreateEditBox(f, INNER_W, 24)
+    local nameEB = SchlingelInc.Shared.CreateEditBox(f, INNER_W, 24)
     nameEB:SetPoint("TOPLEFT", nameLbl, "BOTTOMLEFT", 0, -4)
     f.nameEB = nameEB
 
@@ -191,49 +169,14 @@ local function BuildForm()
         suggestList:Show()
     end
     -- ── Rolle ────────────────────────────────────────────────────────────────
-    local roleLbl = CreateLabel(f, "Rolle:")
+    local roleLbl = SchlingelInc.Shared.CreateLabel(f, "Rolle:")
     roleLbl:SetPoint("TOPLEFT", nameEB, "BOTTOMLEFT", 0, -14)
     f.roleLbl = roleLbl
 
     -- Fixed pool of buttons, sized in ApplyRoleChoices() to whichever subset of
     -- roles applies to the currently typed name (their profile roles, or the full
     -- list if unresolved / no profile roles set).
-    local roleBtns = {}
-    for i = 1, MAX_ROLES do
-        local btn = CreateFrame("Button", nil, f)
-        btn:SetSize(10, 22)
-        btn:EnableMouse(true)
-
-        local bg = btn:CreateTexture(nil, "BACKGROUND")
-        bg:SetAllPoints()
-        bg:SetColorTexture(unpack(FC.OPTION_BG))
-
-        local lbl = btn:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-        lbl:SetAllPoints()
-        lbl:SetJustifyH("CENTER")
-        btn.lbl = lbl
-
-        local function UpdateBtn()
-            if f.selectedRole == btn.roleName then
-                bg:SetColorTexture(unpack(FC.OPTION_BG_SELECTED))
-                lbl:SetTextColor(unpack(FC.TITLE))
-            else
-                bg:SetColorTexture(unpack(FC.OPTION_BG))
-                lbl:SetTextColor(unpack(FC.OPTION_TEXT))
-            end
-        end
-        btn.UpdateAppearance = UpdateBtn
-
-        btn:SetScript("OnClick", function()
-            f.selectedRole = btn.roleName
-            for _, b in ipairs(roleBtns) do b.UpdateAppearance() end
-        end)
-        btn:SetScript("OnEnter", function() lbl:SetTextColor(unpack(FC.HOVER)) end)
-        btn:SetScript("OnLeave", UpdateBtn)
-
-        roleBtns[i] = btn
-    end
-    f.roleBtns = roleBtns
+    f.roleBtns = SchlingelInc.Shared.CreateRoleToggleGroup(f, f, MAX_ROLES)
 
     local function RefreshRoleChoices()
         local resolvedName = ResolveRosterName(nameEB:GetText())
