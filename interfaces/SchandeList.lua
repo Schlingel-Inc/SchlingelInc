@@ -54,19 +54,12 @@ end
 -- { Refresh = function(entries) ... end }. opts.onResolve(entry), if given, adds an
 -- "Aufheben" button to every active card.
 function SchlingelInc.Shared.BuildSchandeList(parent, opts)
-    local scrollFrame = CreateFrame("ScrollFrame", nil, parent, "UIPanelScrollFrameTemplate")
+    local scrollFrame, scrollChild = SchlingelInc.Shared.CreateScrollFrame({
+        parent   = parent,
+        template = "UIPanelScrollFrameTemplate",
+    })
     scrollFrame:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, 0)
     scrollFrame:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -20, 0)
-    scrollFrame:EnableMouseWheel(true)
-    scrollFrame:SetScript("OnMouseWheel", function(sf, delta)
-        sf:SetVerticalScroll(
-            math.max(0, math.min(sf:GetVerticalScrollRange(), sf:GetVerticalScroll() - delta * 24))
-        )
-    end)
-
-    local scrollChild = CreateFrame("Frame", nil, scrollFrame)
-    scrollChild:SetHeight(1)
-    scrollFrame:SetScrollChild(scrollChild)
 
     local cards = {}
 
