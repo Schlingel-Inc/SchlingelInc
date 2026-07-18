@@ -8,6 +8,7 @@ SchlingelInc.Shared = SchlingelInc.Shared or {}
 
 -- cfg = {
 --   name          : string  -- global frame name; required for registerEscape
+--   frameType     : string  -- default "Frame"; e.g. "Button" for click-through toasts
 --   parent        : Frame   -- default UIParent
 --   width, height : number
 --   strata        : string  -- default "DIALOG"
@@ -25,7 +26,7 @@ SchlingelInc.Shared = SchlingelInc.Shared or {}
 function SchlingelInc.Shared.CreateStandardFrame(cfg)
     local FC = SchlingelInc.Constants.FORM_COLORS
 
-    local f = CreateFrame("Frame", cfg.name, cfg.parent or UIParent, "BackdropTemplate")
+    local f = CreateFrame(cfg.frameType or "Frame", cfg.name, cfg.parent or UIParent, "BackdropTemplate")
     f:SetSize(cfg.width, cfg.height)
     f:SetFrameStrata(cfg.strata or "DIALOG")
     f:SetBackdrop(cfg.backdrop or SchlingelInc.Constants.BACKDROP)
