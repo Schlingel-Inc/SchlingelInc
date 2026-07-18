@@ -58,42 +58,7 @@ local function BuildForm()
     soloFs:SetPoint("TOPLEFT", roleLbl, "BOTTOMLEFT", 2, -6)
     f.soloFs = soloFs
 
-    local roleBtns = {}
-    for i = 1, MAX_ROLES do
-        local btn = CreateFrame("Button", nil, f)
-        btn:SetSize(10, 22)
-        btn:EnableMouse(true)
-
-        local bg = btn:CreateTexture(nil, "BACKGROUND")
-        bg:SetAllPoints()
-        bg:SetColorTexture(unpack(FC.OPTION_BG))
-
-        local lbl = btn:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-        lbl:SetAllPoints()
-        lbl:SetJustifyH("CENTER")
-        btn.lbl = lbl
-
-        local function UpdateBtn()
-            if f.selectedRole == btn.roleName then
-                bg:SetColorTexture(unpack(FC.OPTION_BG_SELECTED))
-                lbl:SetTextColor(unpack(FC.TITLE))
-            else
-                bg:SetColorTexture(unpack(FC.OPTION_BG))
-                lbl:SetTextColor(unpack(FC.OPTION_TEXT))
-            end
-        end
-        btn.UpdateAppearance = UpdateBtn
-
-        btn:SetScript("OnClick", function()
-            f.selectedRole = btn.roleName
-            for _, b in ipairs(roleBtns) do b.UpdateAppearance() end
-        end)
-        btn:SetScript("OnEnter", function() lbl:SetTextColor(unpack(FC.HOVER)) end)
-        btn:SetScript("OnLeave", UpdateBtn)
-
-        roleBtns[i] = btn
-    end
-    f.roleBtns = roleBtns
+    f.roleBtns = SchlingelInc.Shared.CreateRoleToggleGroup(f, f, MAX_ROLES)
     f.roleLbl  = roleLbl
 
     local errorFs = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
