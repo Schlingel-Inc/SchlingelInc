@@ -115,24 +115,14 @@ end
 local function BuildFrame()
     local TITLE_H = 28
 
-    local frame = CreateFrame("Frame", "SchlingelSetupWizard", UIParent, "BackdropTemplate")
-    frame:SetSize(FRAME_W, FRAME_H)
-    frame:SetPoint("CENTER")
-    frame:SetBackdrop({
-        bgFile   = "Interface\\BUTTONS\\WHITE8X8",
-        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-        tile = true, tileSize = 16, edgeSize = 16,
-        insets = { left = 4, right = 4, top = 4, bottom = 4 }
+    local frame = SchlingelInc.Shared.CreateStandardFrame({
+        name     = "SchlingelSetupWizard",
+        width    = FRAME_W,
+        height   = FRAME_H,
+        strata   = "DIALOG",
+        backdrop = SchlingelInc.Constants.POPUPBACKDROP,
     })
-    frame:SetBackdropColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BG))
-    frame:SetBackdropBorderColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BORDER))
-    frame:SetFrameStrata("DIALOG")
-    frame:SetMovable(true)
-    frame:EnableMouse(true)
-    frame:RegisterForDrag("LeftButton")
-    frame:SetScript("OnDragStart", frame.StartMoving)
-    frame:SetScript("OnDragStop", frame.StopMovingOrSizing)
-    frame:Hide()
+    frame:SetPoint("CENTER")
 
     -- Title bar
     local titleBg = frame:CreateTexture(nil, "BACKGROUND")
