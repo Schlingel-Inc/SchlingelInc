@@ -5,24 +5,20 @@
 
 SchlingelInc.AchievementAnnouncement = {}
 
-local Frame = CreateFrame("Frame", "SchlingelAchievementAnnouncementFrame", UIParent, "BackdropTemplate")
-Frame:SetSize(220, 40)
-Frame:SetFrameStrata("FULLSCREEN_DIALOG")
+local Frame = SchlingelInc.Shared.CreateStandardFrame({
+	name         = "SchlingelAchievementAnnouncementFrame",
+	width        = 220,
+	height       = 40,
+	strata       = "FULLSCREEN_DIALOG",
+	backdrop     = SchlingelInc.Constants.POPUPBACKDROP,
+	bgColor      = { 0.12, 0.09, 0, 0.85 },
+	borderColor  = SchlingelInc.Constants.FORM_COLORS.TITLE,
+	positionKey  = "achievementannouncement_position",
+	defaultPoint = "TOPRIGHT",
+	defaultX     = -20,
+	defaultY     = -260,
+})
 Frame:SetFrameLevel(1000)
-Frame:SetMovable(true)
-Frame:EnableMouse(true)
-Frame:RegisterForDrag("LeftButton")
-Frame:SetScript("OnDragStart", Frame.StartMoving)
-Frame:SetScript("OnDragStop", function(self)
-	self:StopMovingOrSizing()
-	SchlingelInc:SaveFramePosition(self, "achievementannouncement_position")
-end)
-SchlingelInc:RestoreFramePosition(Frame, "achievementannouncement_position", "TOPRIGHT", -20, -260)
-Frame:Hide()
-
-Frame:SetBackdrop(SchlingelInc.Constants.POPUPBACKDROP)
-Frame:SetBackdropColor(0.12, 0.09, 0, 0.85)
-Frame:SetBackdropBorderColor(unpack(SchlingelInc.Constants.FORM_COLORS.TITLE))
 
 Frame.text = Frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 Frame.text:SetPoint("TOPLEFT",     Frame, "TOPLEFT",     8, -6)
