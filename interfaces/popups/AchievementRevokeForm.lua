@@ -38,23 +38,17 @@ StaticPopupDialogs["SCHLINGEL_ACHIEVEMENT_REVOKE_CONFIRM"] = {
 }
 
 local function BuildForm()
-    local f = CreateFrame("Frame", "SchlingelAchievementRevokeForm", UIParent, "BackdropTemplate")
-    f:SetSize(FORM_W, FORM_H)
-    f:SetFrameStrata("DIALOG")
-    f:SetBackdrop(SchlingelInc.Constants.BACKDROP)
-    f:SetBackdropColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BG))
-    f:SetBackdropBorderColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BORDER))
-    f:SetMovable(true)
-    f:EnableMouse(true)
-    f:RegisterForDrag("LeftButton")
-    f:SetScript("OnDragStart", f.StartMoving)
-    f:SetScript("OnDragStop", function(self)
-        self:StopMovingOrSizing()
-        SchlingelInc:SaveFramePosition(self, "achievementrevokeform_position")
-    end)
-    SchlingelInc:RestoreFramePosition(f, "achievementrevokeform_position", "CENTER", 0, 80)
-    SchlingelInc:RegisterFrameForEscape(f)
-    f:Hide()
+    local f = SchlingelInc.Shared.CreateStandardFrame({
+        name          = "SchlingelAchievementRevokeForm",
+        width         = FORM_W,
+        height        = FORM_H,
+        strata        = "DIALOG",
+        positionKey   = "achievementrevokeform_position",
+        defaultPoint  = "CENTER",
+        defaultX      = 0,
+        defaultY      = 80,
+        registerEscape = true,
+    })
 
     local titleFs = f:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     titleFs:SetPoint("TOP", f, "TOP", 0, -14)
