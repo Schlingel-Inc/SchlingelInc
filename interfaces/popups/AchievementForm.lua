@@ -14,29 +14,6 @@ local KIND_OPTIONS = {
 local FORM_W  = 460
 local INNER_W = FORM_W - 32
 
-local function CreateEditBox(parent, width, maxLetters, numeric)
-    local eb = CreateFrame("EditBox", nil, parent, BackdropTemplateMixin and "BackdropTemplate")
-    eb:SetSize(width, 22)
-    eb:SetBackdrop(SchlingelInc.Constants.POPUPBACKDROP)
-    eb:SetBackdropColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BG))
-    eb:SetBackdropBorderColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BORDER))
-    eb:SetFontObject("GameFontHighlight")
-    eb:SetTextInsets(6, 6, 0, 0)
-    eb:SetAutoFocus(false)
-    eb:SetMaxLetters(maxLetters)
-    if numeric then eb:SetNumeric(true) end
-    eb:SetScript("OnEscapePressed", function(box) box:ClearFocus() end)
-    eb:SetScript("OnEnterPressed", function(box) box:ClearFocus() end)
-    return eb
-end
-
-local function CreateLabel(parent, text)
-    local lbl = parent:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    lbl:SetText(text)
-    lbl:SetTextColor(0.8, 0.8, 0.8, 1)
-    return lbl
-end
-
 local function BuildForm()
     local f = SchlingelInc.Shared.CreateStandardFrame({
         name          = "SchlingelAchievementForm",
@@ -57,31 +34,31 @@ local function BuildForm()
     f.titleFs = titleFs
 
     -- ── Name ─────────────────────────────────────────────────────────────────
-    local nameLbl = CreateLabel(f, "Name:")
+    local nameLbl = SchlingelInc.Shared.CreateLabel(f, "Name:")
     nameLbl:SetPoint("TOPLEFT", f, "TOPLEFT", 16, -48)
 
-    local nameEB = CreateEditBox(f, INNER_W, 60, false)
+    local nameEB = SchlingelInc.Shared.CreateEditBox(f, INNER_W, 60, false)
     nameEB:SetPoint("TOPLEFT", nameLbl, "BOTTOMLEFT", 0, -4)
     f.nameEB = nameEB
 
     -- ── Beschreibung ─────────────────────────────────────────────────────────
-    local descLbl = CreateLabel(f, "Beschreibung (optional):")
+    local descLbl = SchlingelInc.Shared.CreateLabel(f, "Beschreibung (optional):")
     descLbl:SetPoint("TOPLEFT", nameEB, "BOTTOMLEFT", 0, -10)
 
-    local descEB = CreateEditBox(f, INNER_W, 120, false)
+    local descEB = SchlingelInc.Shared.CreateEditBox(f, INNER_W, 120, false)
     descEB:SetPoint("TOPLEFT", descLbl, "BOTTOMLEFT", 0, -4)
     f.descEB = descEB
 
     -- ── Punkte ───────────────────────────────────────────────────────────────
-    local pointsLbl = CreateLabel(f, "Punkte:")
+    local pointsLbl = SchlingelInc.Shared.CreateLabel(f, "Punkte:")
     pointsLbl:SetPoint("TOPLEFT", descEB, "BOTTOMLEFT", 0, -10)
 
-    local pointsEB = CreateEditBox(f, 80, 5, true)
+    local pointsEB = SchlingelInc.Shared.CreateEditBox(f, 80, 5, true)
     pointsEB:SetPoint("TOPLEFT", pointsLbl, "BOTTOMLEFT", 0, -4)
     f.pointsEB = pointsEB
 
     -- ── Art (dropdown) ───────────────────────────────────────────────────────
-    local kindLbl = CreateLabel(f, "Art:")
+    local kindLbl = SchlingelInc.Shared.CreateLabel(f, "Art:")
     kindLbl:SetPoint("TOPLEFT", pointsEB, "TOPLEFT", INNER_W / 2 + 10, 0)
 
     local kindBtn = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
@@ -130,9 +107,9 @@ local function BuildForm()
     levelGroup:SetSize(INNER_W, 50)
     f.levelGroup = levelGroup
 
-    local levelLbl = CreateLabel(levelGroup, "Level:")
+    local levelLbl = SchlingelInc.Shared.CreateLabel(levelGroup, "Level:")
     levelLbl:SetPoint("TOPLEFT", levelGroup, "TOPLEFT", 0, 0)
-    local levelEB = CreateEditBox(levelGroup, 60, 2, true)
+    local levelEB = SchlingelInc.Shared.CreateEditBox(levelGroup, 60, 2, true)
     levelEB:SetPoint("TOPLEFT", levelLbl, "BOTTOMLEFT", 0, -4)
     f.levelEB = levelEB
 
@@ -150,15 +127,15 @@ local function BuildForm()
     killGroup:SetSize(INNER_W, 50)
     f.killGroup = killGroup
 
-    local npcLbl = CreateLabel(killGroup, "NPC-ID (z.B. von Wowhead):")
+    local npcLbl = SchlingelInc.Shared.CreateLabel(killGroup, "NPC-ID (z.B. von Wowhead):")
     npcLbl:SetPoint("TOPLEFT", killGroup, "TOPLEFT", 0, 0)
-    local npcEB = CreateEditBox(killGroup, 100, 8, true)
+    local npcEB = SchlingelInc.Shared.CreateEditBox(killGroup, 100, 8, true)
     npcEB:SetPoint("TOPLEFT", npcLbl, "BOTTOMLEFT", 0, -4)
     f.npcEB = npcEB
 
-    local countLbl = CreateLabel(killGroup, "Benötigte Kills:")
+    local countLbl = SchlingelInc.Shared.CreateLabel(killGroup, "Benötigte Kills:")
     countLbl:SetPoint("TOPLEFT", npcLbl, "TOPLEFT", INNER_W / 2 + 10, 0)
-    local countEB = CreateEditBox(killGroup, 80, 5, true)
+    local countEB = SchlingelInc.Shared.CreateEditBox(killGroup, 80, 5, true)
     countEB:SetPoint("TOPLEFT", countLbl, "BOTTOMLEFT", 0, -4)
     f.countEB = countEB
 
