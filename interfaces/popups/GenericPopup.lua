@@ -30,23 +30,19 @@ function SchlingelInc.Popup:Show(options)
 	local borderColor = {1, 0.55, 0.73, 0}
 	local displayTime = options.displayTime or 3
 
-	local frame = CreateFrame("Frame", nil, UIParent, BackdropTemplateMixin and "BackdropTemplate")
-	frame:SetSize(370, 160)
-	frame:SetBackdrop(SchlingelInc.Constants.BACKDROP)
-	frame:SetBackdropColor(0, 0, 0, 0.50)
-	frame:SetBackdropBorderColor(borderColor[1], borderColor[2], borderColor[3], borderColor[4])
-	frame:SetFrameStrata("DIALOG")
+	local frame = SchlingelInc.Shared.CreateStandardFrame({
+		width        = 370,
+		height       = 160,
+		strata       = "DIALOG",
+		bgColor      = { 0, 0, 0, 0.50 },
+		borderColor  = borderColor,
+		positionKey  = "genericpopup_position",
+		defaultPoint = "TOP",
+		defaultX     = 0,
+		defaultY     = -150,
+		onHide       = RemovePopup,
+	})
 	frame:SetToplevel(false)
-	frame:SetMovable(true)
-	frame:EnableMouse(true)
-	frame:RegisterForDrag("LeftButton")
-	frame:SetScript("OnDragStart", frame.StartMoving)
-	frame:SetScript("OnDragStop", function(self)
-		self:StopMovingOrSizing()
-		SchlingelInc:SaveFramePosition(self, "genericpopup_position")
-	end)
-	SchlingelInc:RestoreFramePosition(frame, "genericpopup_position", "TOP", 0, -150)
-	frame:SetScript("OnHide", RemovePopup)
 
 	-- Skull icon
 	local iconFrame = CreateFrame("Frame", nil, frame)
