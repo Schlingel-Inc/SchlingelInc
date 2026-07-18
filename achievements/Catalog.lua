@@ -55,7 +55,7 @@ local function BroadcastDefine(entry)
         tostring(entry.points), tostring(entry.critA or ""), tostring(entry.critB or ""),
         entry.retired and "1" or "0", (entry.isGlobal and "1" or "0"),
     }, "|")
-    ChatThrottleLib:SendAddonMessage("NORMAL", SchlingelInc.prefix, payload, "GUILD", nil, "SchlingelInc-Achievements")
+    SchlingelInc:SendAddonMessage("NORMAL", payload, "GUILD", nil, "SchlingelInc-Achievements")
 end
 
 -- ── Public API (officer actions) ──────────────────────────────────────────────────
@@ -153,7 +153,7 @@ end
 
 function Catalog:RequestSync()
     if not IsInGuild() then return end
-    ChatThrottleLib:SendAddonMessage("NORMAL", SchlingelInc.prefix, MSG_SYNC_REQUEST, "GUILD", nil, "SchlingelInc-Achievements")
+    SchlingelInc:SendAddonMessage("NORMAL", MSG_SYNC_REQUEST, "GUILD", nil, "SchlingelInc-Achievements")
 end
 
 -- Re-broadcasts every entry this character created, so a login catches up anyone

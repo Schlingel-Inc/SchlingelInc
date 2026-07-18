@@ -128,7 +128,7 @@ function SchlingelInc.Global:Initialize()
 						newestVersionSeen .. ". Bitte aktualisiere das Addon!")
 				end
 			elseif message == "VERSION_REQUEST" and IsInGuild() then
-				ChatThrottleLib:SendAddonMessage("BULK", SchlingelInc.prefix, "VERSION:" .. SchlingelInc.version, "GUILD", nil, "SchlingelInc-Version")
+				SchlingelInc:SendAddonMessage("BULK", "VERSION:" .. SchlingelInc.version, "GUILD", nil, "SchlingelInc-Version")
 			elseif message == "RULES_UPDATE" then
 				C_Timer.After(2, function()
 					SchlingelInc.Rules:LoadFromGuildInfo()
@@ -137,8 +137,8 @@ function SchlingelInc.Global:Initialize()
 		end, 0, "VersionChecker")
 
 	if IsInGuild() then
-		ChatThrottleLib:SendAddonMessage("BULK", SchlingelInc.prefix, "VERSION:" .. SchlingelInc.version, "GUILD", nil, "SchlingelInc-Version")
-		ChatThrottleLib:SendAddonMessage("BULK", SchlingelInc.prefix, "VERSION_REQUEST", "GUILD", nil, "SchlingelInc-Version")
+		SchlingelInc:SendAddonMessage("BULK", "VERSION:" .. SchlingelInc.version, "GUILD", nil, "SchlingelInc-Version")
+		SchlingelInc:SendAddonMessage("BULK", "VERSION_REQUEST", "GUILD", nil, "SchlingelInc-Version")
 	end
     C_GuildInfo.GuildRoster()
 end
@@ -261,7 +261,7 @@ function SchlingelInc:WriteGuildInfo(mail, ah, trade, group, blockedTrader, cap)
     SetGuildInfoText(newText)
     SchlingelInc:Print("Gildeninfo mit neuen Regeln aktualisiert.")
     SchlingelInc.Rules:LoadFromGuildInfo()
-    ChatThrottleLib:SendAddonMessage("BULK", SchlingelInc.prefix, "RULES_UPDATE", "GUILD", nil, "SchlingelInc-Rules")
+    SchlingelInc:SendAddonMessage("BULK", "RULES_UPDATE", "GUILD", nil, "SchlingelInc-Rules")
     return true
 end
 
@@ -301,6 +301,16 @@ function SchlingelInc:SendGuildChatMessage(text)
     if not text then return end
     pcall(function()
         ChatThrottleLib:SendChatMessage("ALERT", SchlingelInc.prefix, text:sub(1, 250), "GUILD")
+    end)
+end
+
+-- Sends an addon-comm message with SchlingelInc.prefix baked in, pcall-wrapped
+-- so a bad payload degrades to "message not sent" instead of aborting the
+-- calling event handler.
+function SchlingelInc:SendAddonMessage(priority, message, chatType, target, queueName)
+    if not message then return end
+    pcall(function()
+        ChatThrottleLib:SendAddonMessage(priority, SchlingelInc.prefix, message, chatType, target, queueName)
     end)
 end
 

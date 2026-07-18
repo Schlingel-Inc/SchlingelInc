@@ -76,21 +76,21 @@ local function BroadcastPost(entry)
         MSG_POST, entry.id, SanitizeForMessage(entry.title), entry.instance,
         tostring(entry.timestamp), SanitizeForMessage(entry.note or ""),
     }, "|")
-    ChatThrottleLib:SendAddonMessage("NORMAL", SchlingelInc.prefix, payload, "GUILD", nil, "SchlingelInc-Raid")
+    SchlingelInc:SendAddonMessage("NORMAL", payload, "GUILD", nil, "SchlingelInc-Raid")
 end
 
 local function BroadcastCancel(id)
-    ChatThrottleLib:SendAddonMessage("NORMAL", SchlingelInc.prefix, MSG_CANCEL .. "|" .. id, "GUILD", nil, "SchlingelInc-Raid")
+    SchlingelInc:SendAddonMessage("NORMAL", MSG_CANCEL .. "|" .. id, "GUILD", nil, "SchlingelInc-Raid")
 end
 
 local function BroadcastSignal(id, signal, signalerName)
     local payload = table.concat({ MSG_SIGNAL, id, signal.role, signalerName }, "|")
-    ChatThrottleLib:SendAddonMessage("NORMAL", SchlingelInc.prefix, payload, "GUILD", nil, "SchlingelInc-Raid")
+    SchlingelInc:SendAddonMessage("NORMAL", payload, "GUILD", nil, "SchlingelInc-Raid")
 end
 
 local function BroadcastUnsignal(id, signalerName)
     local payload = table.concat({ MSG_UNSIGNAL, id, signalerName }, "|")
-    ChatThrottleLib:SendAddonMessage("NORMAL", SchlingelInc.prefix, payload, "GUILD", nil, "SchlingelInc-Raid")
+    SchlingelInc:SendAddonMessage("NORMAL", payload, "GUILD", nil, "SchlingelInc-Raid")
 end
 
 -- ── Public API ───────────────────────────────────────────────────────────────────
@@ -233,7 +233,7 @@ end
 
 function SchlingelInc.Raid:RequestSync()
     if not IsInGuild() then return end
-    ChatThrottleLib:SendAddonMessage("NORMAL", SchlingelInc.prefix, MSG_SYNC_REQUEST, "GUILD", nil, "SchlingelInc-Raid")
+    SchlingelInc:SendAddonMessage("NORMAL", MSG_SYNC_REQUEST, "GUILD", nil, "SchlingelInc-Raid")
 end
 
 -- Relays the whole local cache, not just what this client posted/signaled itself,

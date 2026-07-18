@@ -117,7 +117,7 @@ function SchlingelInc.GuildRecruitment:SendGuildRequest()
     wipe(pendingOfficerFilter)
     for _, name in ipairs(guildOfficers) do
         pendingOfficerFilter[name] = true
-        ChatThrottleLib:SendAddonMessage("ALERT", SchlingelInc.prefix, message, "WHISPER", name, "SchlingelInc-Recruit")
+        SchlingelInc:SendAddonMessage("ALERT", message, "WHISPER", name, "SchlingelInc-Recruit")
     end
     SchlingelInc:Print("Anfrage gesendet...")
     C_Timer.After(3, function() wipe(pendingOfficerFilter) end)
@@ -207,7 +207,7 @@ function SchlingelInc.GuildRecruitment:HandleAcceptRequest(playerName)
 
         local guildOfficers = GetAuthorizedOfficers()
         for _, name in ipairs(guildOfficers) do
-            ChatThrottleLib:SendAddonMessage("ALERT", SchlingelInc.prefix, "INVITE_SENT:" .. playerName, "WHISPER", name, "SchlingelInc-Recruit")
+            SchlingelInc:SendAddonMessage("ALERT", "INVITE_SENT:" .. playerName, "WHISPER", name, "SchlingelInc-Recruit")
         end
     end
 end
@@ -217,7 +217,7 @@ function SchlingelInc.GuildRecruitment:HandleDeclineRequest(playerName)
 
     local guildOfficers = GetAuthorizedOfficers()
     for _, name in ipairs(guildOfficers) do
-        ChatThrottleLib:SendAddonMessage("ALERT", SchlingelInc.prefix, "INVITE_DECLINED:" .. playerName, "WHISPER", name, "SchlingelInc-Recruit")
+        SchlingelInc:SendAddonMessage("ALERT", "INVITE_DECLINED:" .. playerName, "WHISPER", name, "SchlingelInc-Recruit")
     end
 
     SchlingelInc.GuildRecruitment.inviteRequests[playerName] = nil

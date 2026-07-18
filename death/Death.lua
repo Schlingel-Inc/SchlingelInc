@@ -72,6 +72,69 @@ local function ProcessStructuredDeathMessage(message, sender)
 	processDeath(deathData, false)
 end
 
+-- Builds the guild chat text for the player's own death, including the
+-- "Ewiger Schlingel" variant and the optional Discord handle / death cause suffix.
+local function BuildOwnDeathMessage(name, class, level, zone, pronoun, rank, discordHandle)
+	local messageString
+	if rank == "EwigerSchlingel" then
+		if discordHandle and discordHandle ~= "" then
+			messageString = string.format("Ewiger Schlingel %s (%s), %s %s ist mit Level %s in %s gestorben. Schande!",
+				name, discordHandle, pronoun, class, level, zone)
+		else
+			messageString = string.format("Ewiger Schlingel %s, %s %s ist mit Level %s in %s gestorben. Schande!",
+				name, pronoun, class, level, zone)
+		end
+	else
+		if discordHandle and discordHandle ~= "" then
+			messageString = string.format("%s (%s) %s %s ist mit Level %s in %s gestorben. Schande!",
+				name, discordHandle, pronoun, class, level, zone)
+		else
+			messageString = string.format("%s %s %s ist mit Level %s in %s gestorben. Schande!",
+				name, pronoun, class, level, zone)
+		end
+	end
+
+	if SchlingelInc.DeathCauseHandler.DeathCause ~= "" then
+		messageString = string.format("%s Gestorben an %s", messageString, SchlingelInc.DeathCauseHandler.DeathCause)
+	end
+
+	return messageString
+end
+
+-- Announces the player's own death to the guild: chat message (+ last words
+-- follow-up) and the addon-comm trigger for other clients' death popups.
+-- Rate-limited via lastOwnDeathSendTime; no-ops while on cooldown.
+local function AnnounceOwnDeath(name, class, level, zone, messageString)
+	local now = time()
+	if (now - lastOwnDeathSendTime) < SchlingelInc.Constants.COOLDOWNS.DEATH_ANNOUNCEMENT then
+		return
+	end
+
+	SchlingelInc:SendGuildChatMessage(messageString)
+	if SchlingelInc.LastMessageHandler.LastWords ~= "" then
+		local lastWords = SchlingelInc.LastMessageHandler.LastWords
+		C_Timer.After(0.3, function()
+			SchlingelInc:SendGuildChatMessage(string.format('Die letzten Worte: "%s"', lastWords))
+		end)
+	end
+	lastOwnDeathSendTime = now
+
+	-- Addon message triggers the popup alert for others.
+	-- Suppress during raids to avoid wipe spam; chat message still goes through.
+	-- Format: DEATH|name|class|level|zone|cause
+	if not SchlingelInc:IsInRaid() then
+		local addonDeathMsg = table.concat({
+			"DEATH",
+			name,
+			class,
+			tostring(level),
+			zone,
+			SchlingelInc.DeathCauseHandler.DeathCause,
+		}, "|")
+		SchlingelInc:SendAddonMessage("ALERT", addonDeathMsg, "GUILD", nil, "SchlingelInc-Announce")
+	end
+end
+
 -- Initializes the Death module and registers events
 function SchlingelInc.Death:Initialize()
 	SchlingelInc.EventManager:RegisterHandler("CHAT_MSG_ADDON",
@@ -114,56 +177,8 @@ function SchlingelInc.Death:Initialize()
 			-- Get Discord handle for death message
 			local discordHandle = SchlingelInc:GetDiscordHandle()
 
-			-- Build death message with optional Discord handle
-			local messageString
-			if (rank ~= nil and rank == "EwigerSchlingel") then
-				if discordHandle and discordHandle ~= "" then
-					messageString = string.format("Ewiger Schlingel %s (%s), %s %s ist mit Level %s in %s gestorben. Schande!",
-						name, discordHandle, pronoun, class, level, zone)
-				else
-					messageString = string.format("Ewiger Schlingel %s, %s %s ist mit Level %s in %s gestorben. Schande!",
-						name, pronoun, class, level, zone)
-				end
-			else
-				if discordHandle and discordHandle ~= "" then
-					messageString = string.format("%s (%s) %s %s ist mit Level %s in %s gestorben. Schande!",
-						name, discordHandle, pronoun, class, level, zone)
-				else
-					messageString = string.format("%s %s %s ist mit Level %s in %s gestorben. Schande!",
-						name, pronoun, class, level, zone)
-				end
-			end
-
-			if SchlingelInc.DeathCauseHandler.DeathCause ~= "" then
-				messageString = string.format("%s Gestorben an %s", messageString, SchlingelInc.DeathCauseHandler.DeathCause)
-			end
-
-			local now = time()
-			if (now - lastOwnDeathSendTime) >= SchlingelInc.Constants.COOLDOWNS.DEATH_ANNOUNCEMENT then
-				SchlingelInc:SendGuildChatMessage(messageString)
-				if SchlingelInc.LastMessageHandler.LastWords ~= "" then
-					local lastWords = SchlingelInc.LastMessageHandler.LastWords
-					C_Timer.After(0.3, function()
-						SchlingelInc:SendGuildChatMessage(string.format('Die letzten Worte: "%s"', lastWords))
-					end)
-				end
-				lastOwnDeathSendTime = now
-
-				-- Addon message triggers the popup alert for others.
-				-- Suppress during raids to avoid wipe spam; chat message still goes through.
-				-- Format: DEATH|name|class|level|zone|cause
-				if not SchlingelInc:IsInRaid() then
-					local addonDeathMsg = table.concat({
-						"DEATH",
-						name,
-						class,
-						tostring(level),
-						zone,
-						SchlingelInc.DeathCauseHandler.DeathCause,
-					}, "|")
-					ChatThrottleLib:SendAddonMessage("ALERT", SchlingelInc.prefix, addonDeathMsg, "GUILD", nil, "SchlingelInc-Announce")
-				end
-			end
+			local messageString = BuildOwnDeathMessage(name, class, level, zone, pronoun, rank, discordHandle)
+			AnnounceOwnDeath(name, class, level, zone, messageString)
 
 			-- Process own death immediately (add to log with cause, last words, and handle)
 			local deathData = {

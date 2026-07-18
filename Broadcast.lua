@@ -24,7 +24,7 @@ function SchlingelInc.Broadcast:Send(message)
 
     if not message or message == "" then return end
 
-    ChatThrottleLib:SendAddonMessage("ALERT", SchlingelInc.prefix, "BROADCAST|" .. message, "GUILD", nil, "SchlingelInc-Broadcast")
+    SchlingelInc:SendAddonMessage("ALERT", "BROADCAST|" .. message, "GUILD", nil, "SchlingelInc-Broadcast")
     SchlingelInc:Print(SchlingelInc.Constants.COLORS.SUCCESS .. "Broadcast-Nachricht an die Gilde gesendet.|r")
 end
 

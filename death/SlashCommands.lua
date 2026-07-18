@@ -33,6 +33,6 @@ function SchlingelInc.Death:SetRemote(targetName, valueStr)
 		return
 	end
 
-	ChatThrottleLib:SendAddonMessage("ALERT", SchlingelInc.prefix, "DEATHSET|" .. tostring(value), "WHISPER", targetName, "SchlingelInc-Schande")
+	SchlingelInc:SendAddonMessage("ALERT", "DEATHSET|" .. tostring(value), "WHISPER", targetName, "SchlingelInc-Schande")
 	SchlingelInc:Print(SchlingelInc.Constants.COLORS.SUCCESS .. "Deathset-Nachricht an " .. targetName .. " gesendet.|r")
 end
