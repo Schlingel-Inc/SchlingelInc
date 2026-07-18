@@ -293,10 +293,14 @@ end
 -- SendChatMessage limit (which errors instead of truncating when exceeded).
 -- Wrapped in pcall so any remaining edge case degrades to "message not sent"
 -- rather than silently aborting the rest of the calling event handler.
+-- ALERT priority: these are rare, important announcements (death/level-up),
+-- so they should jump ahead of other addons' BULK/NORMAL traffic sharing
+-- the same ChatThrottleLib queue instead of getting stuck behind it when
+-- the client is choking (e.g. FPS below ChatThrottleLib.MIN_FPS).
 function SchlingelInc:SendGuildChatMessage(text)
     if not text then return end
     pcall(function()
-        ChatThrottleLib:SendChatMessage("NORMAL", SchlingelInc.prefix, text:sub(1, 250), "GUILD")
+        ChatThrottleLib:SendChatMessage("ALERT", SchlingelInc.prefix, text:sub(1, 250), "GUILD")
     end)
 end
 
