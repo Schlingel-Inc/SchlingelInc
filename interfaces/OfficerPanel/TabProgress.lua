@@ -1,12 +1,12 @@
 local OfficerPanel = SchlingelInc.OfficerPanel
-local MI = SchlingelInc.MemberInspector
+local MemberInspector = SchlingelInc.MemberInspector
 
 local function FormatGoldShort(copper)
     if not copper then return "\226\128\148" end
-    local g = math.floor(copper / 10000)
-    local s = math.floor((copper % 10000) / 100)
-    local c = copper % 100
-    return string.format("%dg %ds %dc", g, s, c)
+    local goldPart   = math.floor(copper / 10000)
+    local silverPart = math.floor((copper % 10000) / 100)
+    local copperPart = copper % 100
+    return string.format("%dg %ds %dc", goldPart, silverPart, copperPart)
 end
 
 local function FormatAge(timestamp)
@@ -18,10 +18,10 @@ local function FormatAge(timestamp)
     end
 end
 
-function OfficerPanel.BuildProgressTab(pc)
-    local SCROLL_W = OfficerPanel.SCROLL_W
+function OfficerPanel.BuildProgressTab(progressContainer)
+    local scrollWidth = OfficerPanel.SCROLL_W
 
-    local PCOLS = {
+    local progressColumns = {
         { label = "Name",    x = 0,   w = 88,  sortKey = "name",       justifyH = "LEFT"   },
         { label = "Level",   x = 92,  w = 44,  sortKey = "level",      justifyH = "CENTER" },
         { label = "Runen",   x = 140, w = 42,  sortKey = "runesKnown", justifyH = "CENTER" },
@@ -35,143 +35,143 @@ function OfficerPanel.BuildProgressTab(pc)
     local hideOfflineProgress = false
     local progressSortCol     = 2
     local progressSortAsc     = false
-    local progressHdrs        = {}
+    local progressHeaders     = {}
 
-    for i, col in ipairs(PCOLS) do
-        local btn = CreateFrame("Button", nil, pc)
-        btn:SetPoint("TOPLEFT", pc, "TOPLEFT", col.x + 4, -24)
-        btn:SetSize(col.w, 18)
-        btn:EnableMouse(true)
-        local lbl = btn:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-        lbl:SetAllPoints()
-        lbl:SetJustifyH(col.justifyH or "LEFT")
-        lbl:SetText(col.label)
-        lbl:SetTextColor(1, 0.82, 0, 1)
-        progressHdrs[i] = lbl
-        local colIdx = i
-        btn:SetScript("OnClick", function()
-            if progressSortCol == colIdx then
+    for i, column in ipairs(progressColumns) do
+        local button = CreateFrame("Button", nil, progressContainer)
+        button:SetPoint("TOPLEFT", progressContainer, "TOPLEFT", column.x + 4, -24)
+        button:SetSize(column.w, 18)
+        button:EnableMouse(true)
+        local label = button:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+        label:SetAllPoints()
+        label:SetJustifyH(column.justifyH or "LEFT")
+        label:SetText(column.label)
+        label:SetTextColor(1, 0.82, 0, 1)
+        progressHeaders[i] = label
+        local columnIndex = i
+        button:SetScript("OnClick", function()
+            if progressSortCol == columnIndex then
                 progressSortAsc = not progressSortAsc
             else
-                progressSortCol = colIdx
-                progressSortAsc = colIdx == 1
+                progressSortCol = columnIndex
+                progressSortAsc = columnIndex == 1
             end
             if OfficerPanel.frame and OfficerPanel.frame:IsShown() then
                 SchlingelInc.OfficerPanel:RefreshProgress()
             end
         end)
-        btn:SetScript("OnEnter", function() lbl:SetTextColor(1, 1, 0.7, 1) end)
-        btn:SetScript("OnLeave", function()
-            lbl:SetTextColor(
-                colIdx == progressSortCol and 1    or 1,
-                colIdx == progressSortCol and 1    or 0.82,
-                colIdx == progressSortCol and 0.45 or 0, 1)
+        button:SetScript("OnEnter", function() label:SetTextColor(1, 1, 0.7, 1) end)
+        button:SetScript("OnLeave", function()
+            label:SetTextColor(
+                columnIndex == progressSortCol and 1    or 1,
+                columnIndex == progressSortCol and 1    or 0.82,
+                columnIndex == progressSortCol and 0.45 or 0, 1)
         end)
     end
 
     -- Right side: Offline toggle + member count
-    local pCountFs = pc:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    pCountFs:SetPoint("RIGHT", pc, "TOPRIGHT", -4, -11)
-    pCountFs:SetJustifyH("RIGHT")
-    pCountFs:SetTextColor(0.6, 0.6, 0.6, 1)
-    pc.pCountFs = pCountFs
+    local memberCountLabel = progressContainer:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    memberCountLabel:SetPoint("RIGHT", progressContainer, "TOPRIGHT", -4, -11)
+    memberCountLabel:SetJustifyH("RIGHT")
+    memberCountLabel:SetTextColor(0.6, 0.6, 0.6, 1)
+    progressContainer.memberCountLabel = memberCountLabel
 
-    local pOfflineBtn = CreateFrame("Button", nil, pc)
-    pOfflineBtn:SetSize(50, 18)
-    pOfflineBtn:SetPoint("RIGHT", pCountFs, "LEFT", -6, 0)
-    pOfflineBtn:EnableMouse(true)
-    local pOfflineLbl = pOfflineBtn:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    pOfflineLbl:SetAllPoints()
-    pOfflineLbl:SetJustifyH("RIGHT")
-    pOfflineLbl:SetTextColor(0.45, 0.45, 0.45, 1)
-    pOfflineLbl:SetText("Offline")
-    local function UpdateOfflineBtn()
-        pOfflineLbl:SetTextColor(
+    local offlineToggleButton = CreateFrame("Button", nil, progressContainer)
+    offlineToggleButton:SetSize(50, 18)
+    offlineToggleButton:SetPoint("RIGHT", memberCountLabel, "LEFT", -6, 0)
+    offlineToggleButton:EnableMouse(true)
+    local offlineToggleLabel = offlineToggleButton:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    offlineToggleLabel:SetAllPoints()
+    offlineToggleLabel:SetJustifyH("RIGHT")
+    offlineToggleLabel:SetTextColor(0.45, 0.45, 0.45, 1)
+    offlineToggleLabel:SetText("Offline")
+    local function UpdateOfflineToggleAppearance()
+        offlineToggleLabel:SetTextColor(
             hideOfflineProgress and 1    or 0.45,
             hideOfflineProgress and 0.82 or 0.45,
             hideOfflineProgress and 0    or 0.45, 1)
     end
-    pOfflineBtn:SetScript("OnClick", function()
+    offlineToggleButton:SetScript("OnClick", function()
         hideOfflineProgress = not hideOfflineProgress
-        UpdateOfflineBtn()
+        UpdateOfflineToggleAppearance()
         if OfficerPanel.frame and OfficerPanel.frame:IsShown() then
             SchlingelInc.OfficerPanel:RefreshProgress()
         end
     end)
-    pOfflineBtn:SetScript("OnEnter", function() pOfflineLbl:SetTextColor(1, 1, 0.7, 1) end)
-    pOfflineBtn:SetScript("OnLeave", UpdateOfflineBtn)
+    offlineToggleButton:SetScript("OnEnter", function() offlineToggleLabel:SetTextColor(1, 1, 0.7, 1) end)
+    offlineToggleButton:SetScript("OnLeave", UpdateOfflineToggleAppearance)
 
     -- Left side: Lade-Indikator | Anfordern | Filter
-    local pLoadFs = pc:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    pLoadFs:SetPoint("LEFT", pc, "TOPLEFT", 4, -11)
-    pLoadFs:SetWidth(72)
-    pLoadFs:SetJustifyH("LEFT")
-    pLoadFs:SetTextColor(0.6, 0.82, 1, 1)
-    pLoadFs:Hide()
+    local loadStatusLabel = progressContainer:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    loadStatusLabel:SetPoint("LEFT", progressContainer, "TOPLEFT", 4, -11)
+    loadStatusLabel:SetWidth(72)
+    loadStatusLabel:SetJustifyH("LEFT")
+    loadStatusLabel:SetTextColor(0.6, 0.82, 1, 1)
+    loadStatusLabel:Hide()
 
-    local pRequestBtn = CreateFrame("Button", nil, pc, "UIPanelButtonTemplate")
-    pRequestBtn:SetSize(90, 18)
-    pRequestBtn:SetPoint("TOPLEFT", pc, "TOPLEFT", 80, -4)
-    pRequestBtn:SetText("Anfordern")
-    pRequestBtn:SetScript("OnClick", function()
+    local requestButton = CreateFrame("Button", nil, progressContainer, "UIPanelButtonTemplate")
+    requestButton:SetSize(90, 18)
+    requestButton:SetPoint("TOPLEFT", progressContainer, "TOPLEFT", 80, -4)
+    requestButton:SetText("Anfordern")
+    requestButton:SetScript("OnClick", function()
         SchlingelInc.LevelUps:RequestProgress()
     end)
 
     OfficerPanel.StartProgressLoad = function(total)
-        pLoadFs:SetText("Lade 0/" .. total)
-        pLoadFs:Show()
+        loadStatusLabel:SetText("Lade 0/" .. total)
+        loadStatusLabel:Show()
     end
 
     OfficerPanel.UpdateProgressLoad = function(received, total)
-        pLoadFs:SetText("Lade " .. received .. "/" .. total)
+        loadStatusLabel:SetText("Lade " .. received .. "/" .. total)
     end
 
     OfficerPanel.EndProgressLoad = function()
-        pLoadFs:Hide()
+        loadStatusLabel:Hide()
     end
 
-    local pfFilterBtn = CreateFrame("Button", nil, pc, "UIPanelButtonTemplate")
-    pfFilterBtn:SetSize(60, 18)
-    pfFilterBtn:SetPoint("LEFT", pRequestBtn, "RIGHT", 4, 0)
-    pfFilterBtn:SetText("Filter")
-    pfFilterBtn:SetScript("OnClick", function()
-        local fp = OfficerPanel.tabFilterPanels.progress
-        if fp then fp:SetShown(not fp:IsShown()) end
+    local filterToggleButton = CreateFrame("Button", nil, progressContainer, "UIPanelButtonTemplate")
+    filterToggleButton:SetSize(60, 18)
+    filterToggleButton:SetPoint("LEFT", requestButton, "RIGHT", 4, 0)
+    filterToggleButton:SetText("Filter")
+    filterToggleButton:SetScript("OnClick", function()
+        local panel = OfficerPanel.tabFilterPanels.progress
+        if panel then panel:SetShown(not panel:IsShown()) end
     end)
 
-    local phdrDiv = pc:CreateTexture(nil, "ARTWORK")
-    phdrDiv:SetHeight(1)
-    phdrDiv:SetColorTexture(unpack(SchlingelInc.Constants.FORM_COLORS.DIVIDER))
-    phdrDiv:SetPoint("TOPLEFT",  pc, "TOPLEFT",  4, -44)
-    phdrDiv:SetPoint("TOPRIGHT", pc, "TOPRIGHT", -4, -44)
+    local headerDivider = progressContainer:CreateTexture(nil, "ARTWORK")
+    headerDivider:SetHeight(1)
+    headerDivider:SetColorTexture(unpack(SchlingelInc.Constants.FORM_COLORS.DIVIDER))
+    headerDivider:SetPoint("TOPLEFT",  progressContainer, "TOPLEFT",  4, -44)
+    headerDivider:SetPoint("TOPRIGHT", progressContainer, "TOPRIGHT", -4, -44)
 
-    local pScrollFrame, pScrollChild = SchlingelInc.Shared.CreateScrollFrame({
-        parent     = pc,
+    local scrollFrame, scrollChild = SchlingelInc.Shared.CreateScrollFrame({
+        parent     = progressContainer,
         template   = "UIPanelScrollFrameTemplate",
         step       = 20,
-        childWidth = SCROLL_W,
+        childWidth = scrollWidth,
     })
-    pScrollFrame:SetPoint("TOPLEFT",     pc, "TOPLEFT",     4, -48)
-    pScrollFrame:SetPoint("BOTTOMRIGHT", pc, "BOTTOMRIGHT", -20, 8)
+    scrollFrame:SetPoint("TOPLEFT",     progressContainer, "TOPLEFT",     4, -48)
+    scrollFrame:SetPoint("BOTTOMRIGHT", progressContainer, "BOTTOMRIGHT", -20, 8)
 
-    pc.pScrollChild = pScrollChild
-    pc.progressRows = {}
+    progressContainer.scrollChild  = scrollChild
+    progressContainer.progressRows = {}
 
-    local BAR_W = 55
-    local BAR_X = 190
+    local barWidth = 55
+    local barX     = 190
 
     local function GetMemberVersion(shortName)
-        local v = SchlingelInc.guildMemberVersions[shortName]
-        if v then return v end
-        for k, ver in pairs(SchlingelInc.guildMemberVersions) do
-            if SchlingelInc:RemoveRealmFromName(k) == shortName then return ver end
+        local version = SchlingelInc.guildMemberVersions[shortName]
+        if version then return version end
+        for name, storedVersion in pairs(SchlingelInc.guildMemberVersions) do
+            if SchlingelInc:RemoveRealmFromName(name) == shortName then return storedVersion end
         end
     end
 
     local function RefreshProgress()
-        if not pc:IsShown() then return end
-        for _, row in ipairs(pc.progressRows) do row:Hide() end
-        wipe(pc.progressRows)
+        if not progressContainer:IsShown() then return end
+        for _, row in ipairs(progressContainer.progressRows) do row:Hide() end
+        wipe(progressContainer.progressRows)
 
         local list = {}
         for i = 1, GetNumGuildMembers() or 0 do
@@ -200,7 +200,7 @@ function OfficerPanel.BuildProgressTab(pc)
                     timestamp  = data.timestamp or 0
                 end
 
-                local mi = MI.GetProfileEntry(shortName)
+                local memberInfo = MemberInspector.GetProfileEntry(shortName)
 
                 table.insert(list, {
                     name         = shortName,
@@ -220,269 +220,271 @@ function OfficerPanel.BuildProgressTab(pc)
                     classToken   = classToken   or "",
                     zone         = zone         or "",
                     note         = note         or "",
-                    role         = mi.role,
-                    prof1        = mi.prof1,
-                    prof2        = mi.prof2,
-                    discord      = mi.discord,
-                    deaths       = mi.deaths,
+                    role         = memberInfo.role,
+                    prof1        = memberInfo.prof1,
+                    prof2        = memberInfo.prof2,
+                    discord      = memberInfo.discord,
+                    deaths       = memberInfo.deaths,
                 })
             end
         end
 
         local onlineCount = 0
-        for _, e in ipairs(list) do if e.isOnline then onlineCount = onlineCount + 1 end end
-        if pc.pCountFs then
-            pc.pCountFs:SetText(#list .. " (|cff44ff44" .. onlineCount .. " online|r)")
+        for _, entry in ipairs(list) do if entry.isOnline then onlineCount = onlineCount + 1 end end
+        if progressContainer.memberCountLabel then
+            progressContainer.memberCountLabel:SetText(#list .. " (|cff44ff44" .. onlineCount .. " online|r)")
         end
 
         if hideOfflineProgress then
             local filtered = {}
-            for _, e in ipairs(list) do
-                if e.isOnline then table.insert(filtered, e) end
+            for _, entry in ipairs(list) do
+                if entry.isOnline then table.insert(filtered, entry) end
             end
             list = filtered
         end
 
-        local pf   = OfficerPanel.progressFilter
-        local srch = (pf.filterName or ""):lower()
-        if srch ~= "" then
-            local out = {}
-            for _, e in ipairs(list) do
-                if (e.name or ""):lower():find(srch, 1, true) then table.insert(out, e) end
+        local progressFilter = OfficerPanel.progressFilter
+        local search          = (progressFilter.filterName or ""):lower()
+        if search ~= "" then
+            local filtered = {}
+            for _, entry in ipairs(list) do
+                if (entry.name or ""):lower():find(search, 1, true) then table.insert(filtered, entry) end
             end
-            list = out
+            list = filtered
         end
-        if pf.levelValue then
-            local lv  = pf.levelValue
-            local out = {}
-            for _, e in ipairs(list) do
-                if (pf.levelBelow and e.level <= lv) or (not pf.levelBelow and e.level >= lv) then
-                    table.insert(out, e)
+        if progressFilter.levelValue then
+            local levelThreshold = progressFilter.levelValue
+            local filtered = {}
+            for _, entry in ipairs(list) do
+                if (progressFilter.levelBelow and entry.level <= levelThreshold) or
+                   (not progressFilter.levelBelow and entry.level >= levelThreshold) then
+                    table.insert(filtered, entry)
                 end
             end
-            list = out
+            list = filtered
         end
-        if pf.capOnly then
-            local cap = SchlingelInc.Rules.CurrentCap or 0
-            if cap > 0 then
-                local out = {}
-                for _, e in ipairs(list) do
-                    if e.level >= cap then table.insert(out, e) end
+        if progressFilter.capOnly then
+            local levelCap = SchlingelInc.Rules.CurrentCap or 0
+            if levelCap > 0 then
+                local filtered = {}
+                for _, entry in ipairs(list) do
+                    if entry.level >= levelCap then table.insert(filtered, entry) end
                 end
-                list = out
+                list = filtered
             end
         end
-        if pf.goldValue then
-            local gv  = pf.goldValue * 10000
-            local out = {}
-            for _, e in ipairs(list) do
-                local g = e.gold or 0
-                if (pf.goldBelow and g <= gv) or (not pf.goldBelow and g >= gv) then
-                    table.insert(out, e)
+        if progressFilter.goldValue then
+            local goldThreshold = progressFilter.goldValue * 10000
+            local filtered = {}
+            for _, entry in ipairs(list) do
+                local entryGold = entry.gold or 0
+                if (progressFilter.goldBelow and entryGold <= goldThreshold) or
+                   (not progressFilter.goldBelow and entryGold >= goldThreshold) then
+                    table.insert(filtered, entry)
                 end
             end
-            list = out
+            list = filtered
         end
 
-        for i, col in ipairs(PCOLS) do
+        for i, column in ipairs(progressColumns) do
             local active = i == progressSortCol
             local arrow  = active and (progressSortAsc and " ^" or " v") or ""
-            progressHdrs[i]:SetText(col.label .. arrow)
-            progressHdrs[i]:SetTextColor(active and 1 or 1, active and 1 or 0.82, active and 0.45 or 0, 1)
+            progressHeaders[i]:SetText(column.label .. arrow)
+            progressHeaders[i]:SetTextColor(active and 1 or 1, active and 1 or 0.82, active and 0.45 or 0, 1)
         end
 
         local compact = {}
-        for _, e in ipairs(list) do
-            if type(e) == "table" then table.insert(compact, e) end
+        for _, entry in ipairs(list) do
+            if type(entry) == "table" then table.insert(compact, entry) end
         end
         list = compact
 
-        local sortCol  = PCOLS[progressSortCol] or PCOLS[1]
-        local key      = sortCol and sortCol.sortKey or "name"
-        local ascending = progressSortAsc == true
+        local sortColumn = progressColumns[progressSortCol] or progressColumns[1]
+        local key        = sortColumn and sortColumn.sortKey or "name"
+        local ascending  = progressSortAsc == true
 
         -- Manual selection sort avoids Lua's table.sort edge-cases with malformed input.
-        local function IsLess(a, b)
-            if a == b then return false end
-            if type(a) ~= "table" then return false end
-            if type(b) ~= "table" then return true end
-            local va, vb
+        local function IsLess(entryA, entryB)
+            if entryA == entryB then return false end
+            if type(entryA) ~= "table" then return false end
+            if type(entryB) ~= "table" then return true end
+            local valueA, valueB
             if key == "name" then
-                va = tostring(a.name or ""):lower()
-                vb = tostring(b.name or ""):lower()
+                valueA = tostring(entryA.name or ""):lower()
+                valueB = tostring(entryB.name or ""):lower()
             else
-                va = tonumber(a[key]) or 0
-                vb = tonumber(b[key]) or 0
+                valueA = tonumber(entryA[key]) or 0
+                valueB = tonumber(entryB[key]) or 0
             end
-            if va ~= vb then
-                if ascending then return va < vb else return va > vb end
+            if valueA ~= valueB then
+                if ascending then return valueA < valueB else return valueA > valueB end
             end
-            local na = tostring(a.name or ""):lower()
-            local nb = tostring(b.name or ""):lower()
-            if na ~= nb then return na < nb end
-            local la, lb = tonumber(a.level) or 0, tonumber(b.level) or 0
-            if la ~= lb then return la > lb end
-            local xa, xb = tonumber(a.xpPct) or 0, tonumber(b.xpPct) or 0
-            if xa ~= xb then return xa > xb end
-            local ta, tb = tonumber(a.timestamp) or 0, tonumber(b.timestamp) or 0
-            if ta ~= tb then return ta > tb end
+            local nameA = tostring(entryA.name or ""):lower()
+            local nameB = tostring(entryB.name or ""):lower()
+            if nameA ~= nameB then return nameA < nameB end
+            local levelA, levelB = tonumber(entryA.level) or 0, tonumber(entryB.level) or 0
+            if levelA ~= levelB then return levelA > levelB end
+            local xpA, xpB = tonumber(entryA.xpPct) or 0, tonumber(entryB.xpPct) or 0
+            if xpA ~= xpB then return xpA > xpB end
+            local timeA, timeB = tonumber(entryA.timestamp) or 0, tonumber(entryB.timestamp) or 0
+            if timeA ~= timeB then return timeA > timeB end
             return false
         end
 
-        local n = #list
-        for i = 1, n - 1 do
+        local count = #list
+        for i = 1, count - 1 do
             local best = i
-            for j = i + 1, n do
+            for j = i + 1, count do
                 if IsLess(list[j], list[best]) then best = j end
             end
             if best ~= i then list[i], list[best] = list[best], list[i] end
         end
 
         if #list == 0 then
-            local msg = pScrollChild:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-            msg:SetPoint("TOPLEFT", pScrollChild, "TOPLEFT", 4, 0)
-            msg:SetText("Noch keine Daten. Klicke auf Anfordern, um alle Online-Mitglieder um ihre Fortschritte zu bitten.")
-            msg:SetTextColor(0.6, 0.6, 0.6, 1)
-            table.insert(pc.progressRows, msg)
-            pScrollChild:SetHeight(20)
+            local message = scrollChild:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+            message:SetPoint("TOPLEFT", scrollChild, "TOPLEFT", 4, 0)
+            message:SetText("Noch keine Daten. Klicke auf Anfordern, um alle Online-Mitglieder um ihre Fortschritte zu bitten.")
+            message:SetTextColor(0.6, 0.6, 0.6, 1)
+            table.insert(progressContainer.progressRows, message)
+            scrollChild:SetHeight(20)
             return
         end
 
-        local ROW_H = 22
-        local cap   = SchlingelInc.Rules.CurrentCap
+        local rowHeight = 22
+        local levelCap  = SchlingelInc.Rules.CurrentCap
 
         for idx, entry in ipairs(list) do
-            local row = CreateFrame("Frame", nil, pScrollChild)
-            row:SetSize(SCROLL_W, ROW_H)
-            row:SetPoint("TOPLEFT", 0, -(idx - 1) * ROW_H)
+            local row = CreateFrame("Frame", nil, scrollChild)
+            row:SetSize(scrollWidth, rowHeight)
+            row:SetPoint("TOPLEFT", 0, -(idx - 1) * rowHeight)
             row:EnableMouse(true)
-            row:SetScript("OnMouseUp", function(_, btn)
-                if btn == "LeftButton" then
+            row:SetScript("OnMouseUp", function(_, mouseButton)
+                if mouseButton == "LeftButton" then
                     SchlingelInc.LevelUps:RequestProgress(entry.name)
-                elseif btn == "RightButton" then
+                elseif mouseButton == "RightButton" then
                     SchlingelInc.OfficerPanel:ShowMemberContextMenu(entry.name)
                 end
             end)
 
-            local atCap = cap > 0 and entry.level >= cap
-            if atCap and entry.xpStop == false then
-                local bg = row:CreateTexture(nil, "BACKGROUND")
-                bg:SetAllPoints()
-                bg:SetColorTexture(0.4, 0.65, 0.9, 0.55)
+            local isAtCap = levelCap > 0 and entry.level >= levelCap
+            if isAtCap and entry.xpStop == false then
+                local background = row:CreateTexture(nil, "BACKGROUND")
+                background:SetAllPoints()
+                background:SetColorTexture(0.4, 0.65, 0.9, 0.55)
             elseif idx % 2 == 0 then
-                local bg = row:CreateTexture(nil, "BACKGROUND")
-                bg:SetAllPoints()
-                bg:SetColorTexture(unpack(SchlingelInc.Constants.FORM_COLORS.ROW_STRIPE))
+                local background = row:CreateTexture(nil, "BACKGROUND")
+                background:SetAllPoints()
+                background:SetColorTexture(unpack(SchlingelInc.Constants.FORM_COLORS.ROW_STRIPE))
             end
 
-            local hoverTex = row:CreateTexture(nil, "BACKGROUND")
-            hoverTex:SetAllPoints()
-            hoverTex:SetColorTexture(1, 1, 1, 0)
+            local hoverTexture = row:CreateTexture(nil, "BACKGROUND")
+            hoverTexture:SetAllPoints()
+            hoverTexture:SetColorTexture(1, 1, 1, 0)
             row:SetScript("OnEnter", function()
-                hoverTex:SetColorTexture(1, 1, 1, 0.06)
-                MI.ShowTooltip(row, entry)
+                hoverTexture:SetColorTexture(1, 1, 1, 0.06)
+                MemberInspector.ShowTooltip(row, entry)
             end)
             row:SetScript("OnLeave", function()
-                hoverTex:SetColorTexture(1, 1, 1, 0)
+                hoverTexture:SetColorTexture(1, 1, 1, 0)
                 GameTooltip:Hide()
             end)
 
-            local nameFs = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-            nameFs:SetPoint("LEFT", row, "LEFT", 4, 0)
-            nameFs:SetWidth(84)
-            nameFs:SetJustifyH("LEFT")
-            nameFs:SetText(entry.name)
-            if not entry.isOnline then nameFs:SetTextColor(0.5, 0.5, 0.5, 1) end
+            local nameLabel = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+            nameLabel:SetPoint("LEFT", row, "LEFT", 4, 0)
+            nameLabel:SetWidth(84)
+            nameLabel:SetJustifyH("LEFT")
+            nameLabel:SetText(entry.name)
+            if not entry.isOnline then nameLabel:SetTextColor(0.5, 0.5, 0.5, 1) end
 
-            local levelFs = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-            levelFs:SetPoint("LEFT", row, "LEFT", 96, 0)
-            levelFs:SetWidth(40)
-            levelFs:SetJustifyH("CENTER")
-            levelFs:SetText(tostring(entry.level))
-            levelFs:SetTextColor(atCap and 1 or 1, atCap and 0.82 or 1, atCap and 0 or 1, 1)
+            local levelLabel = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+            levelLabel:SetPoint("LEFT", row, "LEFT", 96, 0)
+            levelLabel:SetWidth(40)
+            levelLabel:SetJustifyH("CENTER")
+            levelLabel:SetText(tostring(entry.level))
+            levelLabel:SetTextColor(isAtCap and 1 or 1, isAtCap and 0.82 or 1, isAtCap and 0 or 1, 1)
 
-            local runesFs = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-            runesFs:SetPoint("LEFT", row, "LEFT", 144, 0)
-            runesFs:SetWidth(38)
-            runesFs:SetJustifyH("CENTER")
+            local runesLabel = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+            runesLabel:SetPoint("LEFT", row, "LEFT", 144, 0)
+            runesLabel:SetWidth(38)
+            runesLabel:SetJustifyH("CENTER")
             if entry.runesKnown ~= nil then
-                runesFs:SetText(tostring(entry.runesKnown))
-                runesFs:SetTextColor(1, 1, 1, 1)
+                runesLabel:SetText(tostring(entry.runesKnown))
+                runesLabel:SetTextColor(1, 1, 1, 1)
             else
-                runesFs:SetText("\226\128\148")
-                runesFs:SetTextColor(0.55, 0.55, 0.55, 1)
+                runesLabel:SetText("\226\128\148")
+                runesLabel:SetTextColor(0.55, 0.55, 0.55, 1)
             end
 
-            local barBg = row:CreateTexture(nil, "BACKGROUND")
-            barBg:SetSize(BAR_W, 8)
-            barBg:SetPoint("LEFT", row, "LEFT", BAR_X, 0)
-            barBg:SetColorTexture(0.15, 0.15, 0.15, 1)
+            local barBackground = row:CreateTexture(nil, "BACKGROUND")
+            barBackground:SetSize(barWidth, 8)
+            barBackground:SetPoint("LEFT", row, "LEFT", barX, 0)
+            barBackground:SetColorTexture(0.15, 0.15, 0.15, 1)
 
-            local fillW = 0
+            local fillWidth = 0
             if entry.hasProgress then
-                fillW = math.max(1, math.floor(BAR_W * entry.xpPct / 100))
-            elseif atCap then
-                fillW = BAR_W
+                fillWidth = math.max(1, math.floor(barWidth * entry.xpPct / 100))
+            elseif isAtCap then
+                fillWidth = barWidth
             end
-            local fill = row:CreateTexture(nil, "ARTWORK")
-            fill:SetSize(fillW, 8)
-            fill:SetPoint("LEFT", barBg, "LEFT", 0, 0)
-            fill:SetColorTexture(
-                atCap and 1 or 0.2, atCap and 0.82 or 0.75, atCap and 0 or 0.2,
+            local fillBar = row:CreateTexture(nil, "ARTWORK")
+            fillBar:SetSize(fillWidth, 8)
+            fillBar:SetPoint("LEFT", barBackground, "LEFT", 0, 0)
+            fillBar:SetColorTexture(
+                isAtCap and 1 or 0.2, isAtCap and 0.82 or 0.75, isAtCap and 0 or 0.2,
                 entry.hasProgress and 1 or 0)
 
-            local pctFs = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-            pctFs:SetPoint("LEFT", row, "LEFT", BAR_X + BAR_W + 4, 0)
-            pctFs:SetWidth(41)
-            pctFs:SetJustifyH("CENTER")
+            local percentLabel = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+            percentLabel:SetPoint("LEFT", row, "LEFT", barX + barWidth + 4, 0)
+            percentLabel:SetWidth(41)
+            percentLabel:SetJustifyH("CENTER")
             if not entry.hasProgress then
-                if atCap then
-                    pctFs:SetText("Cap")
-                    pctFs:SetTextColor(1, 0.82, 0, 1)
+                if isAtCap then
+                    percentLabel:SetText("Cap")
+                    percentLabel:SetTextColor(1, 0.82, 0, 1)
                 else
-                    pctFs:SetText("\226\128\148")
-                    pctFs:SetTextColor(0.55, 0.55, 0.55, 1)
+                    percentLabel:SetText("\226\128\148")
+                    percentLabel:SetTextColor(0.55, 0.55, 0.55, 1)
                 end
             else
-                pctFs:SetText(entry.xpPct .. "%")
-                pctFs:SetTextColor(atCap and 1 or 1, atCap and 0.82 or 1, atCap and 0 or 1, 1)
+                percentLabel:SetText(entry.xpPct .. "%")
+                percentLabel:SetTextColor(isAtCap and 1 or 1, isAtCap and 0.82 or 1, isAtCap and 0 or 1, 1)
             end
 
-            local goldFs = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-            goldFs:SetPoint("LEFT", row, "LEFT", 294, 0)
-            goldFs:SetWidth(64)
-            goldFs:SetJustifyH("RIGHT")
-            goldFs:SetWordWrap(false)
-            goldFs:SetText(FormatGoldShort(entry.gold))
-            goldFs:SetTextColor(1, 0.82, 0, 1)
+            local goldLabel = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+            goldLabel:SetPoint("LEFT", row, "LEFT", 294, 0)
+            goldLabel:SetWidth(64)
+            goldLabel:SetJustifyH("RIGHT")
+            goldLabel:SetWordWrap(false)
+            goldLabel:SetText(FormatGoldShort(entry.gold))
+            goldLabel:SetTextColor(1, 0.82, 0, 1)
 
-            local versionFs = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-            versionFs:SetPoint("LEFT", row, "LEFT", 362, 0)
-            versionFs:SetWidth(38)
-            versionFs:SetJustifyH("RIGHT")
-            versionFs:SetWordWrap(false)
+            local versionLabel = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+            versionLabel:SetPoint("LEFT", row, "LEFT", 362, 0)
+            versionLabel:SetWidth(38)
+            versionLabel:SetJustifyH("RIGHT")
+            versionLabel:SetWordWrap(false)
             if entry.version then
-                versionFs:SetText(entry.version)
-                versionFs:SetTextColor(1, 1, 1, 1)
+                versionLabel:SetText(entry.version)
+                versionLabel:SetTextColor(1, 1, 1, 1)
             else
-                versionFs:SetText("\226\128\148")
-                versionFs:SetTextColor(0.55, 0.55, 0.55, 1)
+                versionLabel:SetText("\226\128\148")
+                versionLabel:SetTextColor(0.55, 0.55, 0.55, 1)
             end
 
-            local ageFs = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-            ageFs:SetPoint("LEFT", row, "LEFT", 408, 0)
-            ageFs:SetWidth(38)
-            ageFs:SetJustifyH("RIGHT")
-            ageFs:SetText(FormatAge(entry.timestamp))
-            ageFs:SetTextColor(entry.isOnline and 0.5 or 0.8, 0.5, entry.isOnline and 0.5 or 0.2, 1)
+            local ageLabel = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+            ageLabel:SetPoint("LEFT", row, "LEFT", 408, 0)
+            ageLabel:SetWidth(38)
+            ageLabel:SetJustifyH("RIGHT")
+            ageLabel:SetText(FormatAge(entry.timestamp))
+            ageLabel:SetTextColor(entry.isOnline and 0.5 or 0.8, 0.5, entry.isOnline and 0.5 or 0.2, 1)
 
-            table.insert(pc.progressRows, row)
+            table.insert(progressContainer.progressRows, row)
         end
 
-        pScrollChild:SetHeight(math.max(1, #list * ROW_H))
-        pScrollFrame:SetVerticalScroll(0)
+        scrollChild:SetHeight(math.max(1, #list * rowHeight))
+        scrollFrame:SetVerticalScroll(0)
     end
 
-    pc.Refresh = RefreshProgress
+    progressContainer.Refresh = RefreshProgress
     SchlingelInc.OfficerPanel.RefreshProgress = RefreshProgress
 end

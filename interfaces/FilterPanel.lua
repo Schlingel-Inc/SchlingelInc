@@ -3,7 +3,7 @@
 
 SchlingelInc.Shared = SchlingelInc.Shared or {}
 
--- cfg = {
+-- config = {
 --   panelName  : string        -- prefix for named WoW frames
 --   anchorFrame: Frame         -- panel anchors TOPLEFT -> TOPRIGHT of this frame
 --   filterState: table         -- receives filterName, filterRoles, filterProf fields
@@ -11,250 +11,215 @@ SchlingelInc.Shared = SchlingelInc.Shared or {}
 --   showRoles  : bool | nil    -- default true; pass false to omit role toggles
 --   getDataFn  : function | nil -- returns array with profName1/profName2; nil = no profession dropdown
 -- }
--- Returns the filter panel frame. fp.profList holds the profession dropdown (or nil).
-function SchlingelInc.Shared.CreateFilterPanel(cfg)
-    local panelName = cfg.panelName
-    local anchor    = cfg.anchorFrame
-    local state     = cfg.filterState
-    local getDataFn = cfg.getDataFn
-    local showRoles = cfg.showRoles ~= false
-    local onChange  = cfg.onChangeFn
+-- Returns the filter panel frame. panel.profList holds the profession dropdown (or nil).
+function SchlingelInc.Shared.CreateFilterPanel(config)
+    local panelName = config.panelName
+    local anchor    = config.anchorFrame
+    local state     = config.filterState
+    local getDataFn = config.getDataFn
+    local showRoles = config.showRoles ~= false
+    local onChange  = config.onChangeFn
 
-    local FP_W   = 190
-    local PAD    = 10
-    local INNER_W = FP_W - PAD * 2
+    local panelWidth = SchlingelInc.Shared.FILTER_PANEL_WIDTH
+    local padding     = SchlingelInc.Shared.FILTER_PANEL_PAD
+    local innerWidth  = panelWidth - padding * 2
 
     -- Compute panel height from visible sections
-    local h = PAD + 18 + 10 + 14 + 4 + 22  -- top pad, title, gap, name lbl, gap, editbox
-    if showRoles  then h = h + 10 + 14 + 4 + 22 end
-    if getDataFn  then h = h + 12 + 14 + 4 + 22 end
-    h = h + 12 + 22 + PAD  -- gap, reset btn, bottom pad
+    local height = padding + 18 + 10 + 14 + 4 + 22  -- top pad, title, gap, name label, gap, editbox
+    if showRoles  then height = height + 10 + 14 + 4 + 22 end
+    if getDataFn  then height = height + 12 + 14 + 4 + 22 end
+    height = height + 12 + 22 + padding  -- gap, reset button, bottom pad
 
-    local fp = CreateFrame("Frame", panelName .. "Filter", UIParent, "BackdropTemplate")
-    fp:SetSize(FP_W, h)
-    fp:SetFrameStrata("HIGH")
-    fp:SetBackdrop({
-        bgFile   = "Interface\\BUTTONS\\WHITE8X8",
-        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-        tile = true, tileSize = 16, edgeSize = 16,
-        insets = { left = 4, right = 4, top = 4, bottom = 4 }
+    local panel = SchlingelInc.Shared.CreateFilterPanelShell({
+        panelName   = panelName .. "Filter",
+        anchorFrame = anchor,
+        width       = panelWidth,
+        height      = height,
     })
-    fp:SetBackdropColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BG))
-    fp:SetBackdropBorderColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BORDER))
-    fp:SetPoint("TOPLEFT", anchor, "TOPRIGHT", 6, 0)
-    fp:Hide()
-    SchlingelInc:RegisterFrameForEscape(fp)
 
     -- ── Title ────────────────────────────────────────────────────────────────
-    local titleLbl = fp:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    titleLbl:SetPoint("TOPLEFT", fp, "TOPLEFT", PAD, -PAD)
-    titleLbl:SetText("Filter")
-    titleLbl:SetTextColor(1, 0.82, 0, 1)
+    local titleLabel = SchlingelInc.Shared.CreateFilterTitle(panel)
 
     -- ── Name search ──────────────────────────────────────────────────────────
-    local nameLbl = fp:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    nameLbl:SetPoint("TOPLEFT", titleLbl, "BOTTOMLEFT", 0, -10)
-    nameLbl:SetText("Name:")
-    nameLbl:SetTextColor(0.8, 0.8, 0.8, 1)
+    local nameLabel = SchlingelInc.Shared.CreateLabel(panel, "Name:")
+    nameLabel:SetPoint("TOPLEFT", titleLabel, "BOTTOMLEFT", 0, -10)
 
-    local nameEB = CreateFrame("EditBox", nil, fp, BackdropTemplateMixin and "BackdropTemplate")
-    nameEB:SetSize(INNER_W, 22)
-    nameEB:SetPoint("TOPLEFT", nameLbl, "BOTTOMLEFT", 0, -4)
-    nameEB:SetBackdrop(SchlingelInc.Constants.POPUPBACKDROP)
-    nameEB:SetBackdropColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BG))
-    nameEB:SetBackdropBorderColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BORDER))
-    nameEB:SetFontObject("GameFontHighlight")
-    nameEB:SetTextInsets(6, 6, 0, 0)
-    nameEB:SetAutoFocus(false)
-    nameEB:SetMaxLetters(50)
-    nameEB:SetScript("OnTextChanged", function(eb)
-        state.filterName = eb:GetText():match("^%s*(.-)%s*$") or ""
+    local nameEditBox = SchlingelInc.Shared.CreateEditBox(panel, innerWidth, 50)
+    nameEditBox:SetPoint("TOPLEFT", nameLabel, "BOTTOMLEFT", 0, -4)
+    nameEditBox:SetScript("OnTextChanged", function(editBox)
+        state.filterName = editBox:GetText():match("^%s*(.-)%s*$") or ""
         onChange()
     end)
-    nameEB:SetScript("OnEscapePressed", function(eb) eb:ClearFocus() end)
 
-    local prevWidget = nameEB
+    local prevWidget = nameEditBox
 
     -- ── Role toggles (optional) ───────────────────────────────────────────────
-    local roleBtns
+    local roleButtons
     if showRoles then
-        local roleLbl = fp:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-        roleLbl:SetPoint("TOPLEFT", prevWidget, "BOTTOMLEFT", 0, -10)
-        roleLbl:SetText("Rolle:")
-        roleLbl:SetTextColor(0.8, 0.8, 0.8, 1)
+        local roleLabel = SchlingelInc.Shared.CreateLabel(panel, "Rolle:")
+        roleLabel:SetPoint("TOPLEFT", prevWidget, "BOTTOMLEFT", 0, -10)
 
-        roleBtns = {}
+        roleButtons = {}
         local roles = SchlingelInc.Constants.ROLES
-        local rbW   = math.floor((INNER_W - 4 * (#roles - 1)) / #roles)
+        local roleButtonWidth = math.floor((innerWidth - 4 * (#roles - 1)) / #roles)
 
         for i, roleName in ipairs(roles) do
-            local btn = CreateFrame("Button", nil, fp)
-            btn:SetSize(rbW, 22)
-            btn:SetPoint("TOPLEFT", roleLbl, "BOTTOMLEFT", (i - 1) * (rbW + 4), -4)
-            btn:EnableMouse(true)
+            local button = CreateFrame("Button", nil, panel)
+            button:SetSize(roleButtonWidth, 22)
+            button:SetPoint("TOPLEFT", roleLabel, "BOTTOMLEFT", (i - 1) * (roleButtonWidth + 4), -4)
+            button:EnableMouse(true)
 
-            local bg = btn:CreateTexture(nil, "BACKGROUND")
-            bg:SetAllPoints()
-            bg:SetColorTexture(unpack(SchlingelInc.Constants.FORM_COLORS.OPTION_BG))
+            local background = button:CreateTexture(nil, "BACKGROUND")
+            background:SetAllPoints()
+            background:SetColorTexture(unpack(SchlingelInc.Constants.FORM_COLORS.OPTION_BG))
 
-            local lbl = btn:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-            lbl:SetAllPoints()
-            lbl:SetJustifyH("CENTER")
-            lbl:SetText(roleName)
+            local label = button:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+            label:SetAllPoints()
+            label:SetJustifyH("CENTER")
+            label:SetText(roleName)
 
-            btn._active = false
-            local function UpdateBtn()
-                if btn._active then
-                    bg:SetColorTexture(unpack(SchlingelInc.Constants.FORM_COLORS.OPTION_BG_SELECTED))
-                    lbl:SetTextColor(1, 0.82, 0, 1)
+            button._active = false
+            local function UpdateButtonAppearance()
+                if button._active then
+                    background:SetColorTexture(unpack(SchlingelInc.Constants.FORM_COLORS.OPTION_BG_SELECTED))
+                    label:SetTextColor(1, 0.82, 0, 1)
                 else
-                    bg:SetColorTexture(unpack(SchlingelInc.Constants.FORM_COLORS.OPTION_BG))
-                    lbl:SetTextColor(0.6, 0.6, 0.6, 1)
+                    background:SetColorTexture(unpack(SchlingelInc.Constants.FORM_COLORS.OPTION_BG))
+                    label:SetTextColor(0.6, 0.6, 0.6, 1)
                 end
             end
-            btn.UpdateAppearance = UpdateBtn
-            UpdateBtn()
+            button.UpdateAppearance = UpdateButtonAppearance
+            UpdateButtonAppearance()
 
-            btn:SetScript("OnClick", function()
-                btn._active = not btn._active
-                state.filterRoles[roleName] = btn._active or nil
-                UpdateBtn()
+            button:SetScript("OnClick", function()
+                button._active = not button._active
+                state.filterRoles[roleName] = button._active or nil
+                UpdateButtonAppearance()
                 onChange()
             end)
-            btn:SetScript("OnEnter", function() lbl:SetTextColor(1, 1, 0.7, 1) end)
-            btn:SetScript("OnLeave", UpdateBtn)
+            button:SetScript("OnEnter", function() label:SetTextColor(1, 1, 0.7, 1) end)
+            button:SetScript("OnLeave", UpdateButtonAppearance)
 
-            roleBtns[i] = btn
+            roleButtons[i] = button
         end
 
-        prevWidget = roleBtns[1]
+        prevWidget = roleButtons[1]
     end
 
     -- ── Profession dropdown (optional) ────────────────────────────────────────
-    local profBtn, profList
+    local professionButton, professionList
     if getDataFn then
-        local profLbl = fp:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-        profLbl:SetPoint("TOPLEFT", prevWidget, "BOTTOMLEFT", 0, -12)
-        profLbl:SetText("Beruf:")
-        profLbl:SetTextColor(0.8, 0.8, 0.8, 1)
+        local professionLabel = SchlingelInc.Shared.CreateLabel(panel, "Beruf:")
+        professionLabel:SetPoint("TOPLEFT", prevWidget, "BOTTOMLEFT", 0, -12)
 
-        profBtn = CreateFrame("Button", nil, fp, "UIPanelButtonTemplate")
-        profBtn:SetSize(INNER_W, 22)
-        profBtn:SetPoint("TOPLEFT", profLbl, "BOTTOMLEFT", 0, -4)
-        profBtn:SetText("Alle Berufe")
+        professionButton = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate")
+        professionButton:SetSize(innerWidth, 22)
+        professionButton:SetPoint("TOPLEFT", professionLabel, "BOTTOMLEFT", 0, -4)
+        professionButton:SetText("Alle Berufe")
 
-        profList = CreateFrame("Frame", panelName .. "ProfList", UIParent, "BackdropTemplate")
-        profList:SetSize(INNER_W, 10)
-        profList:SetFrameStrata("TOOLTIP")
-        profList:SetBackdrop({
-            bgFile   = "Interface\\BUTTONS\\WHITE8X8",
-            edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-            tile = true, tileSize = 16, edgeSize = 16,
-            insets = { left = 4, right = 4, top = 4, bottom = 4 }
-        })
-        profList:SetBackdropColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BG))
-        profList:SetBackdropBorderColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BORDER))
-        profList:SetPoint("TOPLEFT", profBtn, "BOTTOMLEFT", 0, -2)
-        profList:Hide()
-        profList.btns = {}
+        professionList = CreateFrame("Frame", panelName .. "ProfList", UIParent, "BackdropTemplate")
+        professionList:SetSize(innerWidth, 10)
+        professionList:SetFrameStrata("TOOLTIP")
+        professionList:SetBackdrop(SchlingelInc.Constants.DROPDOWNBACKDROP)
+        professionList:SetBackdropColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BG))
+        professionList:SetBackdropBorderColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BORDER))
+        professionList:SetPoint("TOPLEFT", professionButton, "BOTTOMLEFT", 0, -2)
+        professionList:Hide()
+        professionList.buttons = {}
 
-        local function BuildProfList()
-            local seen, profs = {}, {}
+        local function BuildProfessionList()
+            local seen, professions = {}, {}
             local data = getDataFn()
             if data then
-                for _, e in ipairs(data) do
-                    for _, pn in ipairs({ e.profName1, e.profName2 }) do
-                        if pn and not seen[pn] then
-                            seen[pn] = true
-                            table.insert(profs, pn)
+                for _, entry in ipairs(data) do
+                    for _, professionName in ipairs({ entry.profName1, entry.profName2 }) do
+                        if professionName and not seen[professionName] then
+                            seen[professionName] = true
+                            table.insert(professions, professionName)
                         end
                     end
                 end
             end
-            table.sort(profs)
+            table.sort(professions)
 
-            for _, b in ipairs(profList.btns) do b:Hide() end
-            profList.btns = {}
+            for _, button in ipairs(professionList.buttons) do button:Hide() end
+            professionList.buttons = {}
 
-            local ITEM_H = 18
-            local yOff   = -4
+            local itemHeight = 18
+            local yOffset     = -4
 
-            local function addItem(label, onClickFn, isActive)
-                local btn = CreateFrame("Button", nil, profList)
-                btn:SetSize(INNER_W - 8, ITEM_H)
-                btn:SetPoint("TOPLEFT", profList, "TOPLEFT", 4, yOff)
-                btn:EnableMouse(true)
-                local lbl = btn:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-                lbl:SetAllPoints()
-                lbl:SetJustifyH("LEFT")
-                lbl:SetText(label)
-                lbl:SetTextColor(isActive and 1 or 0.75, isActive and 0.82 or 0.75, isActive and 0 or 0.75, 1)
-                btn:SetScript("OnClick", onClickFn)
-                btn:SetScript("OnEnter", function() lbl:SetTextColor(1, 1, 0.7, 1) end)
-                btn:SetScript("OnLeave", function()
-                    local a = isActive
-                    lbl:SetTextColor(a and 1 or 0.75, a and 0.82 or 0.75, a and 0 or 0.75, 1)
+            local function AddItem(text, onClickFn, isActive)
+                local button = CreateFrame("Button", nil, professionList)
+                button:SetSize(innerWidth - 8, itemHeight)
+                button:SetPoint("TOPLEFT", professionList, "TOPLEFT", 4, yOffset)
+                button:EnableMouse(true)
+                local label = button:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+                label:SetAllPoints()
+                label:SetJustifyH("LEFT")
+                label:SetText(text)
+                label:SetTextColor(isActive and 1 or 0.75, isActive and 0.82 or 0.75, isActive and 0 or 0.75, 1)
+                button:SetScript("OnClick", onClickFn)
+                button:SetScript("OnEnter", function() label:SetTextColor(1, 1, 0.7, 1) end)
+                button:SetScript("OnLeave", function()
+                    local active = isActive
+                    label:SetTextColor(active and 1 or 0.75, active and 0.82 or 0.75, active and 0 or 0.75, 1)
                 end)
-                table.insert(profList.btns, btn)
-                yOff = yOff - ITEM_H - 2
+                table.insert(professionList.buttons, button)
+                yOffset = yOffset - itemHeight - 2
             end
 
-            addItem("Alle Berufe", function()
+            AddItem("Alle Berufe", function()
                 state.filterProf = nil
-                profBtn:SetText("Alle Berufe")
-                profList:Hide()
+                professionButton:SetText("Alle Berufe")
+                professionList:Hide()
                 onChange()
             end, state.filterProf == nil)
 
-            for _, pn in ipairs(profs) do
-                local name = pn
-                addItem(name, function()
+            for _, professionName in ipairs(professions) do
+                local name = professionName
+                AddItem(name, function()
                     state.filterProf = name
-                    profBtn:SetText(name)
-                    profList:Hide()
+                    professionButton:SetText(name)
+                    professionList:Hide()
                     onChange()
                 end, state.filterProf == name)
             end
 
-            profList:SetHeight(math.abs(yOff) + 4)
+            professionList:SetHeight(math.abs(yOffset) + 4)
         end
 
-        profBtn:SetScript("OnClick", function()
-            if profList:IsShown() then
-                profList:Hide()
+        professionButton:SetScript("OnClick", function()
+            if professionList:IsShown() then
+                professionList:Hide()
             else
-                BuildProfList()
-                profList:Show()
+                BuildProfessionList()
+                professionList:Show()
             end
         end)
 
-        prevWidget  = profBtn
-        fp.profList = profList
-        SchlingelInc:RegisterOutsideClickClose(profList, fp)
+        prevWidget       = professionButton
+        panel.profList   = professionList
+        SchlingelInc:RegisterOutsideClickClose(professionList, panel)
     end
 
     -- ── Reset ─────────────────────────────────────────────────────────────────
-    local resetBtn = CreateFrame("Button", nil, fp, "UIPanelButtonTemplate")
-    resetBtn:SetSize(INNER_W, 22)
-    resetBtn:SetPoint("TOPLEFT", prevWidget, "BOTTOMLEFT", 0, -12)
-    resetBtn:SetText("Zurücksetzen")
-    resetBtn:SetScript("OnClick", function()
+    local resetButton = SchlingelInc.Shared.CreateFilterResetButton(panel, prevWidget, innerWidth, function()
         state.filterName = ""
-        nameEB:SetText("")
-        if showRoles and roleBtns then
+        nameEditBox:SetText("")
+        if showRoles and roleButtons then
             state.filterRoles = {}
-            for _, btn in ipairs(roleBtns) do
-                btn._active = false
-                btn.UpdateAppearance()
+            for _, button in ipairs(roleButtons) do
+                button._active = false
+                button.UpdateAppearance()
             end
         end
-        if getDataFn and profBtn then
+        if getDataFn and professionButton then
             state.filterProf = nil
-            profBtn:SetText("Alle Berufe")
-            if profList then profList:Hide() end
+            professionButton:SetText("Alle Berufe")
+            if professionList then professionList:Hide() end
         end
         onChange()
     end)
 
-    return fp
+    return panel
 end

@@ -1,87 +1,57 @@
 local OfficerPanel = SchlingelInc.OfficerPanel
 
-local FP_BACKDROP = {
-    bgFile   = "Interface\\BUTTONS\\WHITE8X8",
-    edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-    tile = true, tileSize = 16, edgeSize = 16,
-    insets = { left = 4, right = 4, top = 4, bottom = 4 }
-}
+local panelWidth   = SchlingelInc.Shared.FILTER_PANEL_WIDTH
+local panelPadding = SchlingelInc.Shared.FILTER_PANEL_PAD
+local innerWidth   = panelWidth - panelPadding * 2   -- 170
+local toggleWidth  = 28
+local editBoxWidth = innerWidth - toggleWidth - 4
 
-local FP_W     = 190
-local FP_PAD   = 10
-local FP_IW    = FP_W - FP_PAD * 2   -- 170
-local FP_TOG_W = 28
-local FP_EB_W  = FP_IW - FP_TOG_W - 4
-
-local function MakeFp(mainFrame, name, h)
-    local fp = CreateFrame("Frame", name, UIParent, "BackdropTemplate")
-    fp:SetSize(FP_W, h)
-    fp:SetFrameStrata("HIGH")
-    fp:SetBackdrop(FP_BACKDROP)
-    fp:SetBackdropColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BG))
-    fp:SetBackdropBorderColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BORDER))
-    fp:SetPoint("TOPLEFT", mainFrame, "TOPRIGHT", 6, 0)
-    fp:Hide()
-    SchlingelInc:RegisterFrameForEscape(fp)
-    return fp
+local function CreatePanelFrame(mainFrame, name, height)
+    return SchlingelInc.Shared.CreateFilterPanelShell({
+        panelName   = name,
+        anchorFrame = mainFrame,
+        width       = panelWidth,
+        height      = height,
+    })
 end
 
-local function MakeEB(parent, w)
-    local eb = CreateFrame("EditBox", nil, parent, BackdropTemplateMixin and "BackdropTemplate")
-    eb:SetSize(w, 22)
-    eb:SetBackdrop(SchlingelInc.Constants.POPUPBACKDROP)
-    eb:SetBackdropColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BG))
-    eb:SetBackdropBorderColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BORDER))
-    eb:SetFontObject("GameFontHighlight")
-    eb:SetTextInsets(6, 6, 0, 0)
-    eb:SetAutoFocus(false)
-    eb:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
-    return eb
+-- maxLetters is 0 (unlimited) here; every call site sets its own limit afterward.
+local function CreateEditBoxField(parent, width)
+    return SchlingelInc.Shared.CreateEditBox(parent, width, 0)
 end
 
-local function MakeToggle(parent, w, labelA, labelB)
-    local btn = CreateFrame("Button", nil, parent)
-    btn:SetSize(w, 22)
-    btn:EnableMouse(true)
-    local bg = btn:CreateTexture(nil, "BACKGROUND")
-    bg:SetAllPoints()
-    bg:SetColorTexture(unpack(SchlingelInc.Constants.FORM_COLORS.OPTION_BG_SELECTED))
-    local lbl = btn:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    lbl:SetAllPoints()
-    lbl:SetJustifyH("CENTER")
-    lbl:SetTextColor(1, 0.82, 0, 1)
-    btn._stateA = true
-    local function Update() lbl:SetText(btn._stateA and labelA or labelB) end
-    btn.Update  = Update
+local function CreateToggleButton(parent, width, labelA, labelB)
+    local button = CreateFrame("Button", nil, parent)
+    button:SetSize(width, 22)
+    button:EnableMouse(true)
+    local background = button:CreateTexture(nil, "BACKGROUND")
+    background:SetAllPoints()
+    background:SetColorTexture(unpack(SchlingelInc.Constants.FORM_COLORS.OPTION_BG_SELECTED))
+    local label = button:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    label:SetAllPoints()
+    label:SetJustifyH("CENTER")
+    label:SetTextColor(1, 0.82, 0, 1)
+    button._stateA = true
+    local function Update() label:SetText(button._stateA and labelA or labelB) end
+    button.Update  = Update
     Update()
-    btn:SetScript("OnEnter", function() lbl:SetTextColor(1, 1, 0.7, 1) end)
-    btn:SetScript("OnLeave", function() lbl:SetTextColor(1, 0.82, 0, 1) end)
-    return btn
+    button:SetScript("OnEnter", function() label:SetTextColor(1, 1, 0.7, 1) end)
+    button:SetScript("OnLeave", function() label:SetTextColor(1, 0.82, 0, 1) end)
+    return button
 end
 
-local function MakeSectionLabel(parent, text, anchorWidget, gap)
-    local lbl = parent:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    lbl:SetPoint("TOPLEFT", anchorWidget, "BOTTOMLEFT", 0, -(gap or 10))
-    lbl:SetText(text)
-    lbl:SetTextColor(0.8, 0.8, 0.8, 1)
-    return lbl
+local function CreateSectionLabel(parent, text, anchorWidget, gap)
+    local label = SchlingelInc.Shared.CreateLabel(parent, text)
+    label:SetPoint("TOPLEFT", anchorWidget, "BOTTOMLEFT", 0, -(gap or 10))
+    return label
 end
 
-local function MakeTitle(fp)
-    local title = fp:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    title:SetPoint("TOPLEFT", fp, "TOPLEFT", FP_PAD, -FP_PAD)
-    title:SetText("Filter")
-    title:SetTextColor(1, 0.82, 0, 1)
-    return title
+local function CreateTitle(panel)
+    return SchlingelInc.Shared.CreateFilterTitle(panel)
 end
 
-local function MakeResetButton(fp, anchorWidget, onReset)
-    local btn = CreateFrame("Button", nil, fp, "UIPanelButtonTemplate")
-    btn:SetSize(FP_IW, 22)
-    btn:SetPoint("TOPLEFT", anchorWidget, "BOTTOMLEFT", 0, -12)
-    btn:SetText("Zurücksetzen")
-    btn:SetScript("OnClick", onReset)
-    return btn
+local function CreateResetButton(panel, anchorWidget, onReset)
+    return SchlingelInc.Shared.CreateFilterResetButton(panel, anchorWidget, innerWidth, onReset)
 end
 
 function OfficerPanel.BuildFilters(mainFrame)
@@ -97,126 +67,126 @@ function OfficerPanel.BuildFilters(mainFrame)
     OfficerPanel.tabFilterPanels.inactive = inactiveFilterPanel
 
     -- ── Fortschritt: name / level / cap / gold ─────────────────────────────
-    local pfFp = MakeFp(mainFrame, "SchlingelIncOfficerProgressFilter", 258)
-    local pf   = OfficerPanel.progressFilter
+    local progressFilterPanel = CreatePanelFrame(mainFrame, "SchlingelIncOfficerProgressFilter", 258)
+    local progressFilter      = OfficerPanel.progressFilter
 
-    local pfTitle   = MakeTitle(pfFp)
-    local pfNameLbl = MakeSectionLabel(pfFp, "Name:", pfTitle, 10)
-    local pfNameEB  = MakeEB(pfFp, FP_IW)
-    pfNameEB:SetMaxLetters(50)
-    pfNameEB:SetPoint("TOPLEFT", pfNameLbl, "BOTTOMLEFT", 0, -4)
-    pfNameEB:SetScript("OnTextChanged", function(eb)
-        pf.filterName = eb:GetText():match("^%s*(.-)%s*$") or ""
+    local progressTitle          = CreateTitle(progressFilterPanel)
+    local progressNameLabel      = CreateSectionLabel(progressFilterPanel, "Name:", progressTitle, 10)
+    local progressNameEditBox    = CreateEditBoxField(progressFilterPanel, innerWidth)
+    progressNameEditBox:SetMaxLetters(50)
+    progressNameEditBox:SetPoint("TOPLEFT", progressNameLabel, "BOTTOMLEFT", 0, -4)
+    progressNameEditBox:SetScript("OnTextChanged", function(editBox)
+        progressFilter.filterName = editBox:GetText():match("^%s*(.-)%s*$") or ""
         SchlingelInc.OfficerPanel:RefreshProgress()
     end)
 
-    local pfLvLbl = MakeSectionLabel(pfFp, "Level:", pfNameEB, 10)
-    local pfLvEB  = MakeEB(pfFp, FP_EB_W)
-    pfLvEB:SetMaxLetters(3)
-    pfLvEB:SetNumeric(true)
-    pfLvEB:SetPoint("TOPLEFT", pfLvLbl, "BOTTOMLEFT", 0, -4)
-    pfLvEB:SetScript("OnTextChanged", function(eb)
-        pf.levelValue = tonumber(eb:GetText()) or nil
+    local progressLevelLabel   = CreateSectionLabel(progressFilterPanel, "Level:", progressNameEditBox, 10)
+    local progressLevelEditBox = CreateEditBoxField(progressFilterPanel, editBoxWidth)
+    progressLevelEditBox:SetMaxLetters(3)
+    progressLevelEditBox:SetNumeric(true)
+    progressLevelEditBox:SetPoint("TOPLEFT", progressLevelLabel, "BOTTOMLEFT", 0, -4)
+    progressLevelEditBox:SetScript("OnTextChanged", function(editBox)
+        progressFilter.levelValue = tonumber(editBox:GetText()) or nil
         SchlingelInc.OfficerPanel:RefreshProgress()
     end)
-    local pfLvTog = MakeToggle(pfFp, FP_TOG_W, "<", ">")
-    pfLvTog:SetPoint("TOPLEFT", pfLvLbl, "BOTTOMLEFT", FP_EB_W + 4, -4)
-    pfLvTog:SetScript("OnClick", function()
-        pf.levelBelow   = not pf.levelBelow
-        pfLvTog._stateA = pf.levelBelow
-        pfLvTog.Update()
-                SchlingelInc.OfficerPanel:RefreshProgress()
+    local progressLevelToggle = CreateToggleButton(progressFilterPanel, toggleWidth, "<", ">")
+    progressLevelToggle:SetPoint("TOPLEFT", progressLevelLabel, "BOTTOMLEFT", editBoxWidth + 4, -4)
+    progressLevelToggle:SetScript("OnClick", function()
+        progressFilter.levelBelow    = not progressFilter.levelBelow
+        progressLevelToggle._stateA  = progressFilter.levelBelow
+        progressLevelToggle.Update()
+        SchlingelInc.OfficerPanel:RefreshProgress()
     end)
 
-    local pfCapBtn = CreateFrame("Button", nil, pfFp)
-    pfCapBtn:SetSize(FP_IW, 22)
-    pfCapBtn:SetPoint("TOPLEFT", pfLvEB, "BOTTOMLEFT", 0, -6)
-    pfCapBtn:EnableMouse(true)
-    local pfCapBg  = pfCapBtn:CreateTexture(nil, "BACKGROUND")
-    pfCapBg:SetAllPoints()
-    pfCapBg:SetColorTexture(unpack(SchlingelInc.Constants.FORM_COLORS.OPTION_BG))
-    local pfCapLbl = pfCapBtn:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    pfCapLbl:SetAllPoints()
-    pfCapLbl:SetJustifyH("CENTER")
-    pfCapLbl:SetText("Nur Cap")
-    local function UpdateCapBtn()
-        if pf.capOnly then
-            pfCapBg:SetColorTexture(unpack(SchlingelInc.Constants.FORM_COLORS.OPTION_BG_SELECTED))
-            pfCapLbl:SetTextColor(1, 0.82, 0, 1)
+    local progressCapButton = CreateFrame("Button", nil, progressFilterPanel)
+    progressCapButton:SetSize(innerWidth, 22)
+    progressCapButton:SetPoint("TOPLEFT", progressLevelEditBox, "BOTTOMLEFT", 0, -6)
+    progressCapButton:EnableMouse(true)
+    local progressCapBackground = progressCapButton:CreateTexture(nil, "BACKGROUND")
+    progressCapBackground:SetAllPoints()
+    progressCapBackground:SetColorTexture(unpack(SchlingelInc.Constants.FORM_COLORS.OPTION_BG))
+    local progressCapLabel = progressCapButton:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    progressCapLabel:SetAllPoints()
+    progressCapLabel:SetJustifyH("CENTER")
+    progressCapLabel:SetText("Nur Cap")
+    local function UpdateCapButtonAppearance()
+        if progressFilter.capOnly then
+            progressCapBackground:SetColorTexture(unpack(SchlingelInc.Constants.FORM_COLORS.OPTION_BG_SELECTED))
+            progressCapLabel:SetTextColor(1, 0.82, 0, 1)
         else
-            pfCapBg:SetColorTexture(unpack(SchlingelInc.Constants.FORM_COLORS.OPTION_BG))
-            pfCapLbl:SetTextColor(0.6, 0.6, 0.6, 1)
+            progressCapBackground:SetColorTexture(unpack(SchlingelInc.Constants.FORM_COLORS.OPTION_BG))
+            progressCapLabel:SetTextColor(0.6, 0.6, 0.6, 1)
         end
     end
-    UpdateCapBtn()
-    pfCapBtn:SetScript("OnClick", function()
-        pf.capOnly = not pf.capOnly
-        UpdateCapBtn()
+    UpdateCapButtonAppearance()
+    progressCapButton:SetScript("OnClick", function()
+        progressFilter.capOnly = not progressFilter.capOnly
+        UpdateCapButtonAppearance()
         SchlingelInc.OfficerPanel:RefreshProgress()
     end)
-    pfCapBtn:SetScript("OnEnter", function() pfCapLbl:SetTextColor(1, 1, 0.7, 1) end)
-    pfCapBtn:SetScript("OnLeave", UpdateCapBtn)
+    progressCapButton:SetScript("OnEnter", function() progressCapLabel:SetTextColor(1, 1, 0.7, 1) end)
+    progressCapButton:SetScript("OnLeave", UpdateCapButtonAppearance)
 
-    local pfGoldLbl = MakeSectionLabel(pfFp, "Gold (g):", pfCapBtn, 10)
-    local pfGoldEB  = MakeEB(pfFp, FP_EB_W)
-    pfGoldEB:SetMaxLetters(8)
-    pfGoldEB:SetNumeric(true)
-    pfGoldEB:SetPoint("TOPLEFT", pfGoldLbl, "BOTTOMLEFT", 0, -4)
-    pfGoldEB:SetScript("OnTextChanged", function(eb)
-        pf.goldValue = tonumber(eb:GetText()) or nil
+    local progressGoldLabel   = CreateSectionLabel(progressFilterPanel, "Gold (g):", progressCapButton, 10)
+    local progressGoldEditBox = CreateEditBoxField(progressFilterPanel, editBoxWidth)
+    progressGoldEditBox:SetMaxLetters(8)
+    progressGoldEditBox:SetNumeric(true)
+    progressGoldEditBox:SetPoint("TOPLEFT", progressGoldLabel, "BOTTOMLEFT", 0, -4)
+    progressGoldEditBox:SetScript("OnTextChanged", function(editBox)
+        progressFilter.goldValue = tonumber(editBox:GetText()) or nil
         SchlingelInc.OfficerPanel:RefreshProgress()
     end)
-    local pfGoldTog = MakeToggle(pfFp, FP_TOG_W, "\226\137\164", "\226\137\165")  -- ≤ / ≥
-    pfGoldTog:SetPoint("TOPLEFT", pfGoldLbl, "BOTTOMLEFT", FP_EB_W + 4, -4)
-    pfGoldTog:SetScript("OnClick", function()
-        pf.goldBelow      = not pf.goldBelow
-        pfGoldTog._stateA = pf.goldBelow
-        pfGoldTog.Update()
-        SchlingelInc.OfficerPanel:RefreshProgress()
-    end)
-
-    MakeResetButton(pfFp, pfGoldEB, function()
-        pf.filterName = "";   pfNameEB:SetText("")
-        pf.levelValue = nil;  pfLvEB:SetText("")
-        pf.levelBelow = true; pfLvTog._stateA  = true; pfLvTog.Update()
-        pf.capOnly    = false; UpdateCapBtn()
-        pf.goldValue  = nil;  pfGoldEB:SetText("")
-        pf.goldBelow  = true; pfGoldTog._stateA = true; pfGoldTog.Update()
+    local progressGoldToggle = CreateToggleButton(progressFilterPanel, toggleWidth, "\226\137\164", "\226\137\165")  -- ≤ / ≥
+    progressGoldToggle:SetPoint("TOPLEFT", progressGoldLabel, "BOTTOMLEFT", editBoxWidth + 4, -4)
+    progressGoldToggle:SetScript("OnClick", function()
+        progressFilter.goldBelow     = not progressFilter.goldBelow
+        progressGoldToggle._stateA   = progressFilter.goldBelow
+        progressGoldToggle.Update()
         SchlingelInc.OfficerPanel:RefreshProgress()
     end)
 
-    OfficerPanel.tabFilterPanels.progress = pfFp
+    CreateResetButton(progressFilterPanel, progressGoldEditBox, function()
+        progressFilter.filterName = "";    progressNameEditBox:SetText("")
+        progressFilter.levelValue = nil;   progressLevelEditBox:SetText("")
+        progressFilter.levelBelow = true;  progressLevelToggle._stateA = true; progressLevelToggle.Update()
+        progressFilter.capOnly    = false; UpdateCapButtonAppearance()
+        progressFilter.goldValue  = nil;   progressGoldEditBox:SetText("")
+        progressFilter.goldBelow  = true;  progressGoldToggle._stateA = true;  progressGoldToggle.Update()
+        SchlingelInc.OfficerPanel:RefreshProgress()
+    end)
+
+    OfficerPanel.tabFilterPanels.progress = progressFilterPanel
 
     -- ── Discord: name + min char count ─────────────────────────────────────
-    local dcFp = MakeFp(mainFrame, "SchlingelIncOfficerDiscordFilter", 176)
-    local df   = OfficerPanel.discordFilter
+    local discordFilterPanel = CreatePanelFrame(mainFrame, "SchlingelIncOfficerDiscordFilter", 176)
+    local discordFilter      = OfficerPanel.discordFilter
 
-    local dcTitle   = MakeTitle(dcFp)
-    local dcNameLbl = MakeSectionLabel(dcFp, "Name:", dcTitle, 10)
-    local dcNameEB  = MakeEB(dcFp, FP_IW)
-    dcNameEB:SetMaxLetters(50)
-    dcNameEB:SetPoint("TOPLEFT", dcNameLbl, "BOTTOMLEFT", 0, -4)
-    dcNameEB:SetScript("OnTextChanged", function(eb)
-        df.filterName = eb:GetText():match("^%s*(.-)%s*$") or ""
+    local discordTitle        = CreateTitle(discordFilterPanel)
+    local discordNameLabel    = CreateSectionLabel(discordFilterPanel, "Name:", discordTitle, 10)
+    local discordNameEditBox  = CreateEditBoxField(discordFilterPanel, innerWidth)
+    discordNameEditBox:SetMaxLetters(50)
+    discordNameEditBox:SetPoint("TOPLEFT", discordNameLabel, "BOTTOMLEFT", 0, -4)
+    discordNameEditBox:SetScript("OnTextChanged", function(editBox)
+        discordFilter.filterName = editBox:GetText():match("^%s*(.-)%s*$") or ""
         OfficerPanel.RefreshDiscordHandles()
     end)
 
-    local dcCntLbl = MakeSectionLabel(dcFp, "Min. Chars:", dcNameEB, 10)
-    local dcCntEB  = MakeEB(dcFp, FP_IW)
-    dcCntEB:SetMaxLetters(3)
-    dcCntEB:SetNumeric(true)
-    dcCntEB:SetPoint("TOPLEFT", dcCntLbl, "BOTTOMLEFT", 0, -4)
-    dcCntEB:SetScript("OnTextChanged", function(eb)
-        local v = tonumber(eb:GetText())
-        df.minCount = (v and v > 0) and v or nil
+    local discordCountLabel   = CreateSectionLabel(discordFilterPanel, "Min. Chars:", discordNameEditBox, 10)
+    local discordCountEditBox = CreateEditBoxField(discordFilterPanel, innerWidth)
+    discordCountEditBox:SetMaxLetters(3)
+    discordCountEditBox:SetNumeric(true)
+    discordCountEditBox:SetPoint("TOPLEFT", discordCountLabel, "BOTTOMLEFT", 0, -4)
+    discordCountEditBox:SetScript("OnTextChanged", function(editBox)
+        local value = tonumber(editBox:GetText())
+        discordFilter.minCount = (value and value > 0) and value or nil
         OfficerPanel.RefreshDiscordHandles()
     end)
 
-    MakeResetButton(dcFp, dcCntEB, function()
-        df.filterName = ""; dcNameEB:SetText("")
-        df.minCount   = nil; dcCntEB:SetText("")
+    CreateResetButton(discordFilterPanel, discordCountEditBox, function()
+        discordFilter.filterName = ""; discordNameEditBox:SetText("")
+        discordFilter.minCount   = nil; discordCountEditBox:SetText("")
         OfficerPanel.RefreshDiscordHandles()
     end)
 
-    OfficerPanel.tabFilterPanels.discord = dcFp
+    OfficerPanel.tabFilterPanels.discord = discordFilterPanel
 end

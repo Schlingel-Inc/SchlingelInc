@@ -1,48 +1,48 @@
 local OfficerPanel = SchlingelInc.OfficerPanel
 
-function OfficerPanel.BuildDiscordTab(dc)
-    local SCROLL_W = OfficerPanel.SCROLL_W
+function OfficerPanel.BuildDiscordTab(discordContainer)
+    local scrollWidth = OfficerPanel.SCROLL_W
 
-    local DCOLS = {
+    local discordColumns = {
         { label = "Discord",    x = 0,   w = 150 },
         { label = "Chars",      x = 154, w = 42  },
         { label = "Charaktere", x = 200, w = 250 },
     }
-    for _, col in ipairs(DCOLS) do
-        local hdr = dc:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-        hdr:SetPoint("TOPLEFT", dc, "TOPLEFT", col.x + 4, -6)
-        hdr:SetWidth(col.w)
-        hdr:SetJustifyH("LEFT")
-        hdr:SetText(col.label)
-        hdr:SetTextColor(1, 0.82, 0, 1)
+    for _, column in ipairs(discordColumns) do
+        local headerLabel = discordContainer:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+        headerLabel:SetPoint("TOPLEFT", discordContainer, "TOPLEFT", column.x + 4, -6)
+        headerLabel:SetWidth(column.w)
+        headerLabel:SetJustifyH("LEFT")
+        headerLabel:SetText(column.label)
+        headerLabel:SetTextColor(1, 0.82, 0, 1)
     end
 
-    local dhdrDiv = dc:CreateTexture(nil, "ARTWORK")
-    dhdrDiv:SetHeight(1)
-    dhdrDiv:SetColorTexture(unpack(SchlingelInc.Constants.FORM_COLORS.DIVIDER))
-    dhdrDiv:SetPoint("TOPLEFT",  dc, "TOPLEFT",  4, -22)
-    dhdrDiv:SetPoint("TOPRIGHT", dc, "TOPRIGHT", -4, -22)
+    local headerDivider = discordContainer:CreateTexture(nil, "ARTWORK")
+    headerDivider:SetHeight(1)
+    headerDivider:SetColorTexture(unpack(SchlingelInc.Constants.FORM_COLORS.DIVIDER))
+    headerDivider:SetPoint("TOPLEFT",  discordContainer, "TOPLEFT",  4, -22)
+    headerDivider:SetPoint("TOPRIGHT", discordContainer, "TOPRIGHT", -4, -22)
 
-    local dcFilterBtn = CreateFrame("Button", nil, dc, "UIPanelButtonTemplate")
-    dcFilterBtn:SetSize(70, 22)
-    dcFilterBtn:SetPoint("BOTTOMRIGHT", dc, "BOTTOMRIGHT", -4, 8)
-    dcFilterBtn:SetText("Filter")
-    dcFilterBtn:SetScript("OnClick", function()
-        local fp = OfficerPanel.tabFilterPanels.discord
-        if fp then fp:SetShown(not fp:IsShown()) end
+    local filterToggleButton = CreateFrame("Button", nil, discordContainer, "UIPanelButtonTemplate")
+    filterToggleButton:SetSize(70, 22)
+    filterToggleButton:SetPoint("BOTTOMRIGHT", discordContainer, "BOTTOMRIGHT", -4, 8)
+    filterToggleButton:SetText("Filter")
+    filterToggleButton:SetScript("OnClick", function()
+        local panel = OfficerPanel.tabFilterPanels.discord
+        if panel then panel:SetShown(not panel:IsShown()) end
     end)
 
-    local dScrollFrame, dScrollChild = SchlingelInc.Shared.CreateScrollFrame({
-        parent     = dc,
+    local scrollFrame, scrollChild = SchlingelInc.Shared.CreateScrollFrame({
+        parent     = discordContainer,
         template   = "UIPanelScrollFrameTemplate",
         step       = 20,
-        childWidth = SCROLL_W,
+        childWidth = scrollWidth,
     })
-    dScrollFrame:SetPoint("TOPLEFT",     dc, "TOPLEFT",     4, -26)
-    dScrollFrame:SetPoint("BOTTOMRIGHT", dc, "BOTTOMRIGHT", -20, 36)
+    scrollFrame:SetPoint("TOPLEFT",     discordContainer, "TOPLEFT",     4, -26)
+    scrollFrame:SetPoint("BOTTOMRIGHT", discordContainer, "BOTTOMRIGHT", -20, 36)
 
-    dc.dScrollChild = dScrollChild
-    dc.discordRows  = {}
+    discordContainer.scrollChild  = scrollChild
+    discordContainer.discordRows  = {}
 
     local function BuildDiscordHandleData()
         local byHandle = {}
@@ -80,82 +80,82 @@ function OfficerPanel.BuildDiscordTab(dc)
                 names  = table.concat(group.chars, ", "),
             })
         end
-        table.sort(list, function(a, b)
-            if a.count ~= b.count then return a.count > b.count end
-            return string.lower(a.handle) < string.lower(b.handle)
+        table.sort(list, function(groupA, groupB)
+            if groupA.count ~= groupB.count then return groupA.count > groupB.count end
+            return string.lower(groupA.handle) < string.lower(groupB.handle)
         end)
         return list
     end
 
     local function RefreshDiscordHandles()
-        for _, row in ipairs(dc.discordRows) do row:Hide() end
-        wipe(dc.discordRows)
+        for _, row in ipairs(discordContainer.discordRows) do row:Hide() end
+        wipe(discordContainer.discordRows)
 
-        local df   = OfficerPanel.discordFilter
-        local raw  = BuildDiscordHandleData()
-        local srch = (df.filterName or ""):lower()
+        local discordFilter = OfficerPanel.discordFilter
+        local raw           = BuildDiscordHandleData()
+        local search         = (discordFilter.filterName or ""):lower()
         local list = raw
-        if srch ~= "" then
+        if search ~= "" then
             list = {}
-            for _, e in ipairs(raw) do
-                if (e.handle or ""):lower():find(srch, 1, true) or
-                   (e.names  or ""):lower():find(srch, 1, true) then
-                    table.insert(list, e)
+            for _, entry in ipairs(raw) do
+                if (entry.handle or ""):lower():find(search, 1, true) or
+                   (entry.names  or ""):lower():find(search, 1, true) then
+                    table.insert(list, entry)
                 end
             end
         end
-        if df.minCount then
-            local mc  = df.minCount
-            local out = {}
-            for _, e in ipairs(list) do
-                if e.count >= mc then table.insert(out, e) end
+        if discordFilter.minCount then
+            local minCountThreshold = discordFilter.minCount
+            local filtered = {}
+            for _, entry in ipairs(list) do
+                if entry.count >= minCountThreshold then table.insert(filtered, entry) end
             end
-            list = out
+            list = filtered
         end
 
-        local ROW_H = 22
+        local rowHeight = 22
 
         if #list == 0 then
-            local msg = dScrollChild:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-            msg:SetPoint("TOPLEFT", dScrollChild, "TOPLEFT", 4, 0)
-            msg:SetText("Keine Discord Handles in den Profilen gefunden.")
-            msg:SetTextColor(0.6, 0.6, 0.6, 1)
-            table.insert(dc.discordRows, msg)
-            dScrollChild:SetHeight(20)
+            local message = scrollChild:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+            message:SetPoint("TOPLEFT", scrollChild, "TOPLEFT", 4, 0)
+            message:SetText("Keine Discord Handles in den Profilen gefunden.")
+            message:SetTextColor(0.6, 0.6, 0.6, 1)
+            table.insert(discordContainer.discordRows, message)
+            scrollChild:SetHeight(20)
             return
         end
 
         for idx, entry in ipairs(list) do
-            local row = CreateFrame("Frame", nil, dScrollChild)
-            row:SetSize(SCROLL_W, ROW_H)
-            row:SetPoint("TOPLEFT", 0, -(idx - 1) * ROW_H)
+            local row = CreateFrame("Frame", nil, scrollChild)
+            row:SetSize(scrollWidth, rowHeight)
+            row:SetPoint("TOPLEFT", 0, -(idx - 1) * rowHeight)
 
             if idx % 2 == 0 then
-                local bg = row:CreateTexture(nil, "BACKGROUND")
-                bg:SetAllPoints()
-                bg:SetColorTexture(unpack(SchlingelInc.Constants.FORM_COLORS.ROW_STRIPE))
+                local background = row:CreateTexture(nil, "BACKGROUND")
+                background:SetAllPoints()
+                background:SetColorTexture(unpack(SchlingelInc.Constants.FORM_COLORS.ROW_STRIPE))
             end
 
-            local function Cell(text, xPos, w, r, g, b)
-                local fs = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-                fs:SetPoint("LEFT", row, "LEFT", xPos + 4, 0)
-                fs:SetWidth(w)
-                fs:SetJustifyH("LEFT")
-                fs:SetText(text)
-                if r then fs:SetTextColor(r, g, b, 1) end
+            local function Cell(text, xPos, width, red, green, blue)
+                local label = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+                label:SetPoint("LEFT", row, "LEFT", xPos + 4, 0)
+                label:SetWidth(width)
+                label:SetJustifyH("LEFT")
+                label:SetText(text)
+                if red then label:SetTextColor(red, green, blue, 1) end
             end
 
             Cell(entry.handle,          0,   146, 0.65, 0.65, 1)
             Cell(tostring(entry.count), 154, 38,  1,    0.82, 0)
             Cell(entry.names,           200, 246)
 
-            table.insert(dc.discordRows, row)
+            table.insert(discordContainer.discordRows, row)
         end
 
-        dScrollChild:SetHeight(math.max(1, #list * ROW_H))
-        dScrollFrame:SetVerticalScroll(0)
+        scrollChild:SetHeight(math.max(1, #list * rowHeight))
+        scrollFrame:SetVerticalScroll(0)
     end
 
-    dc.Refresh = RefreshDiscordHandles
+    discordContainer.Refresh          = RefreshDiscordHandles
     OfficerPanel.RefreshDiscordHandles = RefreshDiscordHandles
 end

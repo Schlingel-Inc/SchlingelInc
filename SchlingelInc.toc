@@ -26,6 +26,7 @@ interfaces\Shared\Frame.lua
 interfaces\Shared\ScrollFrame.lua
 interfaces\Shared\ToggleGroup.lua
 interfaces\Shared\FormWidgets.lua
+interfaces\Shared\FilterWidgets.lua
 EventManager.lua
 GuildCache.lua
 GuildProfiles.lua
