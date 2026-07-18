@@ -83,21 +83,15 @@ function GP.BuildRosterTab(content, f)
     divider:SetPoint("TOPRIGHT", content, "TOPRIGHT", 0, -(TOP_H + GP.COL_H + 2))
 
     -- ── Scroll frame ───────────────────────────────────────────────────────
-    local scrollFrame = CreateFrame("ScrollFrame", GP.PANEL_NAME .. "Scroll", content)
+    local scrollFrame, rosterContent = SchlingelInc.Shared.CreateScrollFrame({
+        parent     = content,
+        name       = GP.PANEL_NAME .. "Scroll",
+        childName  = GP.PANEL_NAME .. "Content",
+        step       = GP.ROW_H * 3,
+        childWidth = GP.TotalColWidth(),
+    })
     scrollFrame:SetPoint("TOPLEFT",     content, "TOPLEFT",     0, -(TOP_H + GP.COL_H + 5))
     scrollFrame:SetPoint("BOTTOMRIGHT", content, "BOTTOMRIGHT", 0, 24)
-    scrollFrame:EnableMouseWheel(true)
-    scrollFrame:SetScript("OnMouseWheel", function(sf, delta)
-        local step = GP.ROW_H * 3
-        sf:SetVerticalScroll(
-            math.max(0, math.min(sf:GetVerticalScrollRange(), sf:GetVerticalScroll() - delta * step))
-        )
-    end)
-
-    local rosterContent = CreateFrame("Frame", GP.PANEL_NAME .. "Content", scrollFrame)
-    rosterContent:SetWidth(GP.TotalColWidth())
-    rosterContent:SetHeight(1)
-    scrollFrame:SetScrollChild(rosterContent)
 
     -- Filter toggle button (bottom right)
     local filterToggleBtn = CreateFrame("Button", nil, content, "UIPanelButtonTemplate")

@@ -11,6 +11,7 @@ SchlingelInc.Shared = SchlingelInc.Shared or {}
 --   name       : string  -- optional, forwarded to CreateFrame
 --   template   : string  -- optional, e.g. "UIPanelScrollFrameTemplate"; nil = no visible scrollbar
 --   step       : number  -- default 24, mouse-wheel scroll distance per notch
+--   childName  : string  -- optional, forwarded to the scroll child's CreateFrame
 --   childWidth : number  -- optional, sets the scroll child's width at creation
 -- }
 -- Returns scrollFrame, scrollChild. Caller still anchors scrollFrame via :SetPoint.
@@ -25,7 +26,7 @@ function SchlingelInc.Shared.CreateScrollFrame(cfg)
         )
     end)
 
-    local scrollChild = CreateFrame("Frame", nil, scrollFrame)
+    local scrollChild = CreateFrame("Frame", cfg.childName, scrollFrame)
     if cfg.childWidth then
         scrollChild:SetWidth(cfg.childWidth)
     end
