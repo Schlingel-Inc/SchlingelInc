@@ -195,19 +195,12 @@ function GP.BuildRaidTab(content)
     divider:SetPoint("TOPLEFT",  content, "TOPLEFT",  0, -28)
     divider:SetPoint("TOPRIGHT", content, "TOPRIGHT", 0, -28)
 
-    local scrollFrame = CreateFrame("ScrollFrame", nil, content, "UIPanelScrollFrameTemplate")
+    local scrollFrame, scrollChild = SchlingelInc.Shared.CreateScrollFrame({
+        parent   = content,
+        template = "UIPanelScrollFrameTemplate",
+    })
     scrollFrame:SetPoint("TOPLEFT",     content, "TOPLEFT",     0, -32)
     scrollFrame:SetPoint("BOTTOMRIGHT", content, "BOTTOMRIGHT", -20, 0)
-    scrollFrame:EnableMouseWheel(true)
-    scrollFrame:SetScript("OnMouseWheel", function(sf, delta)
-        sf:SetVerticalScroll(
-            math.max(0, math.min(sf:GetVerticalScrollRange(), sf:GetVerticalScroll() - delta * 24))
-        )
-    end)
-
-    local scrollChild = CreateFrame("Frame", nil, scrollFrame)
-    scrollChild:SetHeight(1)
-    scrollFrame:SetScrollChild(scrollChild)
 
     local cards = {}
 
