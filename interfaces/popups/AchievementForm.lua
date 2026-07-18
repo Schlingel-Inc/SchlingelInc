@@ -38,33 +38,23 @@ local function CreateLabel(parent, text)
 end
 
 local function BuildForm()
-    local f = CreateFrame("Frame", "SchlingelAchievementForm", UIParent, "BackdropTemplate")
-    f:SetSize(FORM_W, 490)
-    f:SetFrameStrata("DIALOG")
-    f:SetBackdrop(SchlingelInc.Constants.BACKDROP)
-    f:SetBackdropColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BG))
-    f:SetBackdropBorderColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BORDER))
-    f:SetMovable(true)
-    f:EnableMouse(true)
-    f:RegisterForDrag("LeftButton")
-    f:SetScript("OnDragStart", f.StartMoving)
-    f:SetScript("OnDragStop", function(self)
-        self:StopMovingOrSizing()
-        SchlingelInc:SaveFramePosition(self, "achievementform_position")
-    end)
-    SchlingelInc:RestoreFramePosition(f, "achievementform_position", "CENTER", 0, 80)
-    SchlingelInc:RegisterFrameForEscape(f)
-    f:Hide()
+    local f = SchlingelInc.Shared.CreateStandardFrame({
+        name          = "SchlingelAchievementForm",
+        width         = FORM_W,
+        height        = 490,
+        strata        = "DIALOG",
+        positionKey   = "achievementform_position",
+        defaultPoint  = "CENTER",
+        defaultX      = 0,
+        defaultY      = 80,
+        registerEscape = true,
+        closeButton   = true,
+    })
 
     local titleFs = f:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     titleFs:SetPoint("TOP", f, "TOP", 0, -16)
     titleFs:SetTextColor(1, 0.82, 0, 1)
     f.titleFs = titleFs
-
-    local closeBtn = CreateFrame("Button", nil, f, "UIPanelCloseButton")
-    closeBtn:SetSize(20, 20)
-    closeBtn:SetPoint("TOPRIGHT", f, "TOPRIGHT", -2, -2)
-    closeBtn:SetScript("OnClick", function() f:Hide() end)
 
     -- ── Name ─────────────────────────────────────────────────────────────────
     local nameLbl = CreateLabel(f, "Name:")
