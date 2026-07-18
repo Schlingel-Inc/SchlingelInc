@@ -10,13 +10,6 @@ local VIEWER_W = 340
 local VIEWER_H = 420
 local TITLE_H  = 28
 
-local BACKDROP = {
-    bgFile   = "Interface\\BUTTONS\\WHITE8X8",
-    edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-    tile = true, tileSize = 16, edgeSize = 16,
-    insets = { left = 4, right = 4, top = 4, bottom = 4 }
-}
-
 local currentTarget = nil
 local Fetch -- forward-declared; assigned below, referenced by the StaticPopups' OnAccept
 
@@ -80,23 +73,19 @@ local function SetStatus(f, text, r, g, b)
 end
 
 local function BuildViewer()
-    local f = CreateFrame("Frame", "SchlingelIncSchandeViewer", UIParent, "BackdropTemplate")
-    f:SetSize(VIEWER_W, VIEWER_H)
-    f:SetFrameStrata("DIALOG")
-    f:SetMovable(true)
-    f:EnableMouse(true)
-    f:RegisterForDrag("LeftButton")
-    f:SetBackdrop(BACKDROP)
-    f:SetBackdropColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BG))
-    f:SetBackdropBorderColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BORDER))
-    f:SetScript("OnDragStart", f.StartMoving)
-    f:SetScript("OnDragStop", function(self)
-        self:StopMovingOrSizing()
-        SchlingelInc:SaveFramePosition(self, "schandeviewer_position")
-    end)
-    SchlingelInc:RestoreFramePosition(f, "schandeviewer_position", "CENTER", 0, 0)
-    f:Hide()
-    SchlingelInc:RegisterFrameForEscape(f)
+    local f = SchlingelInc.Shared.CreateStandardFrame({
+        name          = "SchlingelIncSchandeViewer",
+        width         = VIEWER_W,
+        height        = VIEWER_H,
+        strata        = "DIALOG",
+        backdrop      = SchlingelInc.Constants.POPUPBACKDROP,
+        positionKey   = "schandeviewer_position",
+        defaultPoint  = "CENTER",
+        defaultX      = 0,
+        defaultY      = 0,
+        registerEscape = true,
+        closeButton   = true,
+    })
 
     -- ── Title bar ─────────────────────────────────────────────────────────
     local titleBg = f:CreateTexture(nil, "BACKGROUND")
@@ -109,11 +98,6 @@ local function BuildViewer()
     titleText:SetPoint("LEFT", titleBg, "LEFT", 8, 0)
     titleText:SetTextColor(1, 0.82, 0, 1)
     f.titleText = titleText
-
-    local closeBtn = CreateFrame("Button", nil, f, "UIPanelCloseButton")
-    closeBtn:SetSize(20, 20)
-    closeBtn:SetPoint("TOPRIGHT", f, "TOPRIGHT", -2, -2)
-    closeBtn:SetScript("OnClick", function() f:Hide() end)
 
     -- ── Actions + status ─────────────────────────────────────────────────
     local imposeBtn = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
