@@ -28,21 +28,17 @@ end
 function SchlingelInc:CreateMiniDeathLog()
     if self.MiniDeathLogFrame then return end
 
-    local frame = CreateFrame("Frame", "MiniDeathLog", UIParent, "BackdropTemplate")
-    frame:SetSize(FRAME_WIDTH, FRAME_HEIGHT)
-    SchlingelInc:RestoreFramePosition(frame, "deathlog_position", "BOTTOMLEFT", 40, 60)
-    frame:SetBackdrop(SchlingelInc.Constants.POPUPBACKDROP)
-    frame:SetBackdropColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BG))
-    frame:SetBackdropBorderColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BORDER))
-    frame:SetMovable(true)
-    frame:EnableMouse(true)
-    frame:RegisterForDrag("LeftButton")
-    frame:SetScript("OnDragStart", frame.StartMoving)
-    frame:SetScript("OnDragStop", function(self)
-        self:StopMovingOrSizing()
-        SchlingelInc:SaveFramePosition(self, "deathlog_position")
-    end)
-    frame:SetFrameStrata("MEDIUM")
+    local frame = SchlingelInc.Shared.CreateStandardFrame({
+        name          = "MiniDeathLog",
+        width         = FRAME_WIDTH,
+        height        = FRAME_HEIGHT,
+        strata        = "MEDIUM",
+        backdrop      = SchlingelInc.Constants.POPUPBACKDROP,
+        positionKey   = "deathlog_position",
+        defaultPoint  = "BOTTOMLEFT",
+        defaultX      = 40,
+        defaultY      = 60,
+    })
 
     -- Header bar
     local headerBg = frame:CreateTexture(nil, "BACKGROUND")
@@ -118,7 +114,6 @@ function SchlingelInc:CreateMiniDeathLog()
     end
 
     self.MiniDeathLogFrame = frame
-    frame:Hide()
 end
 
 function SchlingelInc:UpdateMiniDeathLog()
