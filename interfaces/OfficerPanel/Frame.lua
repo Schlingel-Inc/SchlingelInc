@@ -1,31 +1,17 @@
 local OfficerPanel = SchlingelInc.OfficerPanel
 
-local BACKDROP = {
-    bgFile   = "Interface\\BUTTONS\\WHITE8X8",
-    edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-    tile = true, tileSize = 16, edgeSize = 16,
-    insets = { left = 4, right = 4, top = 4, bottom = 4 }
-}
-
 local function BuildPanel()
-    local f = CreateFrame("Frame", "SchlingelIncOfficerPanel", UIParent, "BackdropTemplate")
-    f:SetSize(OfficerPanel.PANEL_W, OfficerPanel.PANEL_H)
-    f:SetFrameStrata("HIGH")
+    local f = SchlingelInc.Shared.CreateStandardFrame({
+        name          = "SchlingelIncOfficerPanel",
+        width         = OfficerPanel.PANEL_W,
+        height        = OfficerPanel.PANEL_H,
+        strata        = "HIGH",
+        backdrop      = SchlingelInc.Constants.POPUPBACKDROP,
+        positionKey   = "officerpanel_position",
+        registerEscape = true,
+        closeButton   = true,
+    })
     f:SetToplevel(true)
-    f:SetMovable(true)
-    f:EnableMouse(true)
-    f:RegisterForDrag("LeftButton")
-    f:SetBackdrop(BACKDROP)
-    f:SetBackdropColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BG))
-    f:SetBackdropBorderColor(unpack(SchlingelInc.Constants.FORM_COLORS.FORM_BORDER))
-    f:SetScript("OnDragStart", f.StartMoving)
-    f:SetScript("OnDragStop", function(self)
-        self:StopMovingOrSizing()
-        SchlingelInc:SaveFramePosition(self, "officerpanel_position")
-    end)
-    SchlingelInc:RestoreFramePosition(f, "officerpanel_position")
-    f:Hide()
-    SchlingelInc:RegisterFrameForEscape(f)
 
     -- ── Title bar ─────────────────────────────────────────────────────────
     local titleBg = f:CreateTexture(nil, "BACKGROUND")
@@ -43,11 +29,6 @@ local function BuildPanel()
     titleText:SetPoint("LEFT", titleIcon, "RIGHT", 4, 0)
     titleText:SetText("Offizier Panel")
     titleText:SetTextColor(1, 0.82, 0, 1)
-
-    local closeBtn = CreateFrame("Button", nil, f, "UIPanelCloseButton")
-    closeBtn:SetSize(20, 20)
-    closeBtn:SetPoint("TOPRIGHT", f, "TOPRIGHT", -2, -2)
-    closeBtn:SetScript("OnClick", function() f:Hide() end)
 
     -- ── Tab buttons + content (shared factory) ─────────────────────────────
     local function RequirePermission(message)
