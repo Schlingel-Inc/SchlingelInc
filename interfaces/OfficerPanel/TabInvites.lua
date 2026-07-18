@@ -36,20 +36,14 @@ function OfficerPanel.BuildInvitesTab(vc)
     vhdrDiv:SetPoint("TOPLEFT",  vc, "TOPLEFT",  4, -22)
     vhdrDiv:SetPoint("TOPRIGHT", vc, "TOPRIGHT", -4, -22)
 
-    local vScrollFrame = CreateFrame("ScrollFrame", nil, vc, "UIPanelScrollFrameTemplate")
+    local vScrollFrame, vScrollChild = SchlingelInc.Shared.CreateScrollFrame({
+        parent     = vc,
+        template   = "UIPanelScrollFrameTemplate",
+        step       = 20,
+        childWidth = SCROLL_W,
+    })
     vScrollFrame:SetPoint("TOPLEFT",     vc, "TOPLEFT",     4, -26)
     vScrollFrame:SetPoint("BOTTOMRIGHT", vc, "BOTTOMRIGHT", -20, 8)
-    vScrollFrame:EnableMouseWheel(true)
-    vScrollFrame:SetScript("OnMouseWheel", function(sf, delta)
-        sf:SetVerticalScroll(
-            math.max(0, math.min(sf:GetVerticalScrollRange(), sf:GetVerticalScroll() - delta * 20))
-        )
-    end)
-
-    local vScrollChild = CreateFrame("Frame", nil, vScrollFrame)
-    vScrollChild:SetWidth(SCROLL_W)
-    vScrollChild:SetHeight(1)
-    vScrollFrame:SetScrollChild(vScrollChild)
 
     vc.vScrollChild = vScrollChild
     vc.inviteRows   = {}
