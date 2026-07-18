@@ -145,20 +145,14 @@ function OfficerPanel.BuildProgressTab(pc)
     phdrDiv:SetPoint("TOPLEFT",  pc, "TOPLEFT",  4, -44)
     phdrDiv:SetPoint("TOPRIGHT", pc, "TOPRIGHT", -4, -44)
 
-    local pScrollFrame = CreateFrame("ScrollFrame", nil, pc, "UIPanelScrollFrameTemplate")
+    local pScrollFrame, pScrollChild = SchlingelInc.Shared.CreateScrollFrame({
+        parent     = pc,
+        template   = "UIPanelScrollFrameTemplate",
+        step       = 20,
+        childWidth = SCROLL_W,
+    })
     pScrollFrame:SetPoint("TOPLEFT",     pc, "TOPLEFT",     4, -48)
     pScrollFrame:SetPoint("BOTTOMRIGHT", pc, "BOTTOMRIGHT", -20, 8)
-    pScrollFrame:EnableMouseWheel(true)
-    pScrollFrame:SetScript("OnMouseWheel", function(sf, delta)
-        sf:SetVerticalScroll(
-            math.max(0, math.min(sf:GetVerticalScrollRange(), sf:GetVerticalScroll() - delta * 20))
-        )
-    end)
-
-    local pScrollChild = CreateFrame("Frame", nil, pScrollFrame)
-    pScrollChild:SetWidth(SCROLL_W)
-    pScrollChild:SetHeight(1)
-    pScrollFrame:SetScrollChild(pScrollChild)
 
     pc.pScrollChild = pScrollChild
     pc.progressRows = {}
