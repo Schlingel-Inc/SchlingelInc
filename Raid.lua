@@ -20,6 +20,7 @@ local TITLE_MAX_LEN = 60
 local NOTE_MAX_LEN  = 80
 
 local EXPIRE_GRACE_SECONDS = 3 * 3600
+local UI_REFRESH_DEBOUNCE_SECONDS = 0.25
 
 -- "|" is the message field separator, so it can't appear in free-text fields.
 local function SanitizeForMessage(text)
@@ -63,10 +64,20 @@ local function PurgeStale()
     end
 end
 
+local uiRefreshPending = false
+
 local function RefreshRaidUI()
-    if SchlingelInc.GuildPanel and SchlingelInc.GuildPanel.RefreshRaid then
-        SchlingelInc.GuildPanel:RefreshRaid()
-    end
+    if not SchlingelInc.GuildPanel or not SchlingelInc.GuildPanel.RefreshRaid then return end
+    SchlingelInc.GuildPanel:RefreshRaid()
+end
+
+local function QueueRaidUIRefresh()
+    if uiRefreshPending then return end
+    uiRefreshPending = true
+    C_Timer.After(UI_REFRESH_DEBOUNCE_SECONDS, function()
+        uiRefreshPending = false
+        RefreshRaidUI()
+    end)
 end
 
 -- ── Outgoing messages ────────────────────────────────────────────────────────────
@@ -281,7 +292,7 @@ function SchlingelInc.Raid:HandleMessage(message, sender)
             cancelled = false,
             updatedAt = time(),
         }
-        RefreshRaidUI()
+        QueueRaidUIRefresh()
         return true
     end
 
@@ -291,7 +302,7 @@ function SchlingelInc.Raid:HandleMessage(message, sender)
         if entry and entry.poster == senderShort then
             entry.cancelled = true
             entry.updatedAt = time()
-            RefreshRaidUI()
+            QueueRaidUIRefresh()
         end
         return true
     end
@@ -302,7 +313,7 @@ function SchlingelInc.Raid:HandleMessage(message, sender)
         if IsValidRole(role) then
             SchlingelRaidDB.signals[signalId] = SchlingelRaidDB.signals[signalId] or {}
             SchlingelRaidDB.signals[signalId][signalerName] = { role = role, updatedAt = time() }
-            RefreshRaidUI()
+            QueueRaidUIRefresh()
         end
         return true
     end
@@ -311,7 +322,7 @@ function SchlingelInc.Raid:HandleMessage(message, sender)
     if unsignalId then
         local forId = SchlingelRaidDB.signals[unsignalId]
         if forId then forId[unsignalerName] = nil end
-        RefreshRaidUI()
+        QueueRaidUIRefresh()
         return true
     end
 

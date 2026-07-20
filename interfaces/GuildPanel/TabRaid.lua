@@ -222,10 +222,16 @@ function GP.BuildRaidTab(content)
     scrollFrame:SetScrollChild(scrollChild)
 
     local cards = {}
+    local emptyMsg = scrollChild:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    emptyMsg:SetPoint("TOPLEFT", scrollChild, "TOPLEFT", 4, 0)
+    emptyMsg:SetText("Keine aktiven Raids. Sei der Erste und poste einen!")
+    emptyMsg:SetTextColor(0.6, 0.6, 0.6, 1)
+    emptyMsg:Hide()
 
     local function Refresh()
         for _, c in ipairs(cards) do c:Hide() end
         wipe(cards)
+        emptyMsg:Hide()
 
         local cardW = math.max(1, scrollFrame:GetWidth())
         scrollChild:SetWidth(cardW)
@@ -234,11 +240,7 @@ function GP.BuildRaidTab(content)
         local entries = SchlingelInc.Raid:GetActiveEntries()
 
         if #entries == 0 then
-            local msg = scrollChild:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-            msg:SetPoint("TOPLEFT", scrollChild, "TOPLEFT", 4, 0)
-            msg:SetText("Keine aktiven Raids. Sei der Erste und poste einen!")
-            msg:SetTextColor(0.6, 0.6, 0.6, 1)
-            table.insert(cards, msg)
+            emptyMsg:Show()
             yOff = -20
         else
             for _, entry in ipairs(entries) do
