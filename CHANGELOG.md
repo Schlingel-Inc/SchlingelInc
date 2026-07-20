@@ -1,3 +1,7 @@
+# 4.2.3
+
+- Debounce raid tab refresh during sync bursts
+
 # 4.2.2
 
 - Raid-Postings und Zusagen werden jetzt vollständig relayed, nicht nur die eigenen. Neuer "Erledigt"-Button entfernt abgeschlossene Raids sofort statt erst nach Ablauf der Schonfrist.
