@@ -44,6 +44,14 @@ function SchlingelInc:ClearGuildNote()
     if not playerName or not IsInGuild() then return end
 
     C_Timer.After(2, function()
+        if C_GuildInfo and type(C_GuildInfo.SetNote) == "function" then
+            local guid = UnitGUID("player")
+            if guid then
+                pcall(C_GuildInfo.SetNote, guid, "", true)
+                return
+            end
+        end
+
         local numMembers = GetNumGuildMembers()
         for i = 1, numMembers do
             local name = GetGuildRosterInfo(i)

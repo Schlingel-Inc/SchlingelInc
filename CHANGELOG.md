@@ -1,3 +1,12 @@
+# 4.2.5
+
+- Fixed guild note cleanup crash by switching to C_GuildInfo.SetNote
+
+# 4.2.4
+
+- Bump interface version
+- Better organization of CTL Messages
+
 # 4.2.3
 
 - Debounce raid tab refresh during sync bursts
