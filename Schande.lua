@@ -20,6 +20,7 @@ local MSG_RESOLVE    = "SCHANDE_RESOLVE"
 local MSG_FETCH      = "SCHANDE_FETCH"
 local MSG_PUSH_COUNT = "SCHANDE_PUSH_COUNT"
 local MSG_PUSH       = "SCHANDE_PUSH"
+local PUSH_PRIO      = "NORMAL"
 
 local FETCH_TIMEOUT = 5
 
@@ -150,9 +151,9 @@ function SchlingelInc.Schande:HandleMessage(message, sender)
 
     if message == MSG_FETCH then
         local entries = SchlingelOwnSchande.entries
-        ChatThrottleLib:SendAddonMessage("ALERT", SchlingelInc.prefix, MSG_PUSH_COUNT .. "|" .. #entries, "WHISPER", sender, "SchlingelInc-Schande")
+        ChatThrottleLib:SendAddonMessage(PUSH_PRIO, SchlingelInc.prefix, MSG_PUSH_COUNT .. "|" .. #entries, "WHISPER", sender, "SchlingelInc-Schande")
         for _, entry in ipairs(entries) do
-            ChatThrottleLib:SendAddonMessage("ALERT", SchlingelInc.prefix,
+            ChatThrottleLib:SendAddonMessage(PUSH_PRIO, SchlingelInc.prefix,
                 MSG_PUSH .. "|" .. entry.id .. "|" .. (entry.active and "1" or "0") .. "|" .. entry.freetext,
                 "WHISPER", sender, "SchlingelInc-Schande")
         end

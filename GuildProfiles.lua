@@ -11,6 +11,48 @@ SchlingelOwnProfile        = SchlingelOwnProfile        or {}
 
 -- Message prefix for profile payloads
 local MSG_PROFILE = "PROFILE2"
+local PROFILE_REQUEST_BROADCAST_COOLDOWN = 30
+local PROFILE_REQUEST_RESPONSE_COOLDOWN = 20
+local PROFILE_REQUEST_DELAY_MIN = 0.5
+local PROFILE_REQUEST_DELAY_MAX = 2.5
+local PROFILE_RESPONSE_DELAY_MIN = 0.4
+local PROFILE_RESPONSE_DELAY_MAX = 1.8
+
+local lastProfileRequestBroadcastAt = 0
+local lastProfileRequestResponseAt = 0
+local profileResponseQueued = false
+
+local function RandomDelay(minSeconds, maxSeconds)
+    return minSeconds + (math.random() * (maxSeconds - minSeconds))
+end
+
+local function SendProfileRequestWithCooldown()
+    if not IsInGuild() then return end
+    local now = time()
+    if (now - lastProfileRequestBroadcastAt) < PROFILE_REQUEST_BROADCAST_COOLDOWN then
+        return
+    end
+
+    lastProfileRequestBroadcastAt = now
+    ChatThrottleLib:SendAddonMessage("NORMAL", SchlingelInc.prefix, "PROFILE_REQUEST", "GUILD", nil, "SchlingelInc-Profile")
+end
+
+local function QueueProfileResponse()
+    if profileResponseQueued then return end
+
+    local now = time()
+    if (now - lastProfileRequestResponseAt) < PROFILE_REQUEST_RESPONSE_COOLDOWN then
+        return
+    end
+
+    profileResponseQueued = true
+    C_Timer.After(RandomDelay(PROFILE_RESPONSE_DELAY_MIN, PROFILE_RESPONSE_DELAY_MAX), function()
+        profileResponseQueued = false
+        if not IsInGuild() then return end
+        SchlingelInc.GuildProfiles:Broadcast()
+        lastProfileRequestResponseAt = time()
+    end)
+end
 
 -- Serialise own profile into a single addon message string.
 -- Format: PROFILE2|role|prof1name|prof1rank|prof2name|prof2rank|discord|deaths|pronouns|achievementScore
@@ -105,7 +147,7 @@ end
 function SchlingelInc.GuildProfiles:HandleMessage(sender, message)
     -- Respond to profile requests from freshly-logged-in guild members.
     if message == "PROFILE_REQUEST" then
-        SchlingelInc.GuildProfiles:Broadcast()
+        QueueProfileResponse()
         return true
     end
 
@@ -125,10 +167,10 @@ function SchlingelInc.GuildProfiles:Initialize()
     -- Broadcast own profile on login and request profiles from already-online members.
     SchlingelInc.EventManager:RegisterHandler("PLAYER_ENTERING_WORLD",
         function()
-            C_Timer.After(6, function()
+            C_Timer.After(6 + RandomDelay(0, 1.2), function()
                 SchlingelInc.GuildProfiles:Broadcast()
                 if IsInGuild() then
-                    ChatThrottleLib:SendAddonMessage("NORMAL", SchlingelInc.prefix, "PROFILE_REQUEST", "GUILD", nil, "SchlingelInc-Profile")
+                    C_Timer.After(RandomDelay(PROFILE_REQUEST_DELAY_MIN, PROFILE_REQUEST_DELAY_MAX), SendProfileRequestWithCooldown)
                 end
             end)
         end, 90, "GuildProfilesBroadcast")
@@ -137,9 +179,9 @@ function SchlingelInc.GuildProfiles:Initialize()
     SchlingelInc.EventManager:RegisterHandler("PLAYER_GUILD_UPDATE",
         function()
             if IsInGuild() then
-                C_Timer.After(3, function()
+                C_Timer.After(3 + RandomDelay(0, 1), function()
                     SchlingelInc.GuildProfiles:Broadcast()
-                    ChatThrottleLib:SendAddonMessage("NORMAL", SchlingelInc.prefix, "PROFILE_REQUEST", "GUILD", nil, "SchlingelInc-Profile")
+                    C_Timer.After(RandomDelay(PROFILE_REQUEST_DELAY_MIN, PROFILE_REQUEST_DELAY_MAX), SendProfileRequestWithCooldown)
                 end)
             end
         end, 0, "GuildProfilesGuildUpdate")

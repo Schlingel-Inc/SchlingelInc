@@ -2,6 +2,9 @@
 SchlingelInc.LevelUps = {}
 SchlingelInc.LevelUps.progressCache = {}  -- shortName -> { level, xpCurrent, xpMax, timestamp }
 
+local PROGRESS_REQUEST_SPACING = 0.12
+local PROGRESS_REQUEST_JITTER = 0.08
+
 -- Persists an entry to the officer-only progress DB.
 local function SaveProgressEntry(shortName, entry)
     if not CanGuildInvite() then return end
@@ -287,8 +290,13 @@ function SchlingelInc.LevelUps:RequestProgress(targetName)
     SchlingelInc.LevelUps.StartLoad(#online)
     SchlingelInc.LevelUps.StartVersionLoad(#online)
     ChatThrottleLib:SendAddonMessage("BULK", SchlingelInc.prefix, "VERSION_REQUEST", "GUILD", nil, "SchlingelInc-Version")
-    for _, name in ipairs(online) do
-        ChatThrottleLib:SendAddonMessage("NORMAL", SchlingelInc.prefix, "PROGRESS_REQUEST", "WHISPER", name, "SchlingelInc-Progress")
+    for index, name in ipairs(online) do
+        local targetName = name
+        local delay = ((index - 1) * PROGRESS_REQUEST_SPACING) + (math.random() * PROGRESS_REQUEST_JITTER)
+        C_Timer.After(delay, function()
+            if not IsInGuild() then return end
+            ChatThrottleLib:SendAddonMessage("NORMAL", SchlingelInc.prefix, "PROGRESS_REQUEST", "WHISPER", targetName, "SchlingelInc-Progress")
+        end)
     end
 end
 
