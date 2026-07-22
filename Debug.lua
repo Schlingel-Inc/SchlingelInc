@@ -212,7 +212,7 @@ function SchlingelInc.Debug:TestGuildRequest(targetName)
 	local message = string.format("INVITE_REQUEST:%s:%d:%d:%d:%d:%s",
 		playerName, playerLevel, playerExp, playerGold, runesKnown, zone)
 
-	ChatThrottleLib:SendAddonMessage("ALERT", SchlingelInc.prefix, message, "WHISPER", targetName, "SchlingelInc-Recruit")
+	SchlingelInc:SendAddonMessage("ALERT", message, "WHISPER", targetName, "SchlingelInc-Recruit")
 
 	SchlingelInc:Print(SchlingelInc.Constants.COLORS.SUCCESS ..
 		"Test guild request sent to " .. targetName .. "|r")

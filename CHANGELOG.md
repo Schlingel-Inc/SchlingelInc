@@ -1,3 +1,7 @@
+# 4.2.6
+
+- Complete revamp of how CTL is used in this addon
+
 # 4.2.5
 
 - Fixed guild note cleanup crash by switching to C_GuildInfo.SetNote

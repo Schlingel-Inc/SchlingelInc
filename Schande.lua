@@ -56,7 +56,7 @@ function SchlingelInc.Schande:Impose(targetName, freetext)
     if not targetName or targetName == "" then return end
     freetext = freetext or ""
 
-    ChatThrottleLib:SendAddonMessage("ALERT", SchlingelInc.prefix, MSG_IMPOSE .. "|" .. freetext, "WHISPER", targetName, "SchlingelInc-Schande")
+    SchlingelInc:SendAddonMessage("ALERT", MSG_IMPOSE .. "|" .. freetext, "WHISPER", targetName, "SchlingelInc-Schande")
     SchlingelInc:Print(SchlingelInc.Constants.COLORS.SUCCESS ..
         "Schande gegen " .. targetName .. " verhängt.|r")
 end
@@ -74,7 +74,7 @@ function SchlingelInc.Schande:Resolve(targetName, id)
         return
     end
 
-    ChatThrottleLib:SendAddonMessage("ALERT", SchlingelInc.prefix, MSG_RESOLVE .. "|" .. id, "WHISPER", targetName, "SchlingelInc-Schande")
+    SchlingelInc:SendAddonMessage("ALERT", MSG_RESOLVE .. "|" .. id, "WHISPER", targetName, "SchlingelInc-Schande")
     SchlingelInc:Print(SchlingelInc.Constants.COLORS.SUCCESS ..
         "Schande #" .. id .. " von " .. targetName .. " aufgehoben.|r")
 end
@@ -99,7 +99,7 @@ function SchlingelInc.Schande:GetAllOf(targetName, callback)
         entries  = {},
     }
 
-    ChatThrottleLib:SendAddonMessage("ALERT", SchlingelInc.prefix, MSG_FETCH, "WHISPER", targetName, "SchlingelInc-Schande")
+    SchlingelInc:SendAddonMessage("ALERT", MSG_FETCH, "WHISPER", targetName, "SchlingelInc-Schande")
 
     C_Timer.After(FETCH_TIMEOUT, function()
         if pendingFetch and pendingFetch.seq == seq then
@@ -151,9 +151,9 @@ function SchlingelInc.Schande:HandleMessage(message, sender)
 
     if message == MSG_FETCH then
         local entries = SchlingelOwnSchande.entries
-        ChatThrottleLib:SendAddonMessage(PUSH_PRIO, SchlingelInc.prefix, MSG_PUSH_COUNT .. "|" .. #entries, "WHISPER", sender, "SchlingelInc-Schande")
+        SchlingelInc:SendAddonMessage(PUSH_PRIO, MSG_PUSH_COUNT .. "|" .. #entries, "WHISPER", sender, "SchlingelInc-Schande")
         for _, entry in ipairs(entries) do
-            ChatThrottleLib:SendAddonMessage(PUSH_PRIO, SchlingelInc.prefix,
+            SchlingelInc:SendAddonMessage(PUSH_PRIO,
                 MSG_PUSH .. "|" .. entry.id .. "|" .. (entry.active and "1" or "0") .. "|" .. entry.freetext,
                 "WHISPER", sender, "SchlingelInc-Schande")
         end

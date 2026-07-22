@@ -34,7 +34,7 @@ local function SendProfileRequestWithCooldown()
     end
 
     lastProfileRequestBroadcastAt = now
-    ChatThrottleLib:SendAddonMessage("NORMAL", SchlingelInc.prefix, "PROFILE_REQUEST", "GUILD", nil, "SchlingelInc-Profile")
+    SchlingelInc:SendAddonMessage("NORMAL", "PROFILE_REQUEST", "GUILD", nil, "SchlingelInc-Profile")
 end
 
 local function QueueProfileResponse()
@@ -100,7 +100,7 @@ end
 function SchlingelInc.GuildProfiles:Broadcast()
     if not IsInGuild() then return end
     local payload = Serialize()
-    ChatThrottleLib:SendAddonMessage("NORMAL", SchlingelInc.prefix, payload, "GUILD", nil, "SchlingelInc-Profile")
+    SchlingelInc:SendAddonMessage("NORMAL", payload, "GUILD", nil, "SchlingelInc-Profile")
     local ownProfile = Deserialize(payload:sub(#MSG_PROFILE + 2))
     local selfName = UnitName("player")
     if ownProfile and selfName then

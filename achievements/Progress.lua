@@ -211,26 +211,26 @@ end
 -- to the achievement-grant popup if it's still open for this target.
 function Progress:RequestUnreached(targetName)
     if not targetName or targetName == "" then return end
-    ChatThrottleLib:SendAddonMessage("NORMAL", SchlingelInc.prefix, MSG_UNREACHED_REQUEST, "WHISPER", targetName, "SchlingelInc-Achievements")
+    SchlingelInc:SendAddonMessage("NORMAL", MSG_UNREACHED_REQUEST, "WHISPER", targetName, "SchlingelInc-Achievements")
 end
 
 -- Officer action: ask targetName's client which grantable achievements it currently
 -- has unlocked, so the revoke popup can offer only removable entries.
 function Progress:RequestReached(targetName)
     if not targetName or targetName == "" then return end
-    ChatThrottleLib:SendAddonMessage("NORMAL", SchlingelInc.prefix, MSG_REACHED_REQUEST, "WHISPER", targetName, "SchlingelInc-Achievements")
+    SchlingelInc:SendAddonMessage("NORMAL", MSG_REACHED_REQUEST, "WHISPER", targetName, "SchlingelInc-Achievements")
 end
 
 function Progress:HandleMessage(message, sender)
     if message == MSG_UNREACHED_REQUEST then
         local payload = table.concat({ MSG_UNREACHED, unpack(OwnUnreachedGrantableIds()) }, "|")
-        ChatThrottleLib:SendAddonMessage("NORMAL", SchlingelInc.prefix, payload, "WHISPER", sender, "SchlingelInc-Achievements")
+        SchlingelInc:SendAddonMessage("NORMAL", payload, "WHISPER", sender, "SchlingelInc-Achievements")
         return true
     end
 
     if message == MSG_REACHED_REQUEST then
         local payload = table.concat({ MSG_REACHED, unpack(OwnReachedGrantableIds()) }, "|")
-        ChatThrottleLib:SendAddonMessage("NORMAL", SchlingelInc.prefix, payload, "WHISPER", sender, "SchlingelInc-Achievements")
+        SchlingelInc:SendAddonMessage("NORMAL", payload, "WHISPER", sender, "SchlingelInc-Achievements")
         return true
     end
 
