@@ -1,0 +1,16 @@
+## Interface: 11509
+## Title: Schlingel Inc_Raid
+## Dependencies: SchlingelInc
+## Version: 1.0.0
+## IconTexture: Interface\AddOns\SchlingelInc\media\graphics\SI_Transp_512_x_512_px.tga
+
+
+Raid.lua
+Constants.lua
+
+interfaces\RaidPostForm.lua
+interfaces\RaidSignupForm.lua
+interfaces\RaidAddParticipantForm.lua
+interfaces\TabRaid.lua
+
+Init.lua

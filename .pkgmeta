@@ -1,0 +1,4 @@
+package-as: SchlingelInc
+
+move-folders:
+    SchlingelInc/plugins/SchlingelInc_Raid: SchlingelInc_Raid

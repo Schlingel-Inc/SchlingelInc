@@ -2,7 +2,7 @@
 ## Title: Schlingel Inc
 ## Notes: Visit DerHauges Discord for more information: https://discord.gg/KXkyUZW
 ## Author: Cricksu, Pudi, Canasterzaster
-## Version: 4.2.6
+## Version: 4.2.7
 ## IconTexture: Interface\AddOns\SchlingelInc\media\graphics\SI_Transp_512_x_512_px.tga
 ## Bindings: Bindings.xml
 ## SavedVariablesPerCharacter: CharacterDeaths, SchlingelOptionsDB, SchlingelOwnProfile, SchlingelOwnSchande, SchlingelOwnAchievements
@@ -26,7 +26,6 @@ EventManager.lua
 GuildCache.lua
 GuildProfiles.lua
 Schande.lua
-Raid.lua
 achievements\init.lua
 achievements\AchievementList.lua
 achievements\Catalog.lua
@@ -48,9 +47,6 @@ interfaces\popups\LevelUpAnnouncement.lua
 interfaces\Deathlog.lua
 interfaces\popups\GuildInvites.lua
 interfaces\popups\PvPFrame.lua
-interfaces\popups\RaidPostForm.lua
-interfaces\popups\RaidSignupForm.lua
-interfaces\popups\RaidAddParticipantForm.lua
 interfaces\popups\AchievementAnnouncement.lua
 interfaces\popups\AchievementForm.lua
 interfaces\popups\AchievementGrantForm.lua
@@ -80,7 +76,6 @@ interfaces\GuildPanel\Rows.lua
 interfaces\GuildPanel\FilterPanel.lua
 interfaces\GuildPanel\TabRoster.lua
 interfaces\GuildPanel\TabSchande.lua
-interfaces\GuildPanel\TabRaid.lua
 interfaces\GuildPanel\TabAchievements.lua
 interfaces\GuildPanel\Frame.lua
 Bindings.lua

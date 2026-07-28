@@ -27,26 +27,32 @@ local TAB_GAP = 4
 --   SwitchTab    = function(id)
 -- }
 function SchlingelInc.Shared.CreateTabSwitcher(cfg)
-    local parent    = cfg.parent
-    local tabDefs   = cfg.tabDefs
-    local width     = cfg.width
-    local tabHeight = cfg.tabHeight
-    local topOffset = cfg.topOffset
+    local parent     = cfg.parent
+    local width      = cfg.width
+    local tabHeight  = cfg.tabHeight
+    local topOffset  = cfg.topOffset
     local contentTop = cfg.contentTop
 
     local switcher = {
         tabBtns      = {},
         tabContents  = {},
         filterPanels = {},
+        tabDefs      = {},
     }
 
-    local tabBtnW = math.floor((width - TAB_GAP * (#tabDefs - 1)) / #tabDefs)
-    local tabStep = tabBtnW + TAB_GAP
+    local function LayoutTabs()
+        local tabBtnW = math.floor((width - TAB_GAP * (#switcher.tabDefs - 1)) / #switcher.tabDefs)
+        local tabStep = tabBtnW + TAB_GAP
+        for i, tab in ipairs(switcher.tabDefs) do
+            local btn = switcher.tabBtns[tab.id]
+            btn:SetSize(tabBtnW, tabHeight)
+            btn:ClearAllPoints()
+            btn:SetPoint("TOPLEFT", parent, "TOPLEFT", 8 + (i - 1) * tabStep, topOffset)
+        end
+    end
 
-    for i, tab in ipairs(tabDefs) do
+    local function CreateTabButton(tab)
         local btn = CreateFrame("Button", nil, parent)
-        btn:SetSize(tabBtnW, tabHeight)
-        btn:SetPoint("TOPLEFT", parent, "TOPLEFT", 8 + (i - 1) * tabStep, topOffset)
         btn:EnableMouse(true)
 
         local tabBg = btn:CreateTexture(nil, "BACKGROUND")
@@ -68,6 +74,12 @@ function SchlingelInc.Shared.CreateTabSwitcher(cfg)
         lbl:SetText(tab.label)
         btn.lbl = lbl
 
+        btn:SetScript("OnClick", function()
+            if tab.canSelect and tab.canSelect() == false then return end
+            switcher.SwitchTab(tab.id)
+            if tab.onSelected then tab.onSelected() end
+        end)
+
         switcher.tabBtns[tab.id] = btn
 
         local content = CreateFrame("Frame", nil, parent)
@@ -84,6 +96,7 @@ function SchlingelInc.Shared.CreateTabSwitcher(cfg)
     divider:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -8, contentTop + 2)
 
     function switcher.SwitchTab(id)
+        switcher.activeTab = id
         for _, fp in pairs(switcher.filterPanels) do
             if fp and fp:IsShown() then fp:Hide() end
         end
@@ -96,13 +109,18 @@ function SchlingelInc.Shared.CreateTabSwitcher(cfg)
         end
     end
 
-    for _, tab in ipairs(tabDefs) do
-        local id = tab.id
-        switcher.tabBtns[id]:SetScript("OnClick", function()
-            if tab.canSelect and tab.canSelect() == false then return end
-            switcher.SwitchTab(id)
-            if tab.onSelected then tab.onSelected() end
-        end)
+    function switcher.AddTab(tab)
+        table.insert(switcher.tabDefs, tab)
+        CreateTabButton(tab)
+        LayoutTabs()
+        if switcher.activeTab then
+            switcher.SwitchTab(switcher.activeTab)
+        end
+        return switcher.tabContents[tab.id]
+    end
+
+    for _, tab in ipairs(cfg.tabDefs) do
+        switcher.AddTab(tab)
     end
 
     if cfg.defaultTab then

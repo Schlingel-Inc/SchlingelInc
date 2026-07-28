@@ -94,7 +94,7 @@ local function BuildForm()
 
     local ITEM_H = 18
     local yOff   = -4
-    for _, name in ipairs(SchlingelInc.Constants.RAID_INSTANCES) do
+    for _, name in ipairs(SchlingelInc.Raid.Constants.RAID_INSTANCES) do
         local btn = CreateFrame("Button", nil, instList)
         btn:SetSize(INNER_W - 8, ITEM_H)
         btn:SetPoint("TOPLEFT", instList, "TOPLEFT", 4, yOff)

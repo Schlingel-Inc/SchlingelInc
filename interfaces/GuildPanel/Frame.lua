@@ -79,11 +79,7 @@ function SchlingelInc.GuildPanel:Create()
             { id = "roster",  label = "Mitglieder" },
             { id = "schande", label = "Schande",
               onSelected = function() SchlingelInc.GuildPanel:RefreshSchande() end },
-            { id = "raid",    label = "Raid",
-              onSelected = function()
-                  SchlingelInc.Raid:RequestSync()
-                  SchlingelInc.GuildPanel:RefreshRaid()
-              end },
+
             { id = "achievements", label = "Erfolge",
               onSelected = function()
                   SchlingelInc.Achievements.Catalog:RequestSync()
@@ -96,11 +92,26 @@ function SchlingelInc.GuildPanel:Create()
 
     GP.BuildRosterTab(switcher.tabContents["roster"], f)
     GP.BuildSchandeTab(switcher.tabContents["schande"])
-    GP.BuildRaidTab(switcher.tabContents["raid"])
     GP.BuildAchievementsTab(switcher.tabContents["achievements"])
+
+    for _, pending in ipairs(GP.pendingTabs or {}) do
+        pending.build(switcher.AddTab(pending.tabDef))
+    end
 
     f:Hide()
     self.frame = f
+end
+
+-- Called by optional sub-addons once their own ADDON_LOADED fires, which usually
+-- happens well before the panel is ever created (Create() only runs lazily on
+-- first Toggle()). Queues the tab if the frame isn't built yet.
+function SchlingelInc.GuildPanel:AddTab(tabDef, build)
+    if self.frame then
+        build(self.frame.tabSwitcher.AddTab(tabDef))
+    else
+        GP.pendingTabs = GP.pendingTabs or {}
+        table.insert(GP.pendingTabs, { tabDef = tabDef, build = build })
+    end
 end
 
 -- ── Rendering ─────────────────────────────────────────────────────────────────
