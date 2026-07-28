@@ -1,4 +1,5 @@
 package-as: SchlingelInc
+manual-changelog: CHANGELOG.md
 
 move-folders:
     SchlingelInc/plugins/SchlingelInc_Raid: SchlingelInc_Raid
