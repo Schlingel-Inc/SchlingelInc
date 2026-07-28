@@ -1,3 +1,8 @@
+# 4.2.7
+
+- Raid-Modul in optionales Sub-Addon SchlingelInc_Raid ausgelagert
+- Raid-Sync: Jittered Reply + Suppression statt Broadcast-Storm, Signup-Batching, Relay direkt über CTL
+
 # 4.2.6
 
 - Complete revamp of how CTL is used in this addon
