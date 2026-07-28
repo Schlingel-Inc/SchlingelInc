@@ -4,8 +4,8 @@
 ## Version: 1.0.0
 
 
-Constants.lua
 Raid.lua
+Constants.lua
 
 interfaces\RaidPostForm.lua
 interfaces\RaidSignupForm.lua

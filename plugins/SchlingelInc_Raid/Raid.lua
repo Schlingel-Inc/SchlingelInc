@@ -35,7 +35,7 @@ end
 -- ── Storage helpers ─────────────────────────────────────────────────────────────
 
 local function IsValidInstance(instance)
-    for _, name in ipairs(SchlingelInc.Constants.RAID_INSTANCES) do
+    for _, name in ipairs(SchlingelInc.Raid.Constants.RAID_INSTANCES) do
         if name == instance then return true end
     end
     return false
