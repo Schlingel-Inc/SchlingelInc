@@ -118,6 +118,7 @@ local function CreateCard(parent, cardW, entry)
 end
 
 local RANK_BAR_H = 54
+local REFRESH_COOLDOWN_SECONDS = 30
 
 function GP.BuildAchievementsTab(content)
     -- ── Rank + progress bar ──────────────────────────────────────────────────
@@ -125,6 +126,16 @@ function GP.BuildAchievementsTab(content)
     rankFs:SetPoint("TOPLEFT", content, "TOPLEFT", 4, -2)
     rankFs:SetJustifyH("LEFT")
     rankFs:SetTextColor(1, 0.82, 0, 1)
+
+    local refreshBtn = CreateFrame("Button", nil, content, "UIPanelButtonTemplate")
+    refreshBtn:SetSize(110, 20)
+    refreshBtn:SetPoint("TOPRIGHT", content, "TOPRIGHT", 0, -2)
+    refreshBtn:SetText("Aktualisieren")
+    refreshBtn:SetScript("OnClick", function()
+        SchlingelInc.Achievements.Catalog:RequestSync()
+        refreshBtn:Disable()
+        C_Timer.After(REFRESH_COOLDOWN_SECONDS, function() refreshBtn:Enable() end)
+    end)
 
     local rankBar = CreateFrame("StatusBar", nil, content, "BackdropTemplate")
     rankBar:SetPoint("TOPLEFT", rankFs, "BOTTOMLEFT", 0, -4)

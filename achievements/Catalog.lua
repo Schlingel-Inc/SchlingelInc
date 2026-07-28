@@ -1,7 +1,7 @@
 -- Achievements/Catalog.lua
--- Officer-authored achievement definitions (the catalog), broadcast to the guild and
--- kept in sync the same way Raid.lua syncs its entries: the creator re-broadcasts
--- their own entries on login, and answers sync requests from anyone who missed one.
+-- Officer-authored achievement definitions (the catalog), broadcast to the guild.
+-- Sync is manual (RequestSync, triggered by the refresh button): any online peer
+-- relays what it knows, jittered and suppressed the same way Raid.lua does.
 
 local KIND = SchlingelInc.Achievements.KIND
 
@@ -46,16 +46,37 @@ local function IsValidKind(kind)
     return kind == KIND.LEVEL or kind == KIND.KILL_COUNT or kind == KIND.MANUAL
 end
 
+local function RandomDelay(minSeconds, maxSeconds)
+    return minSeconds + math.random() * (maxSeconds - minSeconds)
+end
+
+local RELAY_JITTER_MIN = 0.5
+local RELAY_JITTER_MAX = 3.0
+
+local pendingRelay  = {}
+local answeredSince = {}
+
 -- ── Broadcast ────────────────────────────────────────────────────────────────────
 
-local function BroadcastDefine(entry)
+-- Bypasses SchlingelInc:SendAddonMessage's direct-send attempt, which races the
+-- same client-wide throttle every other module's messages use. Relay traffic is
+-- bursty enough that it should always go straight through CTL instead.
+local function SendRelayMessage(payload)
+    ChatThrottleLib:SendAddonMessage("BULK", SchlingelInc.prefix, payload, "GUILD", nil, "SchlingelInc-AchievementsRelay")
+end
+
+local function BroadcastDefine(entry, isRelay)
     local payload = table.concat({
         MSG_DEFINE, entry.id, entry.kind,
         SanitizeForMessage(entry.name), SanitizeForMessage(entry.description),
         tostring(entry.points), tostring(entry.critA or ""), tostring(entry.critB or ""),
-        entry.retired and "1" or "0", (entry.isGlobal and "1" or "0"),
+        entry.retired and "1" or "0", (entry.isGlobal and "1" or "0"), tostring(entry.updatedAt or time()),
     }, "|")
-    SchlingelInc:SendAddonMessage("NORMAL", payload, "GUILD", nil, "SchlingelInc-Achievements")
+    if isRelay then
+        SendRelayMessage(payload)
+    else
+        SchlingelInc:SendAddonMessage("NORMAL", payload, "GUILD", nil, "SchlingelInc-Achievements")
+    end
 end
 
 -- ── Public API (officer actions) ──────────────────────────────────────────────────
@@ -156,15 +177,27 @@ function Catalog:RequestSync()
     SchlingelInc:SendAddonMessage("NORMAL", MSG_SYNC_REQUEST, "GUILD", nil, "SchlingelInc-Achievements")
 end
 
--- Re-broadcasts every entry this character created, so a login catches up anyone
--- who missed the original broadcast. Mirrors Raid.lua's BroadcastOwnState.
-local function BroadcastOwnState()
+local function RelayEntry(id)
+    local entry = SchlingelAchievementDB.entries[id]
+    if not entry then return end
+    BroadcastDefine(entry, true)
+end
+
+local function ScheduleRelay(id)
+    if pendingRelay[id] then return end
+    pendingRelay[id] = true
+    local requestedAt = time()
+    C_Timer.After(RandomDelay(RELAY_JITTER_MIN, RELAY_JITTER_MAX), function()
+        pendingRelay[id] = nil
+        if (answeredSince[id] or 0) >= requestedAt then return end
+        RelayEntry(id)
+    end)
+end
+
+local function HandleSyncRequest()
     if not IsInGuild() then return end
-    local own = OwnName()
-    for _, entry in pairs(SchlingelAchievementDB.entries) do
-        if entry.createdBy == own then
-            BroadcastDefine(entry)
-        end
+    for id in pairs(SchlingelAchievementDB.entries) do
+        ScheduleRelay(id)
     end
 end
 
@@ -172,12 +205,16 @@ end
 
 function Catalog:HandleMessage(message, sender)
     if message == MSG_SYNC_REQUEST then
-        BroadcastOwnState()
+        HandleSyncRequest()
         return true
     end
 
-    local id, kind, name, description, pointsStr, critAStr, critBStr, retiredStr, isGlobalStr =
-        message:match("^" .. MSG_DEFINE .. "|([^|]+)|([^|]+)|([^|]*)|([^|]*)|(%d+)|([^|]*)|([^|]*)|([01])|([01])$")
+    local id, kind, name, description, pointsStr, critAStr, critBStr, retiredStr, isGlobalStr, updatedAtStr =
+        message:match("^" .. MSG_DEFINE .. "|([^|]+)|([^|]+)|([^|]*)|([^|]*)|(%d+)|([^|]*)|([^|]*)|([01])|([01])|(%d+)$")
+    if not id then
+        id, kind, name, description, pointsStr, critAStr, critBStr, retiredStr, isGlobalStr =
+            message:match("^" .. MSG_DEFINE .. "|([^|]+)|([^|]+)|([^|]*)|([^|]*)|(%d+)|([^|]*)|([^|]*)|([01])|([01])$")
+    end
     if not id then
         id, kind, name, description, pointsStr, critAStr, critBStr, retiredStr =
             message:match("^" .. MSG_DEFINE .. "|([^|]+)|([^|]+)|([^|]*)|([^|]*)|(%d+)|([^|]*)|([^|]*)|([01])$")
@@ -191,6 +228,12 @@ function Catalog:HandleMessage(message, sender)
         local senderShort = SchlingelInc:RemoveRealmFromName(sender)
         if idCreator ~= senderShort then return true end
         if existing and existing.createdBy ~= senderShort then return true end
+        answeredSince[id] = time()
+
+        local incomingUpdatedAt = tonumber(updatedAtStr) or 0
+        if existing and existing.updatedAt and existing.updatedAt >= incomingUpdatedAt then
+            return true
+        end
 
         SchlingelAchievementDB.entries[id] = {
             id          = id,
@@ -202,7 +245,7 @@ function Catalog:HandleMessage(message, sender)
             critB       = critBStr ~= "" and (tonumber(critBStr) or critBStr) or nil,
             createdBy   = senderShort,
             createdAt   = (existing and existing.createdAt) or time(),
-            updatedAt   = time(),
+            updatedAt   = incomingUpdatedAt,
             retired     = retiredStr == "1",
             isGlobal    = isGlobalStr == "1",
         }
@@ -227,14 +270,4 @@ function Catalog:Initialize()
             if prefix ~= SchlingelInc.prefix then return end
             Catalog:HandleMessage(message, sender)
         end, 0, "AchievementCatalogAddonMessage")
-
-    SchlingelInc.EventManager:RegisterHandler("PLAYER_ENTERING_WORLD",
-        function()
-            C_Timer.After(6, function()
-                if IsInGuild() then
-                    BroadcastOwnState()
-                    Catalog:RequestSync()
-                end
-            end)
-        end, 0, "AchievementCatalogBroadcastAndSync")
 end
