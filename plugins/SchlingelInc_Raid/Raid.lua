@@ -95,14 +95,23 @@ end
 
 -- ── Outgoing messages ────────────────────────────────────────────────────────────
 
+-- Bypasses SchlingelInc:SendAddonMessage's direct-send attempt, which races the
+-- same client-wide throttle every other module's messages use. Relay traffic is
+-- bursty enough that it should always go straight through CTL instead.
+local function SendRelayMessage(payload)
+    ChatThrottleLib:SendAddonMessage("BULK", SchlingelInc.prefix, payload, "GUILD", nil, "SchlingelInc-RaidRelay")
+end
+
 local function BroadcastPost(entry, isRelay)
     local payload = table.concat({
         MSG_POST, entry.id, SanitizeForMessage(entry.title), entry.instance,
         tostring(entry.timestamp), tostring(entry.updatedAt or time()), SanitizeForMessage(entry.note or ""),
     }, "|")
-    local prio = isRelay and "BULK" or "NORMAL"
-    local queueName = isRelay and "SchlingelInc-RaidRelay" or "SchlingelInc-Raid"
-    SchlingelInc:SendAddonMessage(prio, payload, "GUILD", nil, queueName)
+    if isRelay then
+        SendRelayMessage(payload)
+    else
+        SchlingelInc:SendAddonMessage("NORMAL", payload, "GUILD", nil, "SchlingelInc-Raid")
+    end
 end
 
 local function BroadcastCancel(id)
@@ -127,7 +136,7 @@ local function BroadcastSignalsBatch(id, signals)
     for i = 1, #records, SIGNALS_PER_MESSAGE do
         local j = math.min(i + SIGNALS_PER_MESSAGE - 1, #records)
         local payload = table.concat({ MSG_SIGNALS, id, table.concat(records, ",", i, j) }, "|")
-        SchlingelInc:SendAddonMessage("BULK", payload, "GUILD", nil, "SchlingelInc-RaidRelay")
+        SendRelayMessage(payload)
     end
 end
 
