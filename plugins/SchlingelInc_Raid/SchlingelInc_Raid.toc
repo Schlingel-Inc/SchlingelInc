@@ -1,0 +1,15 @@
+## Interface: 11509
+## Title: SchlingelInc_Raid
+## Dependencies: SchlingelInc
+## Version: 1.0.0
+
+
+Constants.lua
+Raid.lua
+
+interfaces\RaidPostForm.lua
+interfaces\RaidSignupForm.lua
+interfaces\RaidAddParticipantForm.lua
+interfaces\TabRaid.lua
+
+Init.lua

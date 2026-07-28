@@ -79,11 +79,7 @@ function SchlingelInc.GuildPanel:Create()
             { id = "roster",  label = "Mitglieder" },
             { id = "schande", label = "Schande",
               onSelected = function() SchlingelInc.GuildPanel:RefreshSchande() end },
-            { id = "raid",    label = "Raid",
-              onSelected = function()
-                  SchlingelInc.Raid:RequestSync()
-                  SchlingelInc.GuildPanel:RefreshRaid()
-              end },
+
             { id = "achievements", label = "Erfolge",
               onSelected = function()
                   SchlingelInc.Achievements.Catalog:RequestSync()
@@ -101,6 +97,16 @@ function SchlingelInc.GuildPanel:Create()
 
     f:Hide()
     self.frame = f
+end
+
+function SchlingelInc.GuildPanel:RegisterTabInFrame()
+    self.frame.tabSwitcher.tabDefs.Add(
+        {
+            id = "raid",    label = "Raid",
+            onSelected = function()
+            SchlingelInc.Raid:RequestSync()
+            SchlingelInc.GuildPanel:RefreshRaid()
+        end })
 end
 
 -- ── Rendering ─────────────────────────────────────────────────────────────────
