@@ -94,32 +94,23 @@ function SchlingelInc.GuildPanel:Create()
     GP.BuildSchandeTab(switcher.tabContents["schande"])
     GP.BuildAchievementsTab(switcher.tabContents["achievements"])
 
-    for _, tab in ipairs(GP.pendingTabs or {}) do
-        tab.build(switcher.AddTab(tab))
+    for _, pending in ipairs(GP.pendingTabs or {}) do
+        pending.build(switcher.AddTab(pending.tabDef))
     end
 
     f:Hide()
     self.frame = f
 end
 
--- Called by optional sub-addons (e.g. SchlingelInc_Raid) once their own ADDON_LOADED
--- fires, which usually happens well before the panel is ever created (Create() only
--- runs lazily on first Toggle()). Queue the tab if the frame isn't built yet.
-function SchlingelInc.GuildPanel:RegisterTabInFrame()
-    local tab = {
-        id = "raid",
-        label = "Raid",
-        onSelected = function()
-            SchlingelInc.Raid:RequestSync()
-            SchlingelInc.GuildPanel:RefreshRaid()
-        end,
-        build = GP.BuildRaidTab,
-    }
+-- Called by optional sub-addons once their own ADDON_LOADED fires, which usually
+-- happens well before the panel is ever created (Create() only runs lazily on
+-- first Toggle()). Queues the tab if the frame isn't built yet.
+function SchlingelInc.GuildPanel:AddTab(tabDef, build)
     if self.frame then
-        tab.build(self.frame.tabSwitcher.AddTab(tab))
+        build(self.frame.tabSwitcher.AddTab(tabDef))
     else
         GP.pendingTabs = GP.pendingTabs or {}
-        table.insert(GP.pendingTabs, tab)
+        table.insert(GP.pendingTabs, { tabDef = tabDef, build = build })
     end
 end
 

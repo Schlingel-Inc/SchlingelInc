@@ -89,12 +89,6 @@ function SchlingelInc.Shared.CreateTabSwitcher(cfg)
         switcher.tabContents[tab.id] = content
     end
 
-    for _, tab in ipairs(cfg.tabDefs) do
-        table.insert(switcher.tabDefs, tab)
-        CreateTabButton(tab)
-    end
-    LayoutTabs()
-
     local divider = parent:CreateTexture(nil, "ARTWORK")
     divider:SetHeight(1)
     divider:SetColorTexture(0.4, 0.4, 0.4, 0.7)
@@ -123,6 +117,10 @@ function SchlingelInc.Shared.CreateTabSwitcher(cfg)
             switcher.SwitchTab(switcher.activeTab)
         end
         return switcher.tabContents[tab.id]
+    end
+
+    for _, tab in ipairs(cfg.tabDefs) do
+        switcher.AddTab(tab)
     end
 
     if cfg.defaultTab then

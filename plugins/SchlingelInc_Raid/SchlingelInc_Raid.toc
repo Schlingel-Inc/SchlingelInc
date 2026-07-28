@@ -1,7 +1,8 @@
 ## Interface: 11509
-## Title: SchlingelInc_Raid
+## Title: Schlingel Inc_Raid
 ## Dependencies: SchlingelInc
 ## Version: 1.0.0
+## IconTexture: Interface\AddOns\SchlingelInc\media\graphics\SI_Transp_512_x_512_px.tga
 
 
 Raid.lua

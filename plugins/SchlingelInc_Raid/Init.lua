@@ -3,6 +3,13 @@ addonLoadedFrame:RegisterEvent("ADDON_LOADED")
 addonLoadedFrame:SetScript("OnEvent", function(self, event, addonName)
     if addonName == "SchlingelInc_Raid" then
         SchlingelInc.Raid:Initialize()
-        SchlingelInc.GuildPanel:RegisterTabInFrame()
+        SchlingelInc.GuildPanel:AddTab({
+            id = "raid",
+            label = "Raid",
+            onSelected = function()
+                SchlingelInc.Raid:RequestSync()
+                SchlingelInc.GuildPanel:RefreshRaid()
+            end,
+        }, SchlingelInc.GuildPanel.BuildRaidTab)
     end
 end)
