@@ -1,3 +1,7 @@
+# 4.2.8
+
+- Raid-Modul: zwei Sync-Bugs behoben, siehe plugins/SchlingelInc_Raid/CHANGELOG.md
+
 # 4.2.7
 
 - Raid-Modul in optionales Sub-Addon SchlingelInc_Raid ausgelagert

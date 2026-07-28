@@ -32,6 +32,22 @@ local function SanitizeForMessage(text)
     return SchlingelInc:SanitizeText(text) or text
 end
 
+-- Defensive cleanup for a client still on a pre-updatedAt build: its parser has
+-- one field fewer, so it glues the updatedAt number onto the front of the note —
+-- as "NNNN|..." on first capture, or "NNNN/..." if that copy was then rebroadcast
+-- through SanitizeForMessage's "|"->"/" escaping. Strips every such leading
+-- prefix (a note can pick up more than one if it bounces through several old
+-- clients) so it neither displays wrong here nor propagates further when this
+-- client relays the entry onward.
+local function StripLeadingTimestamps(note)
+    note = note or ""
+    while true do
+        local stripped = note:gsub("^%d+[|/]", "")
+        if stripped == note then return stripped end
+        note = stripped
+    end
+end
+
 local function OwnName()
     return UnitName("player")
 end
@@ -52,9 +68,31 @@ local function IsValidRole(role)
     return false
 end
 
+local ROLE_CAPS = { Tank = 2, Heal = 2 }
+
+-- Count of `role` signals for this entry, excluding `excludeName` — so a player
+-- re-confirming or switching to their own already-held role isn't blocked by
+-- their own prior signup.
+local function CountRoleExcluding(id, role, excludeName)
+    local count = 0
+    for name, signal in pairs(SchlingelRaidDB.signals[id] or {}) do
+        if signal.role == role and name ~= excludeName then count = count + 1 end
+    end
+    return count
+end
+
 local function IsEntryActive(entry)
     if not entry or entry.cancelled then return false end
     return time() - entry.timestamp <= EXPIRE_GRACE_SECONDS
+end
+
+-- Time-based only, independent of `cancelled` — a cancelled entry must stay in
+-- the DB (still invisible via IsEntryActive) until it would have expired anyway,
+-- so its updatedAt tombstone survives long enough to reject a stale relay from a
+-- peer who hasn't received the cancel yet. Deleting it immediately on cancel
+-- would let that stale relay resurrect it with no updatedAt to compare against.
+local function IsEntryExpired(entry)
+    return time() - entry.timestamp > EXPIRE_GRACE_SECONDS
 end
 
 local function RandomDelay(minSeconds, maxSeconds)
@@ -64,11 +102,12 @@ end
 local pendingRelay  = {}
 local answeredSince = {}
 
--- No history is kept, so anything no longer active (cancelled, or past its grace
--- period) is dropped right away instead of lingering in the DB.
+-- Only removes entries once truly time-expired (see IsEntryExpired) — a
+-- cancelled-but-not-yet-expired entry stays, invisibly, so late stale relays
+-- about it can still be rejected.
 local function PurgeStale()
     for id, entry in pairs(SchlingelRaidDB.entries) do
-        if not IsEntryActive(entry) then
+        if IsEntryExpired(entry) then
             SchlingelRaidDB.entries[id] = nil
             SchlingelRaidDB.signals[id] = nil
             pendingRelay[id] = nil
@@ -157,7 +196,7 @@ function SchlingelInc.Raid:Post(title, instance, timestamp, note)
         title     = SanitizeForMessage(title):sub(1, TITLE_MAX_LEN),
         instance  = instance,
         timestamp = timestamp,
-        note      = SanitizeForMessage(note or ""):sub(1, NOTE_MAX_LEN),
+        note      = SanitizeForMessage(StripLeadingTimestamps(note)):sub(1, NOTE_MAX_LEN),
         cancelled = false,
         updatedAt = time(),
     }
@@ -178,7 +217,7 @@ function SchlingelInc.Raid:Edit(id, title, instance, timestamp, note)
     entry.title     = SanitizeForMessage(title):sub(1, TITLE_MAX_LEN)
     entry.instance  = instance
     entry.timestamp = timestamp
-    entry.note      = SanitizeForMessage(note or ""):sub(1, NOTE_MAX_LEN)
+    entry.note      = SanitizeForMessage(StripLeadingTimestamps(note)):sub(1, NOTE_MAX_LEN)
     entry.cancelled = false
     entry.updatedAt = time()
 
@@ -200,6 +239,11 @@ function SchlingelInc.Raid:Signal(id, role)
     local entry = SchlingelRaidDB.entries[id]
     if not entry or not IsEntryActive(entry) then return nil, "Raid nicht (mehr) aktiv." end
     if not IsValidRole(role) then return nil, "Ungültige Rolle." end
+
+    local cap = ROLE_CAPS[role]
+    if cap and CountRoleExcluding(id, role, OwnName()) >= cap then
+        return nil, role .. "-Plätze sind bereits voll."
+    end
 
     local signal = { role = role, updatedAt = time() }
     SchlingelRaidDB.signals[id] = SchlingelRaidDB.signals[id] or {}
@@ -224,11 +268,23 @@ function SchlingelInc.Raid:AddParticipant(id, name, role)
     if name == "" then return nil, "Name darf nicht leer sein." end
     if not IsValidRole(role) then return nil, "Ungültige Rolle." end
 
+    local cap = ROLE_CAPS[role]
+    if cap and CountRoleExcluding(id, role, name) >= cap then
+        return nil, role .. "-Plätze sind bereits voll."
+    end
+
     local signal = { role = role, updatedAt = time() }
     SchlingelRaidDB.signals[id] = SchlingelRaidDB.signals[id] or {}
     SchlingelRaidDB.signals[id][name] = signal
     BroadcastSignal(id, signal, name)
     return true
+end
+
+-- excludeName's own existing signal (if any) doesn't count against the cap, so
+-- they can still see/keep/switch back to a role they already hold.
+function SchlingelInc.Raid:IsRoleFull(id, role, excludeName)
+    local cap = ROLE_CAPS[role]
+    return cap ~= nil and CountRoleExcluding(id, role, excludeName) >= cap
 end
 
 function SchlingelInc.Raid:RemoveParticipant(id, name)
@@ -340,7 +396,7 @@ function SchlingelInc.Raid:HandleMessage(message, sender)
             title     = title,
             instance  = instance,
             timestamp = tonumber(timestampStr),
-            note      = note,
+            note      = StripLeadingTimestamps(note),
             cancelled = false,
             updatedAt = incomingUpdatedAt,
         }
@@ -395,8 +451,24 @@ function SchlingelInc.Raid:HandleMessage(message, sender)
     return false
 end
 
+-- One-time retroactive fix for notes already corrupted by an old client before
+-- this client ever had StripLeadingTimestamps. Bumps updatedAt so the cleaned
+-- version is treated as newer and actually overrides other peers' still-
+-- corrupted copies once this client relays it, instead of just fixing the local
+-- display.
+local function CleanupCorruptedNotes()
+    for _, entry in pairs(SchlingelRaidDB.entries) do
+        local cleaned = StripLeadingTimestamps(entry.note)
+        if cleaned ~= entry.note then
+            entry.note = cleaned
+            entry.updatedAt = time()
+        end
+    end
+end
+
 function SchlingelInc.Raid:Initialize()
     PurgeStale()
+    CleanupCorruptedNotes()
 
     SchlingelInc.EventManager:RegisterHandler("CHAT_MSG_ADDON",
         function(_, prefix, message, _, sender)

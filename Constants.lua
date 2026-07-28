@@ -118,6 +118,10 @@ SchlingelInc.Constants.FALLBACK_OFFICERS = {
 	"Elemetina",
 	"Trork",
 	"Magentatefau",
+	"Zolazepam",
+	"Zolaplexus",
+	"Morthibou",
+	"Mortsabot",
 }
 
 -- UI Backdrop Settings
