@@ -22,7 +22,7 @@ end
 local function CriteriaHint(entry)
     if entry.kind == KIND.LEVEL then
         local threshold = tonumber(entry.critA) or 0
-        local requireNoDeath = entry.critB == true or entry.critB == 1 or entry.critB == "1"
+        local requireNoDeath = SchlingelInc.Achievements.IsTruthyFlag(entry.critB)
         return "Level " .. threshold .. (requireNoDeath and " (ohne zu sterben)" or "")
     elseif entry.kind == KIND.KILL_COUNT then
         return (tonumber(entry.critB) or 0) .. " Kills"
@@ -50,7 +50,7 @@ local function CreateCard(parent, cardW, entry)
     local safeId = entry.id
     local safeName = SchlingelInc:SanitizeText(entry.name) or "(ohne Namen)"
     local safePoints = tonumber(entry.points) or 0
-    local isGlobal = entry.isGlobal == true or entry.isGlobal == 1 or entry.isGlobal == "1"
+    local isGlobal = SchlingelInc.Achievements.IsTruthyFlag(entry.isGlobal)
 
     local card = CreateFrame("Frame", nil, parent, "BackdropTemplate")
     card:SetBackdrop({
@@ -117,13 +117,13 @@ local function CreateCard(parent, cardW, entry)
     return card
 end
 
-local RANK_BAR_H = 54
+local RANK_BAR_H = 76
 local REFRESH_COOLDOWN_SECONDS = 30
 
 function GP.BuildAchievementsTab(content)
     -- ── Rank + progress bar ──────────────────────────────────────────────────
     local rankFs = content:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    rankFs:SetPoint("TOPLEFT", content, "TOPLEFT", 4, -2)
+    rankFs:SetPoint("TOPLEFT", content, "TOPLEFT", 4, -24)
     rankFs:SetJustifyH("LEFT")
     rankFs:SetTextColor(1, 0.82, 0, 1)
 

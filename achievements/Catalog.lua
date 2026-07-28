@@ -91,7 +91,7 @@ function Catalog:Create(kind, name, description, points, critA, critB, isGlobal)
     if name == "" then return nil, "Name darf nicht leer sein." end
     points = tonumber(points)
     if not points or points < 0 then return nil, "Ungültige Punktzahl." end
-    isGlobal = isGlobal == true or isGlobal == 1 or isGlobal == "1"
+    isGlobal = SchlingelInc.Achievements.IsTruthyFlag(isGlobal)
 
     local id = OwnName() .. "-" .. time()
     local entry = {
@@ -122,7 +122,7 @@ function Catalog:Edit(id, name, description, points, critA, critB, isGlobal)
     if name == "" then return nil, "Name darf nicht leer sein." end
     points = tonumber(points)
     if not points or points < 0 then return nil, "Ungültige Punktzahl." end
-    isGlobal = isGlobal == true or isGlobal == 1 or isGlobal == "1"
+    isGlobal = SchlingelInc.Achievements.IsTruthyFlag(isGlobal)
 
     entry.name        = SanitizeForMessage(name):sub(1, NAME_MAX_LEN)
     entry.description = SanitizeForMessage(description or ""):sub(1, DESC_MAX_LEN)
@@ -162,7 +162,7 @@ function Catalog:GetAll()
     return out
 end
 
--- Non-retired entries only (member view + detectors).
+-- Non-retired entries only (member view).
 function Catalog:GetActive()
     local out = {}
     for _, entry in pairs(SchlingelAchievementDB.entries) do
@@ -170,6 +170,14 @@ function Catalog:GetActive()
     end
     SortEntries(out)
     return out
+end
+
+-- Unsorted scan over non-retired entries, for detectors (KillDetector/LevelDetector)
+-- that only need to test each entry, not display them in order.
+function Catalog:ForEachActive(fn)
+    for _, entry in pairs(SchlingelAchievementDB.entries) do
+        if not entry.retired then fn(entry) end
+    end
 end
 
 function Catalog:RequestSync()

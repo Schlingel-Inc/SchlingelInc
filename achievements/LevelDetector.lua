@@ -16,15 +16,15 @@ function LevelDetector:Check()
     local level = UnitLevel("player")
     local Progress = SchlingelInc.Achievements.Progress
 
-    for _, entry in ipairs(SchlingelInc.Achievements.Catalog:GetActive()) do
+    SchlingelInc.Achievements.Catalog:ForEachActive(function(entry)
         if entry.kind == KIND.LEVEL and not Progress:IsUnlocked(entry.id) then
             local threshold      = tonumber(entry.critA)
-            local requireNoDeath = entry.critB == true or entry.critB == 1 or entry.critB == "1"
+            local requireNoDeath = SchlingelInc.Achievements.IsTruthyFlag(entry.critB)
             if threshold and level >= threshold and (not requireNoDeath or (CharacterDeaths or 0) == 0) then
                 Progress:Unlock(entry.id)
             end
         end
-    end
+    end)
 end
 
 function LevelDetector:Initialize()

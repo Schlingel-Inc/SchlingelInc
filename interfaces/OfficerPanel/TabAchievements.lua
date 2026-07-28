@@ -10,15 +10,10 @@ local CARD_GAP = 6
 local CARD_PAD = 8
 
 local KIND = SchlingelInc.Achievements.KIND
-
-local KIND_LABELS = {
-    [KIND.LEVEL]      = "Level",
-    [KIND.KILL_COUNT] = "Kill-Zähler",
-    [KIND.MANUAL]     = "Manuell (RP)",
-}
+local KIND_LABELS = SchlingelInc.Achievements.KIND_LABELS
 
 local function ScopeText(entry)
-    if entry.isGlobal == true or entry.isGlobal == 1 or entry.isGlobal == "1" then
+    if SchlingelInc.Achievements.IsTruthyFlag(entry.isGlobal) then
         return "Global"
     end
     return "Char"
@@ -27,7 +22,7 @@ end
 local function CriteriaText(entry)
     if entry.kind == KIND.LEVEL then
         local threshold = tonumber(entry.critA) or 0
-        local requireNoDeath = entry.critB == true or entry.critB == 1 or entry.critB == "1"
+        local requireNoDeath = SchlingelInc.Achievements.IsTruthyFlag(entry.critB)
         return "Level " .. threshold .. (requireNoDeath and " (ohne zu sterben)" or "")
     elseif entry.kind == KIND.KILL_COUNT then
         return "NPC-ID " .. (tostring(entry.critA) or "?") .. ", " .. (tostring(entry.critB) or "?") .. " Kills"

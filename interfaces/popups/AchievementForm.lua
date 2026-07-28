@@ -315,10 +315,10 @@ function SchlingelInc.Popup:ShowAchievementForm(existingEntry)
         f.pointsEB:SetText(tostring(existingEntry.points or 0))
         f.SelectKind(existingEntry.kind)
         f.kindBtn:Disable() -- kind can't change after creation (criteria fields are kind-specific)
-        f.globalCb:SetChecked(existingEntry.isGlobal == true or existingEntry.isGlobal == 1 or existingEntry.isGlobal == "1")
+        f.globalCb:SetChecked(SchlingelInc.Achievements.IsTruthyFlag(existingEntry.isGlobal))
         if existingEntry.kind == KIND.LEVEL then
             f.levelEB:SetText(tostring(tonumber(existingEntry.critA) or ""))
-            f.noDeathCb:SetChecked(existingEntry.critB == true or existingEntry.critB == 1 or existingEntry.critB == "1")
+            f.noDeathCb:SetChecked(SchlingelInc.Achievements.IsTruthyFlag(existingEntry.critB))
         elseif existingEntry.kind == KIND.KILL_COUNT then
             f.npcEB:SetText(tostring(tonumber(existingEntry.critA) or ""))
             f.countEB:SetText(tostring(tonumber(existingEntry.critB) or ""))
