@@ -32,9 +32,9 @@ function OfficerPanel.BuildProgressTab(pc)
         { label = "Aktuell", x = 406, w = 42,  sortKey = "timestamp",  justifyH = "RIGHT"  },
     }
 
-    local hideOfflineProgress = false
-    local progressSortCol     = 2
-    local progressSortAsc     = false
+    local hideOfflineProgress = true
+    local progressSortCol     = 1
+    local progressSortAsc     = true
     local progressHdrs        = {}
 
     for i, col in ipairs(PCOLS) do
@@ -91,6 +91,7 @@ function OfficerPanel.BuildProgressTab(pc)
             hideOfflineProgress and 0.82 or 0.45,
             hideOfflineProgress and 0    or 0.45, 1)
     end
+    UpdateOfflineBtn()
     pOfflineBtn:SetScript("OnClick", function()
         hideOfflineProgress = not hideOfflineProgress
         UpdateOfflineBtn()

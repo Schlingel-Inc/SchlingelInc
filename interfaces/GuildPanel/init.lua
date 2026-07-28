@@ -29,7 +29,7 @@ GP.FRAME_H = 458  -- fixed height (~22 visible rows, plus the tab row)
 -- ── Sort / filter state (mutable, shared across Data, Frame, FilterPanel) ──────
 GP.sortCol     = 0      -- 0 = default (online+name); 1..#COLUMNS = COLUMNS index
 GP.sortAsc     = true   -- true = ascending
-GP.hideOffline = false
+GP.hideOffline = true
 GP.ROLE_ORDER  = { Tank = 1, Heal = 2, DPS = 3 }
 
 GP.filterName  = ""

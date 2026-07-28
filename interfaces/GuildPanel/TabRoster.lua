@@ -29,6 +29,7 @@ function GP.BuildRosterTab(content, f)
             GP.hideOffline and 0.82 or 0.45,
             GP.hideOffline and 0    or 0.45, 1)
     end
+    UpdateHideBtnColor()
     hideBtn:SetScript("OnClick", function()
         GP.hideOffline = not GP.hideOffline
         UpdateHideBtnColor()

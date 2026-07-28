@@ -4,6 +4,7 @@
 - Raid-Sync: Jittered Reply + Suppression statt Broadcast-Storm, Signup-Batching, Relay direkt über CTL
 - Erfolge-Sync: Jittered Reply + Suppression statt Broadcast-Storm, Relay direkt über CTL, Katalog-Aktualisierung jetzt manuell per Button
 - Erfolge: doppelten Code in Verleihen/Entziehen-Popups zusammengeführt, ungesicherte Tooltip-Abfrage abgesichert
+- Gilde/Offizier-Mitgliederliste: Offline ausblenden und Name aufsteigend jetzt Standard
 
 # 4.2.6
 
