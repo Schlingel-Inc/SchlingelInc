@@ -21,7 +21,7 @@ function KillDetector:HandleCombatLogEvent()
     if not npcID then return end
 
     local Progress = SchlingelInc.Achievements.Progress
-    for _, entry in ipairs(SchlingelInc.Achievements.Catalog:GetActive()) do
+    SchlingelInc.Achievements.Catalog:ForEachActive(function(entry)
         if entry.kind == KIND.KILL_COUNT and tonumber(entry.critA) == npcID
                 and not Progress:IsUnlocked(entry.id) then
             local required = tonumber(entry.critB) or 0
@@ -30,7 +30,7 @@ function KillDetector:HandleCombatLogEvent()
                 Progress:Unlock(entry.id)
             end
         end
-    end
+    end)
 end
 
 function KillDetector:Initialize()

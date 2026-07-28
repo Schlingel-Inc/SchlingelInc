@@ -49,6 +49,7 @@ interfaces\popups\GuildInvites.lua
 interfaces\popups\PvPFrame.lua
 interfaces\popups\AchievementAnnouncement.lua
 interfaces\popups\AchievementForm.lua
+interfaces\popups\AchievementActionForm.lua
 interfaces\popups\AchievementGrantForm.lua
 interfaces\popups\AchievementRevokeForm.lua
 interfaces\PopupEditMode.lua

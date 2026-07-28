@@ -6,16 +6,10 @@
 SchlingelInc.Achievements.Progress = {}
 local Progress = SchlingelInc.Achievements.Progress
 
-local KIND = SchlingelInc.Achievements.KIND
-
 local MSG_UNREACHED_REQUEST = "ACH_UNREACHED_REQUEST"
 local MSG_UNREACHED         = "ACH_UNREACHED"
 local MSG_REACHED_REQUEST   = "ACH_REACHED_REQUEST"
 local MSG_REACHED           = "ACH_REACHED"
-
-local function IsGlobalFlag(value)
-    return value == true or value == 1 or value == "1"
-end
 
 local function EnsureStores()
     SchlingelAchievementDB = SchlingelAchievementDB or {}
@@ -31,26 +25,19 @@ local function ResolveStores(id)
     EnsureStores()
 
     local entry = SchlingelInc.Achievements.Catalog:Get(id)
-    local useGlobal = entry and IsGlobalFlag(entry.isGlobal)
+    local useGlobal = entry and SchlingelInc.Achievements.IsTruthyFlag(entry.isGlobal)
 
     local unlockedStore = useGlobal and SchlingelAchievementDB.globalUnlocked or SchlingelOwnAchievements.unlocked
-    local killStore = useGlobal and SchlingelAchievementDB.globalKillProgress or SchlingelOwnAchievements.killProgress
+    local killStore     = useGlobal and SchlingelAchievementDB.globalKillProgress or SchlingelOwnAchievements.killProgress
+    local otherUnlocked  = useGlobal and SchlingelOwnAchievements.unlocked or SchlingelAchievementDB.globalUnlocked
+    local otherKill      = useGlobal and SchlingelOwnAchievements.killProgress or SchlingelAchievementDB.globalKillProgress
 
     -- Keep progress when officers toggle an achievement between character/global scope.
-    if useGlobal then
-        if unlockedStore[id] == nil and SchlingelOwnAchievements.unlocked[id] ~= nil then
-            unlockedStore[id] = SchlingelOwnAchievements.unlocked[id]
-        end
-        if killStore[id] == nil and SchlingelOwnAchievements.killProgress[id] ~= nil then
-            killStore[id] = SchlingelOwnAchievements.killProgress[id]
-        end
-    else
-        if unlockedStore[id] == nil and SchlingelAchievementDB.globalUnlocked[id] ~= nil then
-            unlockedStore[id] = SchlingelAchievementDB.globalUnlocked[id]
-        end
-        if killStore[id] == nil and SchlingelAchievementDB.globalKillProgress[id] ~= nil then
-            killStore[id] = SchlingelAchievementDB.globalKillProgress[id]
-        end
+    if unlockedStore[id] == nil and otherUnlocked[id] ~= nil then
+        unlockedStore[id] = otherUnlocked[id]
+    end
+    if killStore[id] == nil and otherKill[id] ~= nil then
+        killStore[id] = otherKill[id]
     end
 
     return unlockedStore, killStore
@@ -176,10 +163,6 @@ function Progress:Revoke(id)
 end
 
 -- Achievement kinds an officer can manually grant (mirrors ManualGrant's allow-list).
-local function IsGrantableKind(kind)
-    return kind == KIND.LEVEL or kind == KIND.MANUAL or kind == KIND.KILL_COUNT
-end
-
 -- Own not-yet-unlocked grantable achievement ids, for the achievement-grant popup.
 -- Sending the "still missing" set rather than the "already have" set keeps the
 -- response short for veteran characters, who are exactly the ones with the most
@@ -187,7 +170,7 @@ end
 local function OwnUnreachedGrantableIds()
     local ids = {}
     for _, entry in ipairs(SchlingelInc.Achievements.Catalog:GetActive()) do
-        if IsGrantableKind(entry.kind) and not Progress:IsUnlocked(entry.id) then
+        if SchlingelInc.Achievements.IsGrantableKind(entry.kind) and not Progress:IsUnlocked(entry.id) then
             table.insert(ids, entry.id)
         end
     end
@@ -199,7 +182,7 @@ end
 local function OwnReachedGrantableIds()
     local ids = {}
     for _, entry in ipairs(SchlingelInc.Achievements.Catalog:GetAll()) do
-        if IsGrantableKind(entry.kind) and Progress:IsUnlocked(entry.id) then
+        if SchlingelInc.Achievements.IsGrantableKind(entry.kind) and Progress:IsUnlocked(entry.id) then
             table.insert(ids, entry.id)
         end
     end

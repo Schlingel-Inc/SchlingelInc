@@ -16,6 +16,23 @@ SchlingelInc.Achievements.KIND = {
     MANUAL     = "manual",      -- no criteria; only unlockable via officer grant (RP achievements)
 }
 
+SchlingelInc.Achievements.KIND_LABELS = {
+    [SchlingelInc.Achievements.KIND.LEVEL]      = "Level",
+    [SchlingelInc.Achievements.KIND.KILL_COUNT] = "Kill-Zähler",
+    [SchlingelInc.Achievements.KIND.MANUAL]     = "Manuell (RP)",
+}
+
+-- Coerces a stored boolean-ish value (Lua true, or "1"/1 from wire/SavedVariables
+-- round-trips) to an actual boolean. Used for isGlobal, requireNoDeath, etc.
+function SchlingelInc.Achievements.IsTruthyFlag(value)
+    return value == true or value == 1 or value == "1"
+end
+
+function SchlingelInc.Achievements.IsGrantableKind(kind)
+    local KIND = SchlingelInc.Achievements.KIND
+    return kind == KIND.LEVEL or kind == KIND.MANUAL or kind == KIND.KILL_COUNT
+end
+
 SchlingelAchievementDB         = SchlingelAchievementDB         or {}
 SchlingelAchievementDB.entries = SchlingelAchievementDB.entries or {} -- [id] = definition
 SchlingelAchievementDB.globalUnlocked     = SchlingelAchievementDB.globalUnlocked     or {} -- [id] = timestamp

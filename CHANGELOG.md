@@ -2,6 +2,8 @@
 
 - Raid-Modul in optionales Sub-Addon SchlingelInc_Raid ausgelagert
 - Raid-Sync: Jittered Reply + Suppression statt Broadcast-Storm, Signup-Batching, Relay direkt über CTL
+- Erfolge-Sync: Jittered Reply + Suppression statt Broadcast-Storm, Relay direkt über CTL, Katalog-Aktualisierung jetzt manuell per Button
+- Erfolge: doppelten Code in Verleihen/Entziehen-Popups zusammengeführt, ungesicherte Tooltip-Abfrage abgesichert
 
 # 4.2.6
 

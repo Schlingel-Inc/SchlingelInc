@@ -6,8 +6,6 @@
 -- progress. Mirrors Schande:Impose's officer-whisper
 -- pattern.
 
-local KIND = SchlingelInc.Achievements.KIND
-
 SchlingelInc.Achievements.ManualGrant = {}
 local ManualGrant = SchlingelInc.Achievements.ManualGrant
 
@@ -23,7 +21,7 @@ function ManualGrant:Grant(targetName, achievementId)
     if not targetName or targetName == "" then return nil, "Kein Ziel gewählt." end
 
     local entry = SchlingelInc.Achievements.Catalog:Get(achievementId)
-    local grantable = entry and (entry.kind == KIND.MANUAL or entry.kind == KIND.LEVEL or entry.kind == KIND.KILL_COUNT)
+    local grantable = entry and SchlingelInc.Achievements.IsGrantableKind(entry.kind)
     if not entry or not grantable or entry.retired then
         return nil, "Ungültiger Erfolg."
     end
@@ -44,7 +42,7 @@ function ManualGrant:Revoke(targetName, achievementId)
     if not targetName or targetName == "" then return nil, "Kein Ziel gewählt." end
 
     local entry = SchlingelInc.Achievements.Catalog:Get(achievementId)
-    local grantable = entry and (entry.kind == KIND.MANUAL or entry.kind == KIND.LEVEL or entry.kind == KIND.KILL_COUNT)
+    local grantable = entry and SchlingelInc.Achievements.IsGrantableKind(entry.kind)
     if not entry or not grantable then
         return nil, "Ungültiger Erfolg."
     end
