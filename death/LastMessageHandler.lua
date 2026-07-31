@@ -19,6 +19,8 @@ function SchlingelInc.LastMessageHandler:Initialize()
 		local senderBase = sender:match("^([^-]+)") or sender
 		local name = UnitName("player")
 		if name and senderBase == name then
+			local lastWordsPrefix = SchlingelInc.Death.LAST_WORDS_PREFIX
+			if msg:sub(1, #lastWordsPrefix) == lastWordsPrefix then return end
 			SchlingelInc.LastMessageHandler.LastWords = msg
 		end
 	end, 0, "LastWordsGuild")

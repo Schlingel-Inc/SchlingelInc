@@ -1,6 +1,9 @@
 -- Initialize the Death module in the SchlingelInc namespace
 SchlingelInc.Death = {}
 
+-- Prefix used when broadcasting a player's last words to guild chat
+SchlingelInc.Death.LAST_WORDS_PREFIX = "Die letzten Worte:"
+
 -- Initialize CharacterDeaths to avoid nil reference
 CharacterDeaths = CharacterDeaths or 0
 
@@ -144,7 +147,7 @@ function SchlingelInc.Death:Initialize()
 				if SchlingelInc.LastMessageHandler.LastWords ~= "" then
 					local lastWords = SchlingelInc.LastMessageHandler.LastWords
 					C_Timer.After(0.3, function()
-						SchlingelInc:SendGuildChatMessage(string.format('Die letzten Worte: "%s"', lastWords))
+						SchlingelInc:SendGuildChatMessage(string.format('%s "%s"', SchlingelInc.Death.LAST_WORDS_PREFIX, lastWords))
 					end)
 				end
 				lastOwnDeathSendTime = now
