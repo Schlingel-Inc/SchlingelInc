@@ -170,7 +170,18 @@ end
 
 function SchlingelInc:IsInRaid()
     local inInstance, instanceType = IsInInstance()
-    return inInstance and instanceType == SchlingelInc.Constants.INSTANCE_TYPES.RAID
+    if not inInstance then return false end
+    if instanceType == SchlingelInc.Constants.INSTANCE_TYPES.RAID then return true end
+
+    -- SoD's raid-ified 5-man dungeons (Blackfathom Deeps, Gnomeregan, Sunken Temple)
+    -- report instanceType "party" even at raid size (confirmed: Gnomeregan-10 reports
+    -- party/instanceGroupSize 10). Normal 5-man dungeons are designed for 5.
+    if instanceType == SchlingelInc.Constants.INSTANCE_TYPES.DUNGEON then
+        local _, _, _, _, _, _, _, _, instanceGroupSize = GetInstanceInfo()
+        return instanceGroupSize ~= nil and instanceGroupSize > 5
+    end
+
+    return false
 end
 
 function SchlingelInc:IsInArena()
