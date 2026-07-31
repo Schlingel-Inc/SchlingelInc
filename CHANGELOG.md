@@ -1,3 +1,11 @@
+# 4.2.9
+
+- Todesmeldungen im Raid wieder vollständig unterdrückt (Gildenchat + Popup), nicht mehr nur das Popup
+- SoD-Raid-Varianten von Blackfathom Deeps/Gnomeregan/Versunkener Tempel werden jetzt korrekt als Raid erkannt (melden instanceType "party", jetzt zusätzlich instanceGroupSize geprüft)
+- "Die letzten Worte" im Gildenchat konnte sich bei zeitgleichen Todesfällen selbst überschreiben, behoben
+- ChatThrottleLib läuft nur noch für Raid-, Erfolge- und Fortschritts-Sync; alle anderen Addon-Nachrichten (Tode, Levelups, Schande, Rekrutierung, ...) werden direkt ohne CTL-Verzögerung gesendet
+- Raid-Modul: siehe plugins/SchlingelInc_Raid/CHANGELOG.md
+
 # 4.2.8
 
 - Raid-Modul: zwei Sync-Bugs behoben, siehe plugins/SchlingelInc_Raid/CHANGELOG.md
