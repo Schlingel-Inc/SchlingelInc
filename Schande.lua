@@ -20,7 +20,6 @@ local MSG_RESOLVE    = "SCHANDE_RESOLVE"
 local MSG_FETCH      = "SCHANDE_FETCH"
 local MSG_PUSH_COUNT = "SCHANDE_PUSH_COUNT"
 local MSG_PUSH       = "SCHANDE_PUSH"
-local PUSH_PRIO      = "NORMAL"
 
 local FETCH_TIMEOUT = 5
 
@@ -56,7 +55,7 @@ function SchlingelInc.Schande:Impose(targetName, freetext)
     if not targetName or targetName == "" then return end
     freetext = freetext or ""
 
-    SchlingelInc:SendAddonMessage("ALERT", MSG_IMPOSE .. "|" .. freetext, "WHISPER", targetName, "SchlingelInc-Schande")
+    SchlingelInc:SendAddonMessage(MSG_IMPOSE .. "|" .. freetext, "WHISPER", targetName)
     SchlingelInc:Print(SchlingelInc.Constants.COLORS.SUCCESS ..
         "Schande gegen " .. targetName .. " verhängt.|r")
 end
@@ -74,7 +73,7 @@ function SchlingelInc.Schande:Resolve(targetName, id)
         return
     end
 
-    SchlingelInc:SendAddonMessage("ALERT", MSG_RESOLVE .. "|" .. id, "WHISPER", targetName, "SchlingelInc-Schande")
+    SchlingelInc:SendAddonMessage(MSG_RESOLVE .. "|" .. id, "WHISPER", targetName)
     SchlingelInc:Print(SchlingelInc.Constants.COLORS.SUCCESS ..
         "Schande #" .. id .. " von " .. targetName .. " aufgehoben.|r")
 end
@@ -99,7 +98,7 @@ function SchlingelInc.Schande:GetAllOf(targetName, callback)
         entries  = {},
     }
 
-    SchlingelInc:SendAddonMessage("ALERT", MSG_FETCH, "WHISPER", targetName, "SchlingelInc-Schande")
+    SchlingelInc:SendAddonMessage(MSG_FETCH, "WHISPER", targetName)
 
     C_Timer.After(FETCH_TIMEOUT, function()
         if pendingFetch and pendingFetch.seq == seq then
@@ -151,11 +150,11 @@ function SchlingelInc.Schande:HandleMessage(message, sender)
 
     if message == MSG_FETCH then
         local entries = SchlingelOwnSchande.entries
-        SchlingelInc:SendAddonMessage(PUSH_PRIO, MSG_PUSH_COUNT .. "|" .. #entries, "WHISPER", sender, "SchlingelInc-Schande")
+        SchlingelInc:SendAddonMessage(MSG_PUSH_COUNT .. "|" .. #entries, "WHISPER", sender)
         for _, entry in ipairs(entries) do
-            SchlingelInc:SendAddonMessage(PUSH_PRIO,
+            SchlingelInc:SendAddonMessage(
                 MSG_PUSH .. "|" .. entry.id .. "|" .. (entry.active and "1" or "0") .. "|" .. entry.freetext,
-                "WHISPER", sender, "SchlingelInc-Schande")
+                "WHISPER", sender)
         end
         return true
     end

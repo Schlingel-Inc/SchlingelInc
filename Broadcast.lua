@@ -24,7 +24,7 @@ function SchlingelInc.Broadcast:Send(message)
 
     if not message or message == "" then return end
 
-    SchlingelInc:SendAddonMessage("ALERT", "BROADCAST|" .. message, "GUILD", nil, "SchlingelInc-Broadcast")
+    SchlingelInc:SendAddonMessage("BROADCAST|" .. message, "GUILD")
     SchlingelInc:Print(SchlingelInc.Constants.COLORS.SUCCESS .. "Broadcast-Nachricht an die Gilde gesendet.|r")
 end
 

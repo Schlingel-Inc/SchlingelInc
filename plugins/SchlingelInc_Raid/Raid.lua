@@ -149,22 +149,22 @@ local function BroadcastPost(entry, isRelay)
     if isRelay then
         SendRelayMessage(payload)
     else
-        SchlingelInc:SendAddonMessage("NORMAL", payload, "GUILD", nil, "SchlingelInc-Raid")
+        SchlingelInc:SendAddonMessage(payload, "GUILD")
     end
 end
 
 local function BroadcastCancel(id)
-    SchlingelInc:SendAddonMessage("NORMAL", MSG_CANCEL .. "|" .. id, "GUILD", nil, "SchlingelInc-Raid")
+    SchlingelInc:SendAddonMessage(MSG_CANCEL .. "|" .. id, "GUILD")
 end
 
 local function BroadcastSignal(id, signal, signalerName)
     local payload = table.concat({ MSG_SIGNAL, id, signal.role, signalerName }, "|")
-    SchlingelInc:SendAddonMessage("NORMAL", payload, "GUILD", nil, "SchlingelInc-Raid")
+    SchlingelInc:SendAddonMessage(payload, "GUILD")
 end
 
 local function BroadcastUnsignal(id, signalerName)
     local payload = table.concat({ MSG_UNSIGNAL, id, signalerName }, "|")
-    SchlingelInc:SendAddonMessage("NORMAL", payload, "GUILD", nil, "SchlingelInc-Raid")
+    SchlingelInc:SendAddonMessage(payload, "GUILD")
 end
 
 local function BroadcastSignalsBatch(id, signals)
@@ -336,7 +336,7 @@ end
 
 function SchlingelInc.Raid:RequestSync()
     if not IsInGuild() then return end
-    SchlingelInc:SendAddonMessage("NORMAL", MSG_SYNC_REQUEST, "GUILD", nil, "SchlingelInc-Raid")
+    SchlingelInc:SendAddonMessage(MSG_SYNC_REQUEST, "GUILD")
 end
 
 local function RelayEntry(id)

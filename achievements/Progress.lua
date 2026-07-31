@@ -194,26 +194,26 @@ end
 -- to the achievement-grant popup if it's still open for this target.
 function Progress:RequestUnreached(targetName)
     if not targetName or targetName == "" then return end
-    SchlingelInc:SendAddonMessage("NORMAL", MSG_UNREACHED_REQUEST, "WHISPER", targetName, "SchlingelInc-Achievements")
+    SchlingelInc:SendAddonMessage(MSG_UNREACHED_REQUEST, "WHISPER", targetName)
 end
 
 -- Officer action: ask targetName's client which grantable achievements it currently
 -- has unlocked, so the revoke popup can offer only removable entries.
 function Progress:RequestReached(targetName)
     if not targetName or targetName == "" then return end
-    SchlingelInc:SendAddonMessage("NORMAL", MSG_REACHED_REQUEST, "WHISPER", targetName, "SchlingelInc-Achievements")
+    SchlingelInc:SendAddonMessage(MSG_REACHED_REQUEST, "WHISPER", targetName)
 end
 
 function Progress:HandleMessage(message, sender)
     if message == MSG_UNREACHED_REQUEST then
         local payload = table.concat({ MSG_UNREACHED, unpack(OwnUnreachedGrantableIds()) }, "|")
-        SchlingelInc:SendAddonMessage("NORMAL", payload, "WHISPER", sender, "SchlingelInc-Achievements")
+        SchlingelInc:SendAddonMessage(payload, "WHISPER", sender)
         return true
     end
 
     if message == MSG_REACHED_REQUEST then
         local payload = table.concat({ MSG_REACHED, unpack(OwnReachedGrantableIds()) }, "|")
-        SchlingelInc:SendAddonMessage("NORMAL", payload, "WHISPER", sender, "SchlingelInc-Achievements")
+        SchlingelInc:SendAddonMessage(payload, "WHISPER", sender)
         return true
     end
 

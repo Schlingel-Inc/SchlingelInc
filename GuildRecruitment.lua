@@ -117,7 +117,7 @@ function SchlingelInc.GuildRecruitment:SendGuildRequest()
     wipe(pendingOfficerFilter)
     for _, name in ipairs(guildOfficers) do
         pendingOfficerFilter[name] = true
-        SchlingelInc:SendAddonMessage("ALERT", message, "WHISPER", name, "SchlingelInc-Recruit")
+        SchlingelInc:SendAddonMessage(message, "WHISPER", name)
     end
     SchlingelInc:Print("Anfrage gesendet...")
     C_Timer.After(3, function() wipe(pendingOfficerFilter) end)
@@ -207,7 +207,7 @@ function SchlingelInc.GuildRecruitment:HandleAcceptRequest(playerName)
 
         local guildOfficers = GetAuthorizedOfficers()
         for _, name in ipairs(guildOfficers) do
-            SchlingelInc:SendAddonMessage("ALERT", "INVITE_SENT:" .. playerName, "WHISPER", name, "SchlingelInc-Recruit")
+            SchlingelInc:SendAddonMessage("INVITE_SENT:" .. playerName, "WHISPER", name)
         end
     end
 end
@@ -217,7 +217,7 @@ function SchlingelInc.GuildRecruitment:HandleDeclineRequest(playerName)
 
     local guildOfficers = GetAuthorizedOfficers()
     for _, name in ipairs(guildOfficers) do
-        SchlingelInc:SendAddonMessage("ALERT", "INVITE_DECLINED:" .. playerName, "WHISPER", name, "SchlingelInc-Recruit")
+        SchlingelInc:SendAddonMessage("INVITE_DECLINED:" .. playerName, "WHISPER", name)
     end
 
     SchlingelInc.GuildRecruitment.inviteRequests[playerName] = nil

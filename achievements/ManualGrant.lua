@@ -26,7 +26,7 @@ function ManualGrant:Grant(targetName, achievementId)
         return nil, "Ungültiger Erfolg."
     end
 
-    SchlingelInc:SendAddonMessage("ALERT", MSG_GRANT .. "|" .. achievementId, "WHISPER", targetName, "SchlingelInc-Achievements")
+    SchlingelInc:SendAddonMessage(MSG_GRANT .. "|" .. achievementId, "WHISPER", targetName)
     SchlingelInc:Print(SchlingelInc.Constants.COLORS.SUCCESS ..
         "Erfolg \"" .. entry.name .. "\" an " .. targetName .. " verliehen.|r")
     return true
@@ -47,7 +47,7 @@ function ManualGrant:Revoke(targetName, achievementId)
         return nil, "Ungültiger Erfolg."
     end
 
-    SchlingelInc:SendAddonMessage("ALERT", MSG_REVOKE .. "|" .. achievementId, "WHISPER", targetName, "SchlingelInc-Achievements")
+    SchlingelInc:SendAddonMessage(MSG_REVOKE .. "|" .. achievementId, "WHISPER", targetName)
     SchlingelInc:Print(SchlingelInc.Constants.COLORS.SUCCESS ..
         "Erfolg \"" .. entry.name .. "\" von " .. targetName .. " entfernt.|r")
     return true

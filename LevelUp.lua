@@ -48,6 +48,14 @@ local function CacheOwnProgress()
     return entry
 end
 
+-- Bypasses SchlingelInc:SendAddonMessage's direct-send attempt, which races the
+-- same client-wide throttle every other module's messages use. The officer
+-- Mitglieder-tab progress request fans out to every online member in quick
+-- succession, so it should always go straight through CTL instead.
+local function SendProgressRequest(targetName)
+    ChatThrottleLib:SendAddonMessage("NORMAL", SchlingelInc.prefix, "PROGRESS_REQUEST", "WHISPER", targetName, "SchlingelInc-Progress")
+end
+
 local function SendProgressTo(targetName)
     if not IsInGuild() then return end
     if not targetName or targetName == "" then return end
@@ -56,12 +64,10 @@ local function SendProgressTo(targetName)
     if not entry then return end
 
     SchlingelInc:SendAddonMessage(
-        "NORMAL",
         string.format("PROGRESS:%s:%d:%d:%d:%d:%d:%d",
             entry.name, entry.level, entry.xpCurrent, entry.xpMax, entry.gold, entry.runesKnown, entry.xpStop and 1 or 0),
         "WHISPER",
-        targetName,
-        "SchlingelInc-Progress"
+        targetName
     )
 end
 
@@ -73,7 +79,7 @@ local function CheckForMilestone(level)
             local handle = SchlingelInc:GetDiscordHandle()
             local playerDisplay = (handle and handle ~= "") and (player .. " (" .. handle .. ")") or player
             SchlingelInc:SendGuildChatMessage(playerDisplay .. " hat Level " .. level .. " erreicht! Schlingel! Schlingel! Schlingel!")
-            SchlingelInc:SendAddonMessage("BULK", "LEVELUP:" .. player .. ":" .. level, "GUILD", nil, "SchlingelInc-Announce")
+            SchlingelInc:SendAddonMessage("LEVELUP:" .. player .. ":" .. level, "GUILD")
         end
     end
 end
@@ -271,7 +277,7 @@ function SchlingelInc.LevelUps:RequestProgress(targetName)
 
     if targetName then
         SchlingelInc.LevelUps.StartLoad(1)
-        SchlingelInc:SendAddonMessage("NORMAL", "PROGRESS_REQUEST", "WHISPER", targetName, "SchlingelInc-Progress")
+        SendProgressRequest(targetName)
         return
     end
 
@@ -288,13 +294,13 @@ function SchlingelInc.LevelUps:RequestProgress(targetName)
     end
     SchlingelInc.LevelUps.StartLoad(#online)
     SchlingelInc.LevelUps.StartVersionLoad(#online)
-    SchlingelInc:SendAddonMessage("BULK", "VERSION_REQUEST", "GUILD", nil, "SchlingelInc-Version")
+    SchlingelInc:SendAddonMessage("VERSION_REQUEST", "GUILD")
     for index, name in ipairs(online) do
         local targetName = name
         local delay = ((index - 1) * PROGRESS_REQUEST_SPACING) + (math.random() * PROGRESS_REQUEST_JITTER)
         C_Timer.After(delay, function()
             if not IsInGuild() then return end
-            SchlingelInc:SendAddonMessage("NORMAL", "PROGRESS_REQUEST", "WHISPER", targetName, "SchlingelInc-Progress")
+            SendProgressRequest(targetName)
         end)
     end
 end
@@ -317,7 +323,7 @@ function SchlingelInc.LevelUps:CheckForCap(level, announce)
             local handle = SchlingelInc:GetDiscordHandle()
             local playerDisplay = (handle and handle ~= "") and (player .. " (" .. handle .. ")") or player
             SchlingelInc:SendGuildChatMessage(playerDisplay .. " hat das Level Cap von " .. level .. " erreicht! Herzlichen Glückwunsch!")
-            SchlingelInc:SendAddonMessage("BULK", "CAP:" .. player .. ":" .. level, "GUILD", nil, "SchlingelInc-Announce")
+            SchlingelInc:SendAddonMessage("CAP:" .. player .. ":" .. level, "GUILD")
         end
     end
 end

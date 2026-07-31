@@ -75,7 +75,7 @@ local function BroadcastDefine(entry, isRelay)
     if isRelay then
         SendRelayMessage(payload)
     else
-        SchlingelInc:SendAddonMessage("NORMAL", payload, "GUILD", nil, "SchlingelInc-Achievements")
+        SchlingelInc:SendAddonMessage(payload, "GUILD")
     end
 end
 
@@ -182,7 +182,7 @@ end
 
 function Catalog:RequestSync()
     if not IsInGuild() then return end
-    SchlingelInc:SendAddonMessage("NORMAL", MSG_SYNC_REQUEST, "GUILD", nil, "SchlingelInc-Achievements")
+    SchlingelInc:SendAddonMessage(MSG_SYNC_REQUEST, "GUILD")
 end
 
 local function RelayEntry(id)

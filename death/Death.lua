@@ -142,7 +142,8 @@ function SchlingelInc.Death:Initialize()
 			end
 
 			local now = time()
-			if (now - lastOwnDeathSendTime) >= SchlingelInc.Constants.COOLDOWNS.DEATH_ANNOUNCEMENT then
+			-- Suppress death announcements entirely during raids to avoid wipe spam.
+			if not SchlingelInc:IsInRaid() and (now - lastOwnDeathSendTime) >= SchlingelInc.Constants.COOLDOWNS.DEATH_ANNOUNCEMENT then
 				SchlingelInc:SendGuildChatMessage(messageString)
 				if SchlingelInc.LastMessageHandler.LastWords ~= "" then
 					local lastWords = SchlingelInc.LastMessageHandler.LastWords
@@ -153,19 +154,16 @@ function SchlingelInc.Death:Initialize()
 				lastOwnDeathSendTime = now
 
 				-- Addon message triggers the popup alert for others.
-				-- Suppress during raids to avoid wipe spam; chat message still goes through.
 				-- Format: DEATH|name|class|level|zone|cause
-				if not SchlingelInc:IsInRaid() then
-					local addonDeathMsg = table.concat({
-						"DEATH",
-						name,
-						class,
-						tostring(level),
-						zone,
-						SchlingelInc.DeathCauseHandler.DeathCause,
-					}, "|")
-					SchlingelInc:SendAddonMessage("BULK", addonDeathMsg, "GUILD", nil, "SchlingelInc-Announce")
-				end
+				local addonDeathMsg = table.concat({
+					"DEATH",
+					name,
+					class,
+					tostring(level),
+					zone,
+					SchlingelInc.DeathCauseHandler.DeathCause,
+				}, "|")
+				SchlingelInc:SendAddonMessage(addonDeathMsg, "GUILD")
 			end
 
 			-- Process own death immediately (add to log with cause, last words, and handle)

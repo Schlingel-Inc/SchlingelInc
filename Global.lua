@@ -107,30 +107,6 @@ end
 
 SchlingelInc.lastPvPAlert = {}
 
-local SendAddonMessageResult = Enum.SendAddonMessageResult or {
-    Success = 0,
-    AddonMessageThrottle = 3,
-    NotInGroup = 5,
-    ChannelThrottle = 8,
-    GeneralError = 9,
-}
-
-local function NormalizeAddonSendResult(ok, result)
-    if not ok then
-        return SendAddonMessageResult.GeneralError
-    end
-
-    if result == nil or result == true then
-        return SendAddonMessageResult.Success
-    end
-
-    if result == false then
-        return SendAddonMessageResult.GeneralError
-    end
-
-    return result
-end
-
 SchlingelInc.Global = {}
 
 function SchlingelInc.Global:Initialize()
@@ -164,7 +140,7 @@ function SchlingelInc.Global:Initialize()
 						newestVersionSeen .. ". Bitte aktualisiere das Addon!")
 				end
             elseif message == "VERSION_REQUEST" and IsInGuild() then
-                SchlingelInc:SendAddonMessage("BULK", "VERSION:" .. SchlingelInc.version, "GUILD", nil, "SchlingelInc-Version")
+                SchlingelInc:SendAddonMessage("VERSION:" .. SchlingelInc.version, "GUILD")
 			elseif message == "RULES_UPDATE" then
 				C_Timer.After(2, function()
 					SchlingelInc.Rules:LoadFromGuildInfo()
@@ -173,8 +149,8 @@ function SchlingelInc.Global:Initialize()
 		end, 0, "VersionChecker")
 
 	if IsInGuild() then
-        SchlingelInc:SendAddonMessage("BULK", "VERSION:" .. SchlingelInc.version, "GUILD", nil, "SchlingelInc-Version")
-        SchlingelInc:SendAddonMessage("BULK", "VERSION_REQUEST", "GUILD", nil, "SchlingelInc-Version")
+        SchlingelInc:SendAddonMessage("VERSION:" .. SchlingelInc.version, "GUILD")
+        SchlingelInc:SendAddonMessage("VERSION_REQUEST", "GUILD")
 	end
     C_GuildInfo.GuildRoster()
 end
@@ -183,20 +159,8 @@ function SchlingelInc:Print(message)
     print(SchlingelInc.colorCode .. "[" .. SchlingelInc.name .. "]|r " .. message)
 end
 
-function SchlingelInc:SendAddonMessage(prio, text, chattype, target, queueName, callbackFn, callbackArg)
-    local ok, result = pcall(C_ChatInfo.SendAddonMessage, SchlingelInc.prefix, text, chattype, target)
-    local sendResult = NormalizeAddonSendResult(ok, result)
-    local didSend = sendResult == SendAddonMessageResult.Success
-
-    if didSend or sendResult ~= SendAddonMessageResult.AddonMessageThrottle then
-        if callbackFn then
-            securecallfunction(callbackFn, callbackArg, didSend, sendResult)
-        end
-        return didSend, sendResult
-    end
-
-    ChatThrottleLib:SendAddonMessage(prio, SchlingelInc.prefix, text, chattype, target, queueName, callbackFn, callbackArg)
-    return false, sendResult
+function SchlingelInc:SendAddonMessage(text, chattype, target)
+    pcall(C_ChatInfo.SendAddonMessage, SchlingelInc.prefix, text, chattype, target)
 end
 
 function SchlingelInc:IsInBattleground()
@@ -318,7 +282,7 @@ function SchlingelInc:WriteGuildInfo(mail, ah, trade, group, blockedTrader, cap)
     SetGuildInfoText(newText)
     SchlingelInc:Print("Gildeninfo mit neuen Regeln aktualisiert.")
     SchlingelInc.Rules:LoadFromGuildInfo()
-    SchlingelInc:SendAddonMessage("BULK", "RULES_UPDATE", "GUILD", nil, "SchlingelInc-Rules")
+    SchlingelInc:SendAddonMessage("RULES_UPDATE", "GUILD")
     return true
 end
 
@@ -352,9 +316,7 @@ end
 -- rather than silently aborting the rest of the calling event handler.
 function SchlingelInc:SendGuildChatMessage(text)
     if not text then return end
-    pcall(function()
-        ChatThrottleLib:SendChatMessage("NORMAL", SchlingelInc.prefix, text:sub(1, 250), "GUILD")
-    end)
+    pcall(SendChatMessage, text:sub(1, 250), "GUILD")
 end
 
 -- Sanitizes text to prevent UI injection via escape codes.

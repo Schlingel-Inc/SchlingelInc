@@ -33,6 +33,6 @@ function SchlingelInc.Death:SetRemote(targetName, valueStr)
 		return
 	end
 
-	SchlingelInc:SendAddonMessage("ALERT", "DEATHSET|" .. tostring(value), "WHISPER", targetName, "SchlingelInc-Schande")
+	SchlingelInc:SendAddonMessage("DEATHSET|" .. tostring(value), "WHISPER", targetName)
 	SchlingelInc:Print(SchlingelInc.Constants.COLORS.SUCCESS .. "Deathset-Nachricht an " .. targetName .. " gesendet.|r")
 end
