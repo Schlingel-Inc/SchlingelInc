@@ -81,8 +81,6 @@ local function BuildPanel()
               end },
             { id = "invites",  label = "Anfragen", canSelect = RequirePermission("Anfragen sind nur für Offiziere sichtbar."),
               onSelected = function() SchlingelInc.OfficerPanel:RefreshInvites() end },
-            { id = "achievements", label = "Erfolge", canSelect = RequirePermission("Erfolge sind nur für Offiziere verwaltbar."),
-              onSelected = function() SchlingelInc.OfficerPanel:RefreshAchievements() end },
         },
     })
 
@@ -97,7 +95,12 @@ local function BuildPanel()
     OfficerPanel.BuildProgressTab(OfficerPanel.tabContents["progress"])
     OfficerPanel.BuildDiscordTab(OfficerPanel.tabContents["discord"])
     OfficerPanel.BuildInvitesTab(OfficerPanel.tabContents["invites"])
-    OfficerPanel.BuildAchievementsTab(OfficerPanel.tabContents["achievements"])
+
+    -- Called by optional sub-addons once their own ADDON_LOADED fires. Mirrors
+    -- GuildPanel:AddTab's pendingTabs queue (see GuildPanel/Frame.lua).
+    for _, pending in ipairs(OfficerPanel.pendingTabs or {}) do
+        pending.build(switcher.AddTab(pending.tabDef))
+    end
 
     -- ── Filter panels ─────────────────────────────────────────────────────
     OfficerPanel.BuildFilters(f)
@@ -121,6 +124,19 @@ local function BuildPanel()
 end
 
 -- ── Public API ────────────────────────────────────────────────────────────────
+
+-- Called by optional sub-addons once their own ADDON_LOADED fires, which usually
+-- happens well before the panel is ever created (Create() only runs lazily on
+-- first Toggle()). Queues the tab if the frame isn't built yet. Mirrors
+-- GuildPanel:AddTab (see GuildPanel/Frame.lua).
+function SchlingelInc.OfficerPanel:AddTab(tabDef, build)
+    if OfficerPanel.frame then
+        build(OfficerPanel.frame.tabSwitcher.AddTab(tabDef))
+    else
+        OfficerPanel.pendingTabs = OfficerPanel.pendingTabs or {}
+        table.insert(OfficerPanel.pendingTabs, { tabDef = tabDef, build = build })
+    end
+end
 
 function SchlingelInc.OfficerPanel:Create()
     if not CanGuildInvite() then return end

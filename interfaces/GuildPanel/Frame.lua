@@ -79,12 +79,6 @@ function SchlingelInc.GuildPanel:Create()
             { id = "roster",  label = "Mitglieder" },
             { id = "schande", label = "Schande",
               onSelected = function() SchlingelInc.GuildPanel:RefreshSchande() end },
-
-            { id = "achievements", label = "Erfolge",
-              onSelected = function()
-                  SchlingelInc.Achievements.Catalog:RequestSync()
-                  SchlingelInc.GuildPanel:RefreshAchievements()
-              end },
         },
         defaultTab = "roster",
     })
@@ -92,7 +86,6 @@ function SchlingelInc.GuildPanel:Create()
 
     GP.BuildRosterTab(switcher.tabContents["roster"], f)
     GP.BuildSchandeTab(switcher.tabContents["schande"])
-    GP.BuildAchievementsTab(switcher.tabContents["achievements"])
 
     for _, pending in ipairs(GP.pendingTabs or {}) do
         pending.build(switcher.AddTab(pending.tabDef))

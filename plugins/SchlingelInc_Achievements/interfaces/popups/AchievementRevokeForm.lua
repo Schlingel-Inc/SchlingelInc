@@ -28,6 +28,6 @@ function SchlingelInc.Popup:ShowAchievementRevokeForm(targetName)
     actionForm.Show(targetName)
 end
 
-function SchlingelInc.Popup:OnReachedReceived(senderShort, ids)
-    actionForm.OnReceived(senderShort, ids)
+function SchlingelInc.Popup:OnReachedReceived(senderShort, chunkIndex, totalChunks, ids)
+    actionForm.OnReceived(senderShort, chunkIndex, totalChunks, ids)
 end

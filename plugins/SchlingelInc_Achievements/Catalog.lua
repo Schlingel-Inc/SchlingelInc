@@ -1,4 +1,4 @@
--- Achievements/Catalog.lua
+-- Catalog.lua
 -- Officer-authored achievement definitions (the catalog), broadcast to the guild.
 -- Sync is manual (RequestSync, triggered by the refresh button): any online peer
 -- relays what it knows, jittered and suppressed the same way Raid.lua does.
@@ -9,11 +9,39 @@ SchlingelInc.Achievements.Catalog = {}
 local Catalog = SchlingelInc.Achievements.Catalog
 
 local MSG_DEFINE       = "ACH_DEFINE"
-local MSG_RETIRE       = "ACH_RETIRE"
 local MSG_SYNC_REQUEST = "ACH_SYNC_REQUEST"
 
-local NAME_MAX_LEN = 60
-local DESC_MAX_LEN = 120
+-- Wire-format kind codes: keeps ACH_DEFINE's fixed overhead small so more of the
+-- 255-byte addon-message budget is left for name/description (see MAX_MESSAGE_LEN
+-- below). Internally, entries always use the human-readable KIND.* constants —
+-- this mapping only applies at the message-serialize/parse boundary.
+local KIND_WIRE_CODE = {
+    [KIND.LEVEL]      = "L",
+    [KIND.KILL_COUNT] = "K",
+    [KIND.MANUAL]     = "M",
+}
+local WIRE_CODE_KIND = {
+    L = KIND.LEVEL,
+    K = KIND.KILL_COUNT,
+    M = KIND.MANUAL,
+}
+
+-- WoW's addon-message hard ceiling (both C_ChatInfo.SendAddonMessage and
+-- ChatThrottleLib reject anything longer outright — neither truncates for us).
+local MAX_MESSAGE_LEN = 255
+
+-- ACH_DEFINE's fixed overhead, worst case, everything except name/description:
+--   tag(10) id(35) kind(1) points(4) critA(7) critB(6) retired(1) isGlobal(1) updatedAt(10)
+--   + 10 "|" separators (11 fields) = 85
+-- id budget: up to 12-char realm character name (worst case ~2 bytes/char for
+-- accented locale characters) + "-" + a 10-digit unix timestamp = ~35 bytes.
+-- points is capped at 4 digits (see MAX_POINTS below); critA/critB budgeted for a
+-- kill_count entry's NPC id (critA) and required kill count (critB).
+-- That leaves 255-85=170 bytes for name+description combined; the limits below
+-- stay under that with margin so sanitization/edge cases can't tip it over.
+local NAME_MAX_LEN = 50
+local DESC_MAX_LEN = 110
+local MAX_POINTS   = 9999
 
 local function OwnName()
     return UnitName("player")
@@ -56,22 +84,28 @@ local RELAY_JITTER_MAX = 3.0
 local pendingRelay  = {}
 local answeredSince = {}
 
--- ── Broadcast ────────────────────────────────────────────────────────────────────
+-- ── Wire serialization ──────────────────────────────────────────────────────────
 
--- Bypasses SchlingelInc:SendAddonMessage's direct-send attempt, which races the
--- same client-wide throttle every other module's messages use. Relay traffic is
--- bursty enough that it should always go straight through CTL instead.
-local function SendRelayMessage(payload)
-    ChatThrottleLib:SendAddonMessage("BULK", SchlingelInc.prefix, payload, "GUILD", nil, "SchlingelInc-AchievementsRelay")
-end
-
-local function BroadcastDefine(entry, isRelay)
-    local payload = table.concat({
-        MSG_DEFINE, entry.id, entry.kind,
+local function SerializeDefine(entry)
+    local kindCode = KIND_WIRE_CODE[entry.kind]
+    if not kindCode then return nil end
+    return table.concat({
+        MSG_DEFINE, entry.id, kindCode,
         SanitizeForMessage(entry.name), SanitizeForMessage(entry.description),
         tostring(entry.points), tostring(entry.critA or ""), tostring(entry.critB or ""),
         entry.retired and "1" or "0", (entry.isGlobal and "1" or "0"), tostring(entry.updatedAt or time()),
     }, "|")
+end
+
+-- ── Broadcast ────────────────────────────────────────────────────────────────────
+
+local function SendRelayMessage(payload)
+    SchlingelInc:SendAddonMessage(payload, "GUILD")
+end
+
+local function BroadcastDefine(entry, isRelay)
+    local payload = SerializeDefine(entry)
+    if not payload then return end
     if isRelay then
         SendRelayMessage(payload)
     else
@@ -90,7 +124,9 @@ function Catalog:Create(kind, name, description, points, critA, critB, isGlobal)
     name = (name or ""):match("^%s*(.-)%s*$")
     if name == "" then return nil, "Name darf nicht leer sein." end
     points = tonumber(points)
-    if not points or points < 0 then return nil, "Ungültige Punktzahl." end
+    if not points or points < 0 or points > MAX_POINTS then
+        return nil, "Ungültige Punktzahl (0-" .. MAX_POINTS .. ")."
+    end
     isGlobal = SchlingelInc.Achievements.IsTruthyFlag(isGlobal)
 
     local id = OwnName() .. "-" .. time()
@@ -108,6 +144,12 @@ function Catalog:Create(kind, name, description, points, critA, critB, isGlobal)
         retired     = false,
         isGlobal    = isGlobal,
     }
+
+    local payload = SerializeDefine(entry)
+    if not payload or #payload > MAX_MESSAGE_LEN then
+        return nil, "Name und Beschreibung sind zusammen zu lang für die Synchronisation. Bitte kürzen."
+    end
+
     SchlingelAchievementDB.entries[id] = entry
     BroadcastDefine(entry)
     return id
@@ -115,23 +157,38 @@ end
 
 function Catalog:Edit(id, name, description, points, critA, critB, isGlobal)
     if not CanGuildInvite() then return nil, "Keine Berechtigung für diesen Befehl." end
-    local entry = SchlingelAchievementDB.entries[id]
-    if not entry then return nil, "Erfolg nicht gefunden." end
-    if entry.createdBy == "builtin" then return nil, "Eingebaute Erfolge können nicht bearbeitet werden." end
+    local existing = SchlingelAchievementDB.entries[id]
+    if not existing then return nil, "Erfolg nicht gefunden." end
+    if existing.createdBy == "builtin" then return nil, "Eingebaute Erfolge können nicht bearbeitet werden." end
     name = (name or ""):match("^%s*(.-)%s*$")
     if name == "" then return nil, "Name darf nicht leer sein." end
     points = tonumber(points)
-    if not points or points < 0 then return nil, "Ungültige Punktzahl." end
+    if not points or points < 0 or points > MAX_POINTS then
+        return nil, "Ungültige Punktzahl (0-" .. MAX_POINTS .. ")."
+    end
     isGlobal = SchlingelInc.Achievements.IsTruthyFlag(isGlobal)
 
-    entry.name        = SanitizeForMessage(name):sub(1, NAME_MAX_LEN)
-    entry.description = SanitizeForMessage(description or ""):sub(1, DESC_MAX_LEN)
-    entry.points      = points
-    entry.critA       = critA
-    entry.critB       = critB
-    entry.isGlobal    = isGlobal
-    entry.updatedAt   = time()
+    local entry = {
+        id          = id,
+        kind        = existing.kind,
+        name        = SanitizeForMessage(name):sub(1, NAME_MAX_LEN),
+        description = SanitizeForMessage(description or ""):sub(1, DESC_MAX_LEN),
+        points      = points,
+        critA       = critA,
+        critB       = critB,
+        createdBy   = existing.createdBy,
+        createdAt   = existing.createdAt,
+        updatedAt   = time(),
+        retired     = existing.retired,
+        isGlobal    = isGlobal,
+    }
 
+    local payload = SerializeDefine(entry)
+    if not payload or #payload > MAX_MESSAGE_LEN then
+        return nil, "Name und Beschreibung sind zusammen zu lang für die Synchronisation. Bitte kürzen."
+    end
+
+    SchlingelAchievementDB.entries[id] = entry
     BroadcastDefine(entry)
     return true
 end
@@ -217,19 +274,11 @@ function Catalog:HandleMessage(message, sender)
         return true
     end
 
-    local id, kind, name, description, pointsStr, critAStr, critBStr, retiredStr, isGlobalStr, updatedAtStr =
-        message:match("^" .. MSG_DEFINE .. "|([^|]+)|([^|]+)|([^|]*)|([^|]*)|(%d+)|([^|]*)|([^|]*)|([01])|([01])|(%d+)$")
-    if not id then
-        id, kind, name, description, pointsStr, critAStr, critBStr, retiredStr, isGlobalStr =
-            message:match("^" .. MSG_DEFINE .. "|([^|]+)|([^|]+)|([^|]*)|([^|]*)|(%d+)|([^|]*)|([^|]*)|([01])|([01])$")
-    end
-    if not id then
-        id, kind, name, description, pointsStr, critAStr, critBStr, retiredStr =
-            message:match("^" .. MSG_DEFINE .. "|([^|]+)|([^|]+)|([^|]*)|([^|]*)|(%d+)|([^|]*)|([^|]*)|([01])$")
-        isGlobalStr = "0"
-    end
+    local id, kindCode, name, description, pointsStr, critAStr, critBStr, retiredStr, isGlobalStr, updatedAtStr =
+        message:match("^" .. MSG_DEFINE .. "|([^|]+)|([A-Z])|([^|]*)|([^|]*)|(%d+)|([^|]*)|([^|]*)|([01])|([01])|(%d+)$")
     if id then
-        if not IsValidKind(kind) then return true end
+        local kind = WIRE_CODE_KIND[kindCode]
+        if not kind then return true end
         local existing = SchlingelAchievementDB.entries[id]
         -- id's creator prefix must match the sender, guarding against a spoofed creator.
         local idCreator = id:match("^(.-)-%d+$")

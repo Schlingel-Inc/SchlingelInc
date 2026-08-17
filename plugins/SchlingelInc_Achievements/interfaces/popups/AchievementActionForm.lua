@@ -193,6 +193,7 @@ function SchlingelInc.Popup.CreateAchievementActionForm(cfg)
 
         currentTarget = targetName
         f[cfg.eligibleSetField] = nil
+        f.pendingChunks = { received = {}, receivedCount = 0, total = nil, mergedSet = {} }
         f.titleFs:SetText(cfg.titlePrefix .. targetName)
         f.statusFs:SetTextColor(0.8, 0.8, 0.4, 1)
         f.statusFs:SetText("Frage Freischaltungsstatus ab...")
@@ -203,24 +204,43 @@ function SchlingelInc.Popup.CreateAchievementActionForm(cfg)
         cfg.requestEligibility(targetName)
         f.timeoutTimer = C_Timer.NewTimer(STATUS_TIMEOUT, function()
             f.timeoutTimer = nil
-            if currentTarget == targetName and not f[cfg.eligibleSetField] then
+            if currentTarget ~= targetName or f[cfg.eligibleSetField] then return end
+
+            -- Eligibility responses can arrive as several chunked messages (see
+            -- Progress.lua's BuildChunkedMessages). If some already arrived before
+            -- the timeout, show that partial result rather than nothing.
+            local pending = f.pendingChunks
+            if pending and pending.receivedCount > 0 then
+                f[cfg.eligibleSetField] = pending.mergedSet
+                f.statusFs:SetText("")
+                Refresh(f)
+            else
                 f.statusFs:SetTextColor(1, 0.4, 0.4, 1)
                 f.statusFs:SetText("Status konnte nicht bestätigt werden — bitte beim Spieler nachfragen.")
             end
         end)
     end
 
-    -- Routes an incoming eligibility response to the popup if it's still open for
-    -- this sender; stale responses (form closed or reopened for someone else) are ignored.
-    local function OnReceived(senderShort, ids)
+    -- Routes an incoming eligibility response chunk to the popup if it's still open
+    -- for this sender; stale responses (form closed or reopened for someone else)
+    -- are ignored. Merges chunks by index (order-independent) and only finalizes
+    -- once every chunk in the batch has arrived.
+    local function OnReceived(senderShort, chunkIndex, totalChunks, ids)
         local f = SchlingelInc.Popup[cfg.popupKey]
         if not f or not f:IsShown() or currentTarget ~= senderShort then return end
 
-        if f.timeoutTimer then f.timeoutTimer:Cancel() f.timeoutTimer = nil end
+        local pending = f.pendingChunks
+        if not pending or pending.received[chunkIndex] then return end -- stale popup or duplicate chunk
 
-        local set = {}
-        for _, id in ipairs(ids) do set[id] = true end
-        f[cfg.eligibleSetField] = set
+        pending.received[chunkIndex] = true
+        pending.receivedCount = pending.receivedCount + 1
+        pending.total = totalChunks
+        for _, id in ipairs(ids) do pending.mergedSet[id] = true end
+
+        if pending.receivedCount < pending.total then return end -- still waiting on more chunks
+
+        if f.timeoutTimer then f.timeoutTimer:Cancel() f.timeoutTimer = nil end
+        f[cfg.eligibleSetField] = pending.mergedSet
         f.statusFs:SetText("")
         Refresh(f)
     end

@@ -1,4 +1,4 @@
--- achievements/AchievementList.lua
+-- AchievementList.lua
 -- Level-milestone achievements, seeded into the catalog on first load. These are the
 -- only built-ins; everything else is created by officers in-game. Catalog:Edit/Retire
 -- reject entries with createdBy == "builtin", so this stays the sole way to add to

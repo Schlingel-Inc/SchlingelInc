@@ -1,6 +1,6 @@
--- Achievements/init.lua
+-- Namespace.lua
 -- Namespace, shared constants, and SavedVariable init for the Achievements framework.
--- Loaded first; all other Achievements/* files depend on these values.
+-- Loaded first; all other files in this addon depend on these values.
 --
 -- Catalog (achievement definitions) is account-wide: officers create/edit/retire
 -- entries and broadcast them to the guild, so every character on the account shares

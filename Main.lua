@@ -13,7 +13,8 @@ function SchlingelInc:OnLoad()
     SchlingelInc.Debug:Initialize()
     SchlingelInc.GuildProfiles:Initialize()
     SchlingelInc.Schande:Initialize()
-    SchlingelInc.Achievements:Initialize()
+    -- SchlingelInc.Achievements is an optional sub-addon (SchlingelInc_Achievements);
+    -- it initializes itself off its own ADDON_LOADED (see plugins/SchlingelInc_Achievements/Init.lua).
     SchlingelInc:InitializeDiscordHandlePrompt()
     SchlingelInc:InitializeSetupWizard()
     SchlingelInc:InitializeGuildJoinPrompt()

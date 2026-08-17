@@ -1,4 +1,4 @@
--- Achievements/ManualGrant.lua
+-- ManualGrant.lua
 -- Officer -> player whisper grant for `manual`-kind (RP) achievements, which have no
 -- auto-detectable criteria, and for `level`-kind milestones, so officers can resolve
 -- disputed auto-detection (e.g. a death-counter disagreement blocking an UNBROKEN

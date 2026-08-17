@@ -27,13 +27,6 @@ EventManager.lua
 GuildCache.lua
 GuildProfiles.lua
 Schande.lua
-achievements\init.lua
-achievements\AchievementList.lua
-achievements\Catalog.lua
-achievements\Progress.lua
-achievements\LevelDetector.lua
-achievements\KillDetector.lua
-achievements\ManualGrant.lua
 Tooltip.lua
 Debug.lua
 Options.lua
@@ -48,11 +41,6 @@ interfaces\popups\LevelUpAnnouncement.lua
 interfaces\Deathlog.lua
 interfaces\popups\GuildInvites.lua
 interfaces\popups\PvPFrame.lua
-interfaces\popups\AchievementAnnouncement.lua
-interfaces\popups\AchievementForm.lua
-interfaces\popups\AchievementActionForm.lua
-interfaces\popups\AchievementGrantForm.lua
-interfaces\popups\AchievementRevokeForm.lua
 interfaces\PopupEditMode.lua
 interfaces\DiscordHandlePrompt.lua
 interfaces\GuildJoinPrompt.lua
@@ -68,7 +56,6 @@ interfaces\OfficerPanel\TabInactive.lua
 interfaces\OfficerPanel\TabProgress.lua
 interfaces\OfficerPanel\TabDiscord.lua
 interfaces\OfficerPanel\TabInvites.lua
-interfaces\OfficerPanel\TabAchievements.lua
 interfaces\OfficerPanel\Filters.lua
 interfaces\OfficerPanel\SchandeViewer.lua
 interfaces\OfficerPanel\MemberContextMenu.lua
@@ -78,7 +65,6 @@ interfaces\GuildPanel\Rows.lua
 interfaces\GuildPanel\FilterPanel.lua
 interfaces\GuildPanel\TabRoster.lua
 interfaces\GuildPanel\TabSchande.lua
-interfaces\GuildPanel\TabAchievements.lua
 interfaces\GuildPanel\Frame.lua
 Bindings.lua
 death\Death.lua

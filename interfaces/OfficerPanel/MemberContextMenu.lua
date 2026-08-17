@@ -66,23 +66,27 @@ UIDropDownMenu_Initialize(contextMenu, function(self, level)
     end
     UIDropDownMenu_AddButton(info, level)
 
-    info = UIDropDownMenu_CreateInfo()
-    info.notCheckable = true
-    info.text = "Erfolg verleihen"
-    info.func = function()
-        CloseDropDownMenus()
-        SchlingelInc.Popup:ShowAchievementGrantForm(targetName)
-    end
-    UIDropDownMenu_AddButton(info, level)
+    -- SchlingelInc_Achievements is an optional sub-addon; these two entries only
+    -- make sense (and only exist) when it's loaded.
+    if SchlingelInc.Achievements then
+        info = UIDropDownMenu_CreateInfo()
+        info.notCheckable = true
+        info.text = "Erfolg verleihen"
+        info.func = function()
+            CloseDropDownMenus()
+            SchlingelInc.Popup:ShowAchievementGrantForm(targetName)
+        end
+        UIDropDownMenu_AddButton(info, level)
 
-    info = UIDropDownMenu_CreateInfo()
-    info.notCheckable = true
-    info.text = "Erfolg entziehen"
-    info.func = function()
-        CloseDropDownMenus()
-        SchlingelInc.Popup:ShowAchievementRevokeForm(targetName)
+        info = UIDropDownMenu_CreateInfo()
+        info.notCheckable = true
+        info.text = "Erfolg entziehen"
+        info.func = function()
+            CloseDropDownMenus()
+            SchlingelInc.Popup:ShowAchievementRevokeForm(targetName)
+        end
+        UIDropDownMenu_AddButton(info, level)
     end
-    UIDropDownMenu_AddButton(info, level)
 end, "MENU")
 
 -- Public API

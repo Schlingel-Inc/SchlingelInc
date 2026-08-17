@@ -70,7 +70,9 @@ local function BuildForm()
     local nameLbl = CreateLabel(f, "Name:")
     nameLbl:SetPoint("TOPLEFT", f, "TOPLEFT", 16, -48)
 
-    local nameEB = CreateEditBox(f, INNER_W, 60, false)
+    -- Mirrors Catalog.lua's NAME_MAX_LEN/DESC_MAX_LEN (the wire-payload budget) so
+    -- officers hit the limit here instead of only on submit.
+    local nameEB = CreateEditBox(f, INNER_W, 50, false)
     nameEB:SetPoint("TOPLEFT", nameLbl, "BOTTOMLEFT", 0, -4)
     f.nameEB = nameEB
 
@@ -78,7 +80,7 @@ local function BuildForm()
     local descLbl = CreateLabel(f, "Beschreibung (optional):")
     descLbl:SetPoint("TOPLEFT", nameEB, "BOTTOMLEFT", 0, -10)
 
-    local descEB = CreateEditBox(f, INNER_W, 120, false)
+    local descEB = CreateEditBox(f, INNER_W, 110, false)
     descEB:SetPoint("TOPLEFT", descLbl, "BOTTOMLEFT", 0, -4)
     f.descEB = descEB
 
@@ -86,7 +88,8 @@ local function BuildForm()
     local pointsLbl = CreateLabel(f, "Punkte:")
     pointsLbl:SetPoint("TOPLEFT", descEB, "BOTTOMLEFT", 0, -10)
 
-    local pointsEB = CreateEditBox(f, 80, 5, true)
+    -- Mirrors Catalog.lua's MAX_POINTS (4 digits).
+    local pointsEB = CreateEditBox(f, 80, 4, true)
     pointsEB:SetPoint("TOPLEFT", pointsLbl, "BOTTOMLEFT", 0, -4)
     f.pointsEB = pointsEB
 

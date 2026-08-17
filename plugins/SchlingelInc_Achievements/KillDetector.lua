@@ -1,4 +1,4 @@
--- Achievements/KillDetector.lua
+-- KillDetector.lua
 -- Auto-detects `kill_count`-kind achievements via the combat log. Same detection
 -- shape as the guild's CounterDerSchande addon: PARTY_KILL + Creature GUID + npcID.
 

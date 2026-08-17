@@ -1,4 +1,4 @@
--- Achievements/Progress.lua
+-- Progress.lua
 -- Per-character unlock bookkeeping, kill-progress counters, and the achievement
 -- score fed into GuildProfiles. Knows the catalog (to look up points/names) but no
 -- detection logic — LevelDetector/KillDetector decide *when* to call Unlock().
@@ -10,6 +10,51 @@ local MSG_UNREACHED_REQUEST = "ACH_UNREACHED_REQUEST"
 local MSG_UNREACHED         = "ACH_UNREACHED"
 local MSG_REACHED_REQUEST   = "ACH_REACHED_REQUEST"
 local MSG_REACHED           = "ACH_REACHED"
+
+-- WoW's addon-message hard ceiling — same limit Catalog.lua budgets ACH_DEFINE
+-- against (see its MAX_MESSAGE_LEN comment for why neither SendAddonMessage nor
+-- ChatThrottleLib will truncate an oversized message for us).
+local MAX_MESSAGE_LEN = 255
+
+-- Greedily packs `ids` into as few "tag|chunkIndex|totalChunks|id1|id2|..." messages
+-- as fit under MAX_MESSAGE_LEN. A veteran character's unreached/reached id list has
+-- no natural upper bound, so this can't be a single message the way it used to be.
+-- chunkIndex/totalChunks let the receiver (AchievementActionForm.OnReceived) know
+-- when it has everything, regardless of delivery order. Always emits at least one
+-- message — even for an empty id list — so the requester gets a definitive "you
+-- have none of these" answer instead of waiting out the popup's timeout.
+local function BuildChunkedMessages(tag, ids)
+    local groups = { {} }
+    for _, id in ipairs(ids) do
+        local g = groups[#groups]
+        local candidate = (#g == 0) and id or (table.concat(g, "|") .. "|" .. id)
+        -- Reserve room for "tag|<idx>|<total>|" ahead of the ids; idx/total stay
+        -- small in practice, so a flat reserve is safe.
+        if #g > 0 and (#candidate + #tag + 8) > MAX_MESSAGE_LEN then
+            table.insert(groups, { id })
+        else
+            table.insert(g, id)
+        end
+    end
+
+    local total = #groups
+    local messages = {}
+    for i, g in ipairs(groups) do
+        table.insert(messages, table.concat({ tag, tostring(i), tostring(total), unpack(g) }, "|"))
+    end
+    return messages
+end
+
+-- Parses a "tag|chunkIndex|totalChunks|id1|id2|..." message. Returns nil if
+-- `message` isn't a chunk of `tag` at all.
+local function ParseChunkedMessage(tag, message)
+    if not message:match("^" .. tag .. "|%d+|%d+") then return nil end
+    local parts = SchlingelInc:ParsePipeMessage(message)
+    table.remove(parts, 1) -- tag
+    local chunkIndex = tonumber(table.remove(parts, 1))
+    local totalChunks = tonumber(table.remove(parts, 1))
+    return chunkIndex, totalChunks, parts
+end
 
 local function EnsureStores()
     SchlingelAchievementDB = SchlingelAchievementDB or {}
@@ -206,33 +251,33 @@ end
 
 function Progress:HandleMessage(message, sender)
     if message == MSG_UNREACHED_REQUEST then
-        local payload = table.concat({ MSG_UNREACHED, unpack(OwnUnreachedGrantableIds()) }, "|")
-        SchlingelInc:SendAddonMessage(payload, "WHISPER", sender)
-        return true
-    end
-
-    if message == MSG_REACHED_REQUEST then
-        local payload = table.concat({ MSG_REACHED, unpack(OwnReachedGrantableIds()) }, "|")
-        SchlingelInc:SendAddonMessage(payload, "WHISPER", sender)
-        return true
-    end
-
-    if message == MSG_UNREACHED or message:match("^" .. MSG_UNREACHED .. "|") then
-        local ids = SchlingelInc:ParsePipeMessage(message)
-        table.remove(ids, 1) -- drop the MSG_UNREACHED tag
-        local senderShort = SchlingelInc:RemoveRealmFromName(sender)
-        if SchlingelInc.Popup and SchlingelInc.Popup.OnUnreachedReceived then
-            SchlingelInc.Popup:OnUnreachedReceived(senderShort, ids)
+        for _, payload in ipairs(BuildChunkedMessages(MSG_UNREACHED, OwnUnreachedGrantableIds())) do
+            SchlingelInc:SendAddonMessage(payload, "WHISPER", sender)
         end
         return true
     end
 
-    if message == MSG_REACHED or message:match("^" .. MSG_REACHED .. "|") then
-        local ids = SchlingelInc:ParsePipeMessage(message)
-        table.remove(ids, 1) -- drop the MSG_REACHED tag
+    if message == MSG_REACHED_REQUEST then
+        for _, payload in ipairs(BuildChunkedMessages(MSG_REACHED, OwnReachedGrantableIds())) do
+            SchlingelInc:SendAddonMessage(payload, "WHISPER", sender)
+        end
+        return true
+    end
+
+    local chunkIndex, totalChunks, ids = ParseChunkedMessage(MSG_UNREACHED, message)
+    if chunkIndex then
+        local senderShort = SchlingelInc:RemoveRealmFromName(sender)
+        if SchlingelInc.Popup and SchlingelInc.Popup.OnUnreachedReceived then
+            SchlingelInc.Popup:OnUnreachedReceived(senderShort, chunkIndex, totalChunks, ids)
+        end
+        return true
+    end
+
+    chunkIndex, totalChunks, ids = ParseChunkedMessage(MSG_REACHED, message)
+    if chunkIndex then
         local senderShort = SchlingelInc:RemoveRealmFromName(sender)
         if SchlingelInc.Popup and SchlingelInc.Popup.OnReachedReceived then
-            SchlingelInc.Popup:OnReachedReceived(senderShort, ids)
+            SchlingelInc.Popup:OnReachedReceived(senderShort, chunkIndex, totalChunks, ids)
         end
         return true
     end

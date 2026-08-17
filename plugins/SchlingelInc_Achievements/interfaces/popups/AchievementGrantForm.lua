@@ -29,6 +29,6 @@ function SchlingelInc.Popup:ShowAchievementGrantForm(targetName)
     actionForm.Show(targetName)
 end
 
-function SchlingelInc.Popup:OnUnreachedReceived(senderShort, ids)
-    actionForm.OnReceived(senderShort, ids)
+function SchlingelInc.Popup:OnUnreachedReceived(senderShort, chunkIndex, totalChunks, ids)
+    actionForm.OnReceived(senderShort, chunkIndex, totalChunks, ids)
 end

@@ -1,0 +1,24 @@
+## Interface: 11509
+## Title: Schlingel Inc_Achievements
+## Dependencies: SchlingelInc
+## Version: 1.0.0
+## IconTexture: Interface\AddOns\SchlingelInc\media\graphics\SI_Transp_512_x_512_px.tga
+
+Namespace.lua
+AchievementList.lua
+Catalog.lua
+Progress.lua
+LevelDetector.lua
+KillDetector.lua
+ManualGrant.lua
+
+interfaces\popups\AchievementAnnouncement.lua
+interfaces\popups\AchievementForm.lua
+interfaces\popups\AchievementActionForm.lua
+interfaces\popups\AchievementGrantForm.lua
+interfaces\popups\AchievementRevokeForm.lua
+
+interfaces\GuildPanel\TabAchievements.lua
+interfaces\OfficerPanel\TabAchievements.lua
+
+Init.lua

@@ -1,4 +1,4 @@
--- Achievements/LevelDetector.lua
+-- LevelDetector.lua
 -- Auto-detects `level`-kind achievements. Registers its own independent handlers
 -- (EventManager supports multiple handlers per event) rather than hooking into
 -- LevelUp.lua, so the Achievements framework stays self-contained.
