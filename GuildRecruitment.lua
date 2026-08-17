@@ -28,6 +28,7 @@ end
 local WHO_QUERY_COOLDOWN = 5
 local lastWhoQueryTime = 0
 local onlineOfficersFromWho = {}
+local awaitingOwnWhoResult = false
 
 -- SendWho pops open the default Blizzard Who/FriendsFrame window as a side
 -- effect; hide it back up since this is meant to be a silent background check.
@@ -41,6 +42,7 @@ function SchlingelInc.GuildRecruitment:CheckOfficersOnline()
     local now = time()
     if (now - lastWhoQueryTime) < WHO_QUERY_COOLDOWN then return end
     lastWhoQueryTime = now
+    awaitingOwnWhoResult = true
     C_FriendList.SendWho(string.format('g-"%s"', SchlingelInc.Constants.GUILD_NAME))
     HideWhoWindow()
 end
@@ -241,6 +243,8 @@ function SchlingelInc.GuildRecruitment:Initialize()
 	-- Priority 10 so this runs before the join prompt's hint-refresh handler
 	-- (registered at priority 0), which reads onlineOfficersFromWho.
 	SchlingelInc.EventManager:RegisterHandler("WHO_LIST_UPDATE", function()
+		if not awaitingOwnWhoResult then return end
+		awaitingOwnWhoResult = false
 		HideWhoWindow()
 		wipe(onlineOfficersFromWho)
 		for i = 1, C_FriendList.GetNumWhoResults() do
