@@ -1,7 +1,5 @@
 -- interfaces/popups/AchievementRevokeForm.lua
--- Small officer popup to remove a previously unlocked `manual`-kind (RP),
--- `level`-kind, or `kill_count` achievement from a specific target, opened via
--- "Erfolg entziehen" in MemberContextMenu.lua.
+-- Officer popup to remove a previously unlocked achievement from a specific target.
 
 SchlingelInc.Popup = SchlingelInc.Popup or {}
 
@@ -15,8 +13,6 @@ local actionForm = SchlingelInc.Popup.CreateAchievementActionForm({
     titlePrefix       = "Erfolg entziehen: ",
     getEntries        = function() return SchlingelInc.Achievements.Catalog:GetAll() end,
     eligibleSetField  = "reachedSet",
-    -- Show nothing until the real "reached" set arrives — can't assume someone
-    -- has unlocked something before confirmed.
     isEligible        = function(f, entry) return f.reachedSet and f.reachedSet[entry.id] end,
     emptyWithSet      = "Spieler hat keine entziehbaren Erfolge.",
     emptyNoSet        = "Keine entziehbaren Erfolge vorhanden.",

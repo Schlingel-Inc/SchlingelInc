@@ -66,17 +66,13 @@ local function BuildForm()
     closeBtn:SetPoint("TOPRIGHT", f, "TOPRIGHT", -2, -2)
     closeBtn:SetScript("OnClick", function() f:Hide() end)
 
-    -- ── Name ─────────────────────────────────────────────────────────────────
     local nameLbl = CreateLabel(f, "Name:")
     nameLbl:SetPoint("TOPLEFT", f, "TOPLEFT", 16, -48)
 
-    -- Mirrors Catalog.lua's NAME_MAX_LEN/DESC_MAX_LEN (the wire-payload budget) so
-    -- officers hit the limit here instead of only on submit.
     local nameEB = CreateEditBox(f, INNER_W, 50, false)
     nameEB:SetPoint("TOPLEFT", nameLbl, "BOTTOMLEFT", 0, -4)
     f.nameEB = nameEB
 
-    -- ── Beschreibung ─────────────────────────────────────────────────────────
     local descLbl = CreateLabel(f, "Beschreibung (optional):")
     descLbl:SetPoint("TOPLEFT", nameEB, "BOTTOMLEFT", 0, -10)
 
@@ -84,16 +80,13 @@ local function BuildForm()
     descEB:SetPoint("TOPLEFT", descLbl, "BOTTOMLEFT", 0, -4)
     f.descEB = descEB
 
-    -- ── Punkte ───────────────────────────────────────────────────────────────
     local pointsLbl = CreateLabel(f, "Punkte:")
     pointsLbl:SetPoint("TOPLEFT", descEB, "BOTTOMLEFT", 0, -10)
 
-    -- Mirrors Catalog.lua's MAX_POINTS (4 digits).
     local pointsEB = CreateEditBox(f, 80, 4, true)
     pointsEB:SetPoint("TOPLEFT", pointsLbl, "BOTTOMLEFT", 0, -4)
     f.pointsEB = pointsEB
 
-    -- ── Art (dropdown) ───────────────────────────────────────────────────────
     local kindLbl = CreateLabel(f, "Art:")
     kindLbl:SetPoint("TOPLEFT", pointsEB, "TOPLEFT", INNER_W / 2 + 10, 0)
 
@@ -131,13 +124,11 @@ local function BuildForm()
     f.kindList = kindList
     SchlingelInc:RegisterOutsideClickClose(kindList, f)
 
-    -- ── Kriterien (dynamic per kind, all anchored at the same point) ────────
     local criteriaAnchor = CreateFrame("Frame", nil, f)
     criteriaAnchor:SetPoint("TOPLEFT", globalCb, "BOTTOMLEFT", 0, -12)
     criteriaAnchor:SetSize(INNER_W, 1)
     f.criteriaAnchor = criteriaAnchor
 
-    -- Level fields
     local levelGroup = CreateFrame("Frame", nil, f)
     levelGroup:SetPoint("TOPLEFT", criteriaAnchor, "TOPLEFT", 0, 0)
     levelGroup:SetSize(INNER_W, 50)
@@ -157,7 +148,6 @@ local function BuildForm()
     noDeathLbl:SetText("ohne zu sterben")
     f.noDeathCb = noDeathCb
 
-    -- Kill-count fields
     local killGroup = CreateFrame("Frame", nil, f)
     killGroup:SetPoint("TOPLEFT", criteriaAnchor, "TOPLEFT", 0, 0)
     killGroup:SetSize(INNER_W, 50)
@@ -175,7 +165,6 @@ local function BuildForm()
     countEB:SetPoint("TOPLEFT", countLbl, "BOTTOMLEFT", 0, -4)
     f.countEB = countEB
 
-    -- Manual note
     local manualGroup = CreateFrame("Frame", nil, f)
     manualGroup:SetPoint("TOPLEFT", criteriaAnchor, "TOPLEFT", 0, 0)
     manualGroup:SetSize(INNER_W, 30)
@@ -222,7 +211,6 @@ local function BuildForm()
         kindList:SetShown(not kindList:IsShown())
     end)
 
-    -- ── Fehler / Submit ─────────────────────────────────────────────────────
     local errorFs = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     errorFs:SetPoint("TOPLEFT", criteriaAnchor, "BOTTOMLEFT", 0, -64)
     errorFs:SetWidth(INNER_W)
@@ -317,7 +305,7 @@ function SchlingelInc.Popup:ShowAchievementForm(existingEntry)
         f.descEB:SetText(existingEntry.description or "")
         f.pointsEB:SetText(tostring(existingEntry.points or 0))
         f.SelectKind(existingEntry.kind)
-        f.kindBtn:Disable() -- kind can't change after creation (criteria fields are kind-specific)
+        f.kindBtn:Disable()
         f.globalCb:SetChecked(SchlingelInc.Achievements.IsTruthyFlag(existingEntry.isGlobal))
         if existingEntry.kind == KIND.LEVEL then
             f.levelEB:SetText(tostring(tonumber(existingEntry.critA) or ""))

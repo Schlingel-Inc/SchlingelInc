@@ -1,8 +1,5 @@
 -- interfaces/popups/AchievementGrantForm.lua
--- Small officer popup to manually grant a `manual`-kind (RP), `level`-kind, or
--- `kill_count` achievement to a specific target, opened via "Erfolg verleihen" in
--- MemberContextMenu.lua.
--- Card list mirrors OfficerPanel/TabAchievements.lua's catalog view.
+-- Officer popup to manually grant an achievement to a specific target.
 
 SchlingelInc.Popup = SchlingelInc.Popup or {}
 
@@ -16,8 +13,6 @@ local actionForm = SchlingelInc.Popup.CreateAchievementActionForm({
     titlePrefix       = "Erfolg verleihen: ",
     getEntries        = function() return SchlingelInc.Achievements.Catalog:GetActive() end,
     eligibleSetField  = "unreachedSet",
-    -- Show everything grantable while we're still waiting on the real "unreached"
-    -- set, then narrow down once it arrives.
     isEligible        = function(f, entry) return not f.unreachedSet or f.unreachedSet[entry.id] end,
     emptyWithSet      = "Spieler hat bereits alle verleihbaren Erfolge.",
     emptyNoSet        = "Keine verleihbaren Erfolge vorhanden.",

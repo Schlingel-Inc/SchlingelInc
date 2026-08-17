@@ -1,7 +1,5 @@
 -- Catalog.lua
--- Officer-authored achievement definitions (the catalog), broadcast to the guild.
--- Sync is manual (RequestSync, triggered by the refresh button): any online peer
--- relays what it knows, jittered and suppressed the same way Raid.lua does.
+-- Officer-authored achievement definitions, broadcast and synced to the guild.
 
 local KIND = SchlingelInc.Achievements.KIND
 
@@ -11,10 +9,6 @@ local Catalog = SchlingelInc.Achievements.Catalog
 local MSG_DEFINE       = "ACH_DEFINE"
 local MSG_SYNC_REQUEST = "ACH_SYNC_REQUEST"
 
--- Wire-format kind codes: keeps ACH_DEFINE's fixed overhead small so more of the
--- 255-byte addon-message budget is left for name/description (see MAX_MESSAGE_LEN
--- below). Internally, entries always use the human-readable KIND.* constants —
--- this mapping only applies at the message-serialize/parse boundary.
 local KIND_WIRE_CODE = {
     [KIND.LEVEL]      = "L",
     [KIND.KILL_COUNT] = "K",
@@ -26,19 +20,8 @@ local WIRE_CODE_KIND = {
     M = KIND.MANUAL,
 }
 
--- WoW's addon-message hard ceiling (both C_ChatInfo.SendAddonMessage and
--- ChatThrottleLib reject anything longer outright — neither truncates for us).
 local MAX_MESSAGE_LEN = 255
 
--- ACH_DEFINE's fixed overhead, worst case, everything except name/description:
---   tag(10) id(35) kind(1) points(4) critA(7) critB(6) retired(1) isGlobal(1) updatedAt(10)
---   + 10 "|" separators (11 fields) = 85
--- id budget: up to 12-char realm character name (worst case ~2 bytes/char for
--- accented locale characters) + "-" + a 10-digit unix timestamp = ~35 bytes.
--- points is capped at 4 digits (see MAX_POINTS below); critA/critB budgeted for a
--- kill_count entry's NPC id (critA) and required kill count (critB).
--- That leaves 255-85=170 bytes for name+description combined; the limits below
--- stay under that with margin so sanitization/edge cases can't tip it over.
 local NAME_MAX_LEN = 50
 local DESC_MAX_LEN = 110
 local MAX_POINTS   = 9999
@@ -84,8 +67,6 @@ local RELAY_JITTER_MAX = 3.0
 local pendingRelay  = {}
 local answeredSince = {}
 
--- ── Wire serialization ──────────────────────────────────────────────────────────
-
 local function SerializeDefine(entry)
     local kindCode = KIND_WIRE_CODE[entry.kind]
     if not kindCode then return nil end
@@ -96,8 +77,6 @@ local function SerializeDefine(entry)
         entry.retired and "1" or "0", (entry.isGlobal and "1" or "0"), tostring(entry.updatedAt or time()),
     }, "|")
 end
-
--- ── Broadcast ────────────────────────────────────────────────────────────────────
 
 local function SendRelayMessage(payload)
     SchlingelInc:SendAddonMessage(payload, "GUILD")
@@ -113,11 +92,6 @@ local function BroadcastDefine(entry, isRelay)
     end
 end
 
--- ── Public API (officer actions) ──────────────────────────────────────────────────
-
--- kind-specific criteria: LEVEL -> critA=threshold level, critB=requireNoDeath (bool)
---                         KILL_COUNT -> critA=npcID, critB=required kill count
---                         MANUAL -> critA/critB unused
 function Catalog:Create(kind, name, description, points, critA, critB, isGlobal)
     if not CanGuildInvite() then return nil, "Keine Berechtigung für diesen Befehl." end
     if not IsValidKind(kind) then return nil, "Ungültige Erfolgsart." end
@@ -209,7 +183,6 @@ function Catalog:Get(id)
     return SchlingelAchievementDB.entries[id]
 end
 
--- All known entries, including retired ones (officer management view).
 function Catalog:GetAll()
     local out = {}
     for _, entry in pairs(SchlingelAchievementDB.entries) do
@@ -219,7 +192,6 @@ function Catalog:GetAll()
     return out
 end
 
--- Non-retired entries only (member view).
 function Catalog:GetActive()
     local out = {}
     for _, entry in pairs(SchlingelAchievementDB.entries) do
@@ -229,8 +201,6 @@ function Catalog:GetActive()
     return out
 end
 
--- Unsorted scan over non-retired entries, for detectors (KillDetector/LevelDetector)
--- that only need to test each entry, not display them in order.
 function Catalog:ForEachActive(fn)
     for _, entry in pairs(SchlingelAchievementDB.entries) do
         if not entry.retired then fn(entry) end
@@ -266,8 +236,6 @@ local function HandleSyncRequest()
     end
 end
 
--- ── Incoming messages ────────────────────────────────────────────────────────────
-
 function Catalog:HandleMessage(message, sender)
     if message == MSG_SYNC_REQUEST then
         HandleSyncRequest()
@@ -280,7 +248,6 @@ function Catalog:HandleMessage(message, sender)
         local kind = WIRE_CODE_KIND[kindCode]
         if not kind then return true end
         local existing = SchlingelAchievementDB.entries[id]
-        -- id's creator prefix must match the sender, guarding against a spoofed creator.
         local idCreator = id:match("^(.-)-%d+$")
         local senderShort = SchlingelInc:RemoveRealmFromName(sender)
         if idCreator ~= senderShort then return true end

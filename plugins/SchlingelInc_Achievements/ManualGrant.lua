@@ -1,10 +1,5 @@
 -- ManualGrant.lua
--- Officer -> player whisper grant for `manual`-kind (RP) achievements, which have no
--- auto-detectable criteria, and for `level`-kind milestones, so officers can resolve
--- disputed auto-detection (e.g. a death-counter disagreement blocking an UNBROKEN
--- achievement), plus `kill_count` achievements when officers need to resolve missed
--- progress. Mirrors Schande:Impose's officer-whisper
--- pattern.
+-- Officer -> player whisper grant/revoke for manual, level, and kill_count achievements.
 
 SchlingelInc.Achievements.ManualGrant = {}
 local ManualGrant = SchlingelInc.Achievements.ManualGrant
@@ -12,7 +7,6 @@ local ManualGrant = SchlingelInc.Achievements.ManualGrant
 local MSG_GRANT = "ACH_GRANT"
 local MSG_REVOKE = "ACH_REVOKE"
 
--- Officer action: grant a `manual`, `level`, or `kill_count` achievement to targetName (must be online).
 function ManualGrant:Grant(targetName, achievementId)
     if not CanGuildInvite() then
         SchlingelInc:Print(SchlingelInc.Constants.COLORS.ERROR .. "Keine Berechtigung für diesen Befehl.|r")
@@ -32,8 +26,6 @@ function ManualGrant:Grant(targetName, achievementId)
     return true
 end
 
--- Officer action: revoke a previously unlocked `manual`, `level`, or `kill_count`
--- achievement from targetName (must be online).
 function ManualGrant:Revoke(targetName, achievementId)
     if not CanGuildInvite() then
         SchlingelInc:Print(SchlingelInc.Constants.COLORS.ERROR .. "Keine Berechtigung für diesen Befehl.|r")

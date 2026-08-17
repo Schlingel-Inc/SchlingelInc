@@ -1,17 +1,11 @@
 -- LevelDetector.lua
--- Auto-detects `level`-kind achievements. Registers its own independent handlers
--- (EventManager supports multiple handlers per event) rather than hooking into
--- LevelUp.lua, so the Achievements framework stays self-contained.
+-- Auto-detects `level`-kind achievements.
 
 local KIND = SchlingelInc.Achievements.KIND
 
 SchlingelInc.Achievements.LevelDetector = {}
 local LevelDetector = SchlingelInc.Achievements.LevelDetector
 
--- Re-evaluates every active `level` achievement against the character's current
--- level and death count. CharacterDeaths only ever increases, so checking it "now"
--- is always correct for a requireNoDeath achievement — once you've died, that
--- specific achievement can never become unlockable again, no matter when this runs.
 function LevelDetector:Check()
     local level = UnitLevel("player")
     local Progress = SchlingelInc.Achievements.Progress

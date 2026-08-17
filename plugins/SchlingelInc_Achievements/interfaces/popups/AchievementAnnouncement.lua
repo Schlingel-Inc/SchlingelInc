@@ -1,7 +1,5 @@
 -- interfaces/popups/AchievementAnnouncement.lua
--- Compact, icon-less achievement-unlock notification: same size/style as the small
--- death frame (SmallDeathFrame in DeathAnnouncement.lua). A proper custom design for
--- these compact popups is planned as a follow-up, so this deliberately stays minimal.
+-- Compact achievement-unlock notification popup.
 
 SchlingelInc.AchievementAnnouncement = {}
 

@@ -1,13 +1,11 @@
 -- KillDetector.lua
--- Auto-detects `kill_count`-kind achievements via the combat log. Same detection
--- shape as the guild's CounterDerSchande addon: PARTY_KILL + Creature GUID + npcID.
+-- Auto-detects `kill_count`-kind achievements via the combat log.
 
 local KIND = SchlingelInc.Achievements.KIND
 
 SchlingelInc.Achievements.KillDetector = {}
 local KillDetector = SchlingelInc.Achievements.KillDetector
 
--- Same npcID pattern already used for the Dev NPC-ID tooltip line (Tooltip.lua).
 local function GetNpcID(destGUID)
     return tonumber(destGUID:match("Creature%-%d+%-%d+%-%d+%-%d+%-(%d+)"))
 end

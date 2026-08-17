@@ -1,15 +1,11 @@
 -- AchievementList.lua
--- Level-milestone achievements, seeded into the catalog on first load. These are the
--- only built-ins; everything else is created by officers in-game. Catalog:Edit/Retire
--- reject entries with createdBy == "builtin", so this stays the sole way to add to
--- this list going forward.
+-- Built-in level-milestone achievements, seeded into the catalog on first load.
 
 local KIND = SchlingelInc.Achievements.KIND
 
 SchlingelInc.Achievements.AchievementList = {}
 local AchievementList = SchlingelInc.Achievements.AchievementList
 
--- ── Default achievement definitions ────────────────────────────────────────────
 local DEFAULTS = {
     {
         id          = "builtin001",
@@ -153,8 +149,6 @@ local DEFAULTS = {
     },
 }
 
--- ── Seeding ─────────────────────────────────────────────────────────────────────
--- Writes the achievement definitions to the catalog if they don't already exist.
 function AchievementList:Seed()
     SchlingelAchievementDB.entries = SchlingelAchievementDB.entries or {}
     for _, def in ipairs(DEFAULTS) do

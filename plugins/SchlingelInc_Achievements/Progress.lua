@@ -1,7 +1,5 @@
 -- Progress.lua
--- Per-character unlock bookkeeping, kill-progress counters, and the achievement
--- score fed into GuildProfiles. Knows the catalog (to look up points/names) but no
--- detection logic — LevelDetector/KillDetector decide *when* to call Unlock().
+-- Per-character unlock bookkeeping, kill-progress counters, and achievement score.
 
 SchlingelInc.Achievements.Progress = {}
 local Progress = SchlingelInc.Achievements.Progress
@@ -11,25 +9,13 @@ local MSG_UNREACHED         = "ACH_UNREACHED"
 local MSG_REACHED_REQUEST   = "ACH_REACHED_REQUEST"
 local MSG_REACHED           = "ACH_REACHED"
 
--- WoW's addon-message hard ceiling — same limit Catalog.lua budgets ACH_DEFINE
--- against (see its MAX_MESSAGE_LEN comment for why neither SendAddonMessage nor
--- ChatThrottleLib will truncate an oversized message for us).
 local MAX_MESSAGE_LEN = 255
 
--- Greedily packs `ids` into as few "tag|chunkIndex|totalChunks|id1|id2|..." messages
--- as fit under MAX_MESSAGE_LEN. A veteran character's unreached/reached id list has
--- no natural upper bound, so this can't be a single message the way it used to be.
--- chunkIndex/totalChunks let the receiver (AchievementActionForm.OnReceived) know
--- when it has everything, regardless of delivery order. Always emits at least one
--- message — even for an empty id list — so the requester gets a definitive "you
--- have none of these" answer instead of waiting out the popup's timeout.
 local function BuildChunkedMessages(tag, ids)
     local groups = { {} }
     for _, id in ipairs(ids) do
         local g = groups[#groups]
         local candidate = (#g == 0) and id or (table.concat(g, "|") .. "|" .. id)
-        -- Reserve room for "tag|<idx>|<total>|" ahead of the ids; idx/total stay
-        -- small in practice, so a flat reserve is safe.
         if #g > 0 and (#candidate + #tag + 8) > MAX_MESSAGE_LEN then
             table.insert(groups, { id })
         else
@@ -45,12 +31,10 @@ local function BuildChunkedMessages(tag, ids)
     return messages
 end
 
--- Parses a "tag|chunkIndex|totalChunks|id1|id2|..." message. Returns nil if
--- `message` isn't a chunk of `tag` at all.
 local function ParseChunkedMessage(tag, message)
     if not message:match("^" .. tag .. "|%d+|%d+") then return nil end
     local parts = SchlingelInc:ParsePipeMessage(message)
-    table.remove(parts, 1) -- tag
+    table.remove(parts, 1)
     local chunkIndex = tonumber(table.remove(parts, 1))
     local totalChunks = tonumber(table.remove(parts, 1))
     return chunkIndex, totalChunks, parts
@@ -77,7 +61,6 @@ local function ResolveStores(id)
     local otherUnlocked  = useGlobal and SchlingelOwnAchievements.unlocked or SchlingelAchievementDB.globalUnlocked
     local otherKill      = useGlobal and SchlingelOwnAchievements.killProgress or SchlingelAchievementDB.globalKillProgress
 
-    -- Keep progress when officers toggle an achievement between character/global scope.
     if unlockedStore[id] == nil and otherUnlocked[id] ~= nil then
         unlockedStore[id] = otherUnlocked[id]
     end
@@ -114,9 +97,6 @@ function Progress:GetUnlockedAt(id)
     return unlockedStore[id]
 end
 
--- Sum of points for every currently-unlocked achievement that still exists in the
--- catalog. Computed live so an officer editing an entry's points retroactively
--- updates everyone's score consistently.
 function Progress:GetScore()
     local total = 0
     for _, id in ipairs(Progress:GetUnlockedIds()) do
@@ -128,10 +108,6 @@ function Progress:GetScore()
     return total
 end
 
--- Returns (currentRank, nextRank) for an arbitrary score — used both for the local
--- player's own rank and for computing another player's rank from their broadcast
--- achievementScore (the rank name itself never needs to go over the wire, since
--- every client derives it from the same Constants.ACHIEVEMENT_RANKS table).
 function Progress:GetRankForScore(score)
     local current, nextRank
     for _, rank in ipairs(SchlingelInc.Constants.ACHIEVEMENT_RANKS) do
@@ -160,8 +136,6 @@ function Progress:IncrementKillProgress(id)
     return newCount
 end
 
--- Marks id unlocked (idempotent), shows a personal popup + sound, and re-broadcasts
--- the guild profile so the updated score reaches the guild via the normal sync path.
 function Progress:Unlock(id)
     if Progress:IsUnlocked(id) then return false end
     local entry = SchlingelInc.Achievements.Catalog:Get(id)
@@ -183,8 +157,6 @@ function Progress:Unlock(id)
     return true
 end
 
--- Removes an unlock from the local character/account, clearing any stored kill
--- progress alongside it so a mistaken grant does not immediately reappear.
 function Progress:Revoke(id)
     EnsureStores()
 
@@ -207,11 +179,6 @@ function Progress:Revoke(id)
     return true
 end
 
--- Achievement kinds an officer can manually grant (mirrors ManualGrant's allow-list).
--- Own not-yet-unlocked grantable achievement ids, for the achievement-grant popup.
--- Sending the "still missing" set rather than the "already have" set keeps the
--- response short for veteran characters, who are exactly the ones with the most
--- unlocked achievements to otherwise list.
 local function OwnUnreachedGrantableIds()
     local ids = {}
     for _, entry in ipairs(SchlingelInc.Achievements.Catalog:GetActive()) do
@@ -222,8 +189,6 @@ local function OwnUnreachedGrantableIds()
     return ids
 end
 
--- Own currently unlocked grantable achievement ids, including retired entries so
--- officers can still remove achievements that are no longer obtainable.
 local function OwnReachedGrantableIds()
     local ids = {}
     for _, entry in ipairs(SchlingelInc.Achievements.Catalog:GetAll()) do
@@ -234,16 +199,11 @@ local function OwnReachedGrantableIds()
     return ids
 end
 
--- Officer action: ask targetName's client which grantable achievements it hasn't
--- unlocked yet. The response arrives asynchronously via HandleMessage and is routed
--- to the achievement-grant popup if it's still open for this target.
 function Progress:RequestUnreached(targetName)
     if not targetName or targetName == "" then return end
     SchlingelInc:SendAddonMessage(MSG_UNREACHED_REQUEST, "WHISPER", targetName)
 end
 
--- Officer action: ask targetName's client which grantable achievements it currently
--- has unlocked, so the revoke popup can offer only removable entries.
 function Progress:RequestReached(targetName)
     if not targetName or targetName == "" then return end
     SchlingelInc:SendAddonMessage(MSG_REACHED_REQUEST, "WHISPER", targetName)

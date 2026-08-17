@@ -1,7 +1,5 @@
 -- interfaces/popups/AchievementActionForm.lua
--- Shared builder for the officer "grant"/"revoke" achievement popups: a small
--- scrollable card list of eligible achievements for a target player, populated
--- once their eligibility status arrives over the wire (see cfg.requestEligibility).
+-- Shared builder for the officer "grant"/"revoke" achievement popups.
 
 SchlingelInc.Popup = SchlingelInc.Popup or {}
 
@@ -109,23 +107,6 @@ local function BuildForm(frameName, positionKey)
     return f
 end
 
--- cfg = {
---   popupKey          : string    -- SchlingelInc.Popup[popupKey] stores the built form frame
---   frameName         : string
---   positionKey       : string
---   confirmDialogKey  : string    -- StaticPopupDialogs key, registered once here
---   confirmText       : string    -- e.g. "Erfolg \"%s\" an %s verleihen?"
---   confirmButton     : string
---   titlePrefix       : string    -- e.g. "Erfolg verleihen: "
---   getEntries        : function() -> array of achievement entries (Catalog:GetActive/:GetAll)
---   eligibleSetField  : string    -- field on f holding the id->true set once it arrives
---   isEligible        : function(f, entry) -> bool, using eligibleSetField
---   emptyWithSet      : string    -- shown once the set arrived but nothing qualifies
---   emptyNoSet        : string    -- shown while still waiting on the set
---   requestEligibility: function(targetName)
---   performAction     : function(targetName, id)
--- }
--- Returns { Show = function(targetName), OnReceived = function(senderShort, ids) }
 function SchlingelInc.Popup.CreateAchievementActionForm(cfg)
     local currentTarget = nil
 
@@ -206,9 +187,6 @@ function SchlingelInc.Popup.CreateAchievementActionForm(cfg)
             f.timeoutTimer = nil
             if currentTarget ~= targetName or f[cfg.eligibleSetField] then return end
 
-            -- Eligibility responses can arrive as several chunked messages (see
-            -- Progress.lua's BuildChunkedMessages). If some already arrived before
-            -- the timeout, show that partial result rather than nothing.
             local pending = f.pendingChunks
             if pending and pending.receivedCount > 0 then
                 f[cfg.eligibleSetField] = pending.mergedSet
@@ -221,23 +199,19 @@ function SchlingelInc.Popup.CreateAchievementActionForm(cfg)
         end)
     end
 
-    -- Routes an incoming eligibility response chunk to the popup if it's still open
-    -- for this sender; stale responses (form closed or reopened for someone else)
-    -- are ignored. Merges chunks by index (order-independent) and only finalizes
-    -- once every chunk in the batch has arrived.
     local function OnReceived(senderShort, chunkIndex, totalChunks, ids)
         local f = SchlingelInc.Popup[cfg.popupKey]
         if not f or not f:IsShown() or currentTarget ~= senderShort then return end
 
         local pending = f.pendingChunks
-        if not pending or pending.received[chunkIndex] then return end -- stale popup or duplicate chunk
+        if not pending or pending.received[chunkIndex] then return end
 
         pending.received[chunkIndex] = true
         pending.receivedCount = pending.receivedCount + 1
         pending.total = totalChunks
         for _, id in ipairs(ids) do pending.mergedSet[id] = true end
 
-        if pending.receivedCount < pending.total then return end -- still waiting on more chunks
+        if pending.receivedCount < pending.total then return end
 
         if f.timeoutTimer then f.timeoutTimer:Cancel() f.timeoutTimer = nil end
         f[cfg.eligibleSetField] = pending.mergedSet

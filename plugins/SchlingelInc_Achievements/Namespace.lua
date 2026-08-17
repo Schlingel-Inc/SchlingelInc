@@ -1,19 +1,12 @@
 -- Namespace.lua
 -- Namespace, shared constants, and SavedVariable init for the Achievements framework.
--- Loaded first; all other files in this addon depend on these values.
---
--- Catalog (achievement definitions) is account-wide: officers create/edit/retire
--- entries and broadcast them to the guild, so every character on the account shares
--- the same catalog without re-syncing per alt.
--- Progress is mixed: entries with `isGlobal` are account-wide (all characters),
--- while non-global entries stay per-character.
 
 SchlingelInc.Achievements = {}
 
 SchlingelInc.Achievements.KIND = {
-    LEVEL      = "level",       -- criteria: level (threshold), requireNoDeath (bool)
-    KILL_COUNT = "kill_count",  -- criteria: npcID, count (required kills)
-    MANUAL     = "manual",      -- no criteria; only unlockable via officer grant (RP achievements)
+    LEVEL      = "level",
+    KILL_COUNT = "kill_count",
+    MANUAL     = "manual",
 }
 
 SchlingelInc.Achievements.KIND_LABELS = {
@@ -22,8 +15,6 @@ SchlingelInc.Achievements.KIND_LABELS = {
     [SchlingelInc.Achievements.KIND.MANUAL]     = "Manuell (RP)",
 }
 
--- Coerces a stored boolean-ish value (Lua true, or "1"/1 from wire/SavedVariables
--- round-trips) to an actual boolean. Used for isGlobal, requireNoDeath, etc.
 function SchlingelInc.Achievements.IsTruthyFlag(value)
     return value == true or value == 1 or value == "1"
 end
@@ -34,13 +25,13 @@ function SchlingelInc.Achievements.IsGrantableKind(kind)
 end
 
 SchlingelAchievementDB         = SchlingelAchievementDB         or {}
-SchlingelAchievementDB.entries = SchlingelAchievementDB.entries or {} -- [id] = definition
-SchlingelAchievementDB.globalUnlocked     = SchlingelAchievementDB.globalUnlocked     or {} -- [id] = timestamp
-SchlingelAchievementDB.globalKillProgress = SchlingelAchievementDB.globalKillProgress or {} -- [id] = count
+SchlingelAchievementDB.entries = SchlingelAchievementDB.entries or {}
+SchlingelAchievementDB.globalUnlocked     = SchlingelAchievementDB.globalUnlocked     or {}
+SchlingelAchievementDB.globalKillProgress = SchlingelAchievementDB.globalKillProgress or {}
 
 SchlingelOwnAchievements               = SchlingelOwnAchievements               or {}
-SchlingelOwnAchievements.unlocked      = SchlingelOwnAchievements.unlocked      or {} -- [id] = timestamp
-SchlingelOwnAchievements.killProgress  = SchlingelOwnAchievements.killProgress  or {} -- [id] = count
+SchlingelOwnAchievements.unlocked      = SchlingelOwnAchievements.unlocked      or {}
+SchlingelOwnAchievements.killProgress  = SchlingelOwnAchievements.killProgress  or {}
 
 function SchlingelInc.Achievements:Initialize()
     SchlingelInc.Achievements.AchievementList:Initialize()

@@ -1,9 +1,5 @@
 -- GuildPanel/TabAchievements.lua
--- "Erfolge" tab: read-only view of the shared achievement catalog with the local
--- player's own unlock state. Locked entries are shown in a grayish font; unlocked
--- entries show their unlock date. A retired entry only remains visible here if the
--- local player already unlocked it (otherwise it's no longer obtainable and clutters
--- the list for no reason).
+-- "Erfolge" tab: read-only view of the shared achievement catalog and own unlock state.
 
 local GP = SchlingelInc.GuildPanel
 
@@ -121,7 +117,6 @@ local RANK_BAR_H = 76
 local REFRESH_COOLDOWN_SECONDS = 30
 
 function GP.BuildAchievementsTab(content)
-    -- ── Rank + progress bar ──────────────────────────────────────────────────
     local rankFs = content:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     rankFs:SetPoint("TOPLEFT", content, "TOPLEFT", 4, -24)
     rankFs:SetJustifyH("LEFT")

@@ -1,8 +1,5 @@
 -- OfficerPanel/TabAchievements.lua
 -- Officer-facing achievement catalog management: create/edit/retire definitions.
--- Shows every entry, including retired ones (with a "Eingestellt" badge), since
--- officers need the full picture to manage the catalog — unlike the member-facing
--- GuildPanel tab, which hides not-yet-earned retired entries.
 
 local OfficerPanel = SchlingelInc.OfficerPanel
 
