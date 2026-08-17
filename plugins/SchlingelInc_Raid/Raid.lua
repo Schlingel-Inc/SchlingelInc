@@ -68,19 +68,6 @@ local function IsValidRole(role)
     return false
 end
 
-local ROLE_CAPS = { Tank = 2, Heal = 2 }
-
--- Count of `role` signals for this entry, excluding `excludeName` — so a player
--- re-confirming or switching to their own already-held role isn't blocked by
--- their own prior signup.
-local function CountRoleExcluding(id, role, excludeName)
-    local count = 0
-    for name, signal in pairs(SchlingelRaidDB.signals[id] or {}) do
-        if signal.role == role and name ~= excludeName then count = count + 1 end
-    end
-    return count
-end
-
 local function IsEntryActive(entry)
     if not entry or entry.cancelled then return false end
     return time() - entry.timestamp <= EXPIRE_GRACE_SECONDS
@@ -134,11 +121,8 @@ end
 
 -- ── Outgoing messages ────────────────────────────────────────────────────────────
 
--- Bypasses SchlingelInc:SendAddonMessage's direct-send attempt, which races the
--- same client-wide throttle every other module's messages use. Relay traffic is
--- bursty enough that it should always go straight through CTL instead.
 local function SendRelayMessage(payload)
-    ChatThrottleLib:SendAddonMessage("BULK", SchlingelInc.prefix, payload, "GUILD", nil, "SchlingelInc-RaidRelay")
+    SchlingelInc:SendAddonMessage(payload, "GUILD", nil)
 end
 
 local function BroadcastPost(entry, isRelay)
@@ -240,11 +224,6 @@ function SchlingelInc.Raid:Signal(id, role)
     if not entry or not IsEntryActive(entry) then return nil, "Raid nicht (mehr) aktiv." end
     if not IsValidRole(role) then return nil, "Ungültige Rolle." end
 
-    local cap = ROLE_CAPS[role]
-    if cap and CountRoleExcluding(id, role, OwnName()) >= cap then
-        return nil, role .. "-Plätze sind bereits voll."
-    end
-
     local signal = { role = role, updatedAt = time() }
     SchlingelRaidDB.signals[id] = SchlingelRaidDB.signals[id] or {}
     SchlingelRaidDB.signals[id][OwnName()] = signal
@@ -268,23 +247,11 @@ function SchlingelInc.Raid:AddParticipant(id, name, role)
     if name == "" then return nil, "Name darf nicht leer sein." end
     if not IsValidRole(role) then return nil, "Ungültige Rolle." end
 
-    local cap = ROLE_CAPS[role]
-    if cap and CountRoleExcluding(id, role, name) >= cap then
-        return nil, role .. "-Plätze sind bereits voll."
-    end
-
     local signal = { role = role, updatedAt = time() }
     SchlingelRaidDB.signals[id] = SchlingelRaidDB.signals[id] or {}
     SchlingelRaidDB.signals[id][name] = signal
     BroadcastSignal(id, signal, name)
     return true
-end
-
--- excludeName's own existing signal (if any) doesn't count against the cap, so
--- they can still see/keep/switch back to a role they already hold.
-function SchlingelInc.Raid:IsRoleFull(id, role, excludeName)
-    local cap = ROLE_CAPS[role]
-    return cap ~= nil and CountRoleExcluding(id, role, excludeName) >= cap
 end
 
 function SchlingelInc.Raid:RemoveParticipant(id, name)
@@ -475,15 +442,4 @@ function SchlingelInc.Raid:Initialize()
             if prefix ~= SchlingelInc.prefix then return end
             SchlingelInc.Raid:HandleMessage(message, sender)
         end, 0, "RaidAddonMessage")
-
-    -- Login/reload only, not every PLAYER_ENTERING_WORLD (also fires on zoning etc.)
-    SchlingelInc.EventManager:RegisterHandler("PLAYER_ENTERING_WORLD",
-        function(_, isInitialLogin, isReloadingUi)
-            if not (isInitialLogin or isReloadingUi) then return end
-            C_Timer.After(6, function()
-                if IsInGuild() then
-                    SchlingelInc.Raid:RequestSync()
-                end
-            end)
-        end, 0, "RaidRequestSync")
 end

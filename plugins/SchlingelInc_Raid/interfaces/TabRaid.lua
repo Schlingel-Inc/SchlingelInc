@@ -15,9 +15,10 @@ local CARD_PAD     = 8
 local ROW_H        = 16
 local COL_GAP      = 4
 local COL_HEADER_H = 12
-local SIGNUP_SLOTS = 10 -- raids are 10-man; no headroom needed
+local SIGNUP_SLOTS = 40 -- no per-role or total cap; generous pool so any real-world signup count still renders
 local ROWS_PER_SUBCOL = 3
 local SUBCOL_GAP   = 3
+local REFRESH_COOLDOWN_SECONDS = 30
 -- DPS normally wraps into 2 name-columns (6 DD in 10-man), Tank/Heal stay single
 -- -column, so DPS gets twice the width instead of an equal three-way split.
 local COL_WEIGHTS  = { Tank = 1, Heal = 1, DPS = 2 }
@@ -321,23 +322,14 @@ local function UpdateCard(card, cardW, entry)
 
         height = height + 6
 
-        -- Raid is full: hide the join button unless this player already has a
-        -- signal of their own to change or withdraw.
-        local showSignupBtn = ownSignal or #signups < SIGNUP_SLOTS
-        if showSignupBtn then
-            card.signupBtn:ClearAllPoints()
-            card.signupBtn:SetPoint("TOPLEFT", card, "TOPLEFT", CARD_PAD, -height)
-            card.signupBtn:SetText(ownSignal and "Zusage ändern" or "Zusagen")
-            card.signupBtn:Show()
-        end
+        card.signupBtn:ClearAllPoints()
+        card.signupBtn:SetPoint("TOPLEFT", card, "TOPLEFT", CARD_PAD, -height)
+        card.signupBtn:SetText(ownSignal and "Zusage ändern" or "Zusagen")
+        card.signupBtn:Show()
 
         if isOwn then
             card.editBtn:ClearAllPoints()
-            if showSignupBtn then
-                card.editBtn:SetPoint("LEFT", card.signupBtn, "RIGHT", 6, 0)
-            else
-                card.editBtn:SetPoint("TOPLEFT", card, "TOPLEFT", CARD_PAD, -height)
-            end
+            card.editBtn:SetPoint("LEFT", card.signupBtn, "RIGHT", 6, 0)
             card.editBtn:Show()
 
             card.cancelBtn:ClearAllPoints()
@@ -350,12 +342,9 @@ local function UpdateCard(card, cardW, entry)
 
             height = height + 20 + 6
 
-            -- Raid is full: no more manual participants can be added.
-            if #signups < SIGNUP_SLOTS then
-                card.addParticipantBtn:ClearAllPoints()
-                card.addParticipantBtn:SetPoint("TOPLEFT", card, "TOPLEFT", CARD_PAD, -height)
-                card.addParticipantBtn:Show()
-            end
+            card.addParticipantBtn:ClearAllPoints()
+            card.addParticipantBtn:SetPoint("TOPLEFT", card, "TOPLEFT", CARD_PAD, -height)
+            card.addParticipantBtn:Show()
         end
 
         height = height + 20 + CARD_PAD
@@ -366,6 +355,15 @@ local function UpdateCard(card, cardW, entry)
 end
 
 function GP.BuildRaidTab(content)
+    local refreshBtn = CreateFrame("Button", nil, content, "UIPanelButtonTemplate")
+    refreshBtn:SetSize(100, 22)
+    refreshBtn:SetPoint("TOPRIGHT", content, "TOPRIGHT", -100, -2)
+    refreshBtn:SetText("Aktualisieren")
+    refreshBtn:SetScript("OnClick", function()
+        SchlingelInc.Raid:RequestSync()
+        refreshBtn:Disable()
+        C_Timer.After(REFRESH_COOLDOWN_SECONDS, function() refreshBtn:Enable() end)
+    end)
     local postBtn = CreateFrame("Button", nil, content, "UIPanelButtonTemplate")
     postBtn:SetSize(100, 22)
     postBtn:SetPoint("TOPRIGHT", content, "TOPRIGHT", 0, -2)
@@ -404,6 +402,9 @@ function GP.BuildRaidTab(content)
     local cardsByEntryId = {}
     -- released cards, available for the next new entry id
     local freeCards = {}
+    -- category headers, recreated each refresh (small bounded set, one per instance)
+    local headers = {}
+    local collapsedInstances = SchlingelInc.UI.NewCollapsedState(SchlingelInc.Raid.Constants.RAID_INSTANCES)
 
     local function AcquireCard(cardW)
         local card = table.remove(freeCards)
@@ -416,6 +417,9 @@ function GP.BuildRaidTab(content)
 
     local function Refresh()
         emptyMsg:Hide()
+
+        for _, h in ipairs(headers) do h:Hide() end
+        wipe(headers)
 
         local cardW = math.max(1, scrollFrame:GetWidth())
         scrollChild:SetWidth(cardW)
@@ -445,17 +449,47 @@ function GP.BuildRaidTab(content)
             end
         end
 
-        local yOff = 0
+        local groups = {}
         for _, entry in ipairs(entries) do
-            local card = cardsByEntryId[entry.id]
-            if not card then
-                card = AcquireCard(cardW)
-                cardsByEntryId[entry.id] = card
+            groups[entry.instance] = groups[entry.instance] or {}
+            table.insert(groups[entry.instance], entry)
+        end
+
+        local instanceNames = {}
+        for name in pairs(groups) do table.insert(instanceNames, name) end
+        table.sort(instanceNames)
+
+        local yOff = 0
+        for _, instanceName in ipairs(instanceNames) do
+            local list = groups[instanceName]
+
+            local header = SchlingelInc.UI.CreateCollapsibleHeader(
+                scrollChild, cardW, instanceName, instanceName, #list, collapsedInstances, Refresh)
+            header:SetPoint("TOPLEFT", scrollChild, "TOPLEFT", 0, yOff)
+            table.insert(headers, header)
+            yOff = yOff - header:GetHeight() - 6
+
+            if not collapsedInstances[instanceName] then
+                for _, entry in ipairs(list) do
+                    local card = cardsByEntryId[entry.id]
+                    if not card then
+                        card = AcquireCard(cardW)
+                        cardsByEntryId[entry.id] = card
+                    end
+                    card:Show()
+                    local height = UpdateCard(card, cardW, entry)
+                    card:ClearAllPoints()
+                    card:SetPoint("TOPLEFT", scrollChild, "TOPLEFT", 0, yOff)
+                    yOff = yOff - height - CARD_GAP
+                end
+            else
+                for _, entry in ipairs(list) do
+                    local card = cardsByEntryId[entry.id]
+                    if card then card:Hide() end
+                end
             end
-            local height = UpdateCard(card, cardW, entry)
-            card:ClearAllPoints()
-            card:SetPoint("TOPLEFT", scrollChild, "TOPLEFT", 0, yOff)
-            yOff = yOff - height - CARD_GAP
+
+            yOff = yOff - 6
         end
 
         scrollChild:SetHeight(math.max(1, -yOff))

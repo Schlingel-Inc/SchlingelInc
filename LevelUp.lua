@@ -48,12 +48,8 @@ local function CacheOwnProgress()
     return entry
 end
 
--- Bypasses SchlingelInc:SendAddonMessage's direct-send attempt, which races the
--- same client-wide throttle every other module's messages use. The officer
--- Mitglieder-tab progress request fans out to every online member in quick
--- succession, so it should always go straight through CTL instead.
 local function SendProgressRequest(targetName)
-    ChatThrottleLib:SendAddonMessage("NORMAL", SchlingelInc.prefix, "PROGRESS_REQUEST", "WHISPER", targetName, "SchlingelInc-Progress")
+    SchlingelInc:SendAddonMessage("PROGRESS_REQUEST", "WHISPER", targetName)
 end
 
 local function SendProgressTo(targetName)

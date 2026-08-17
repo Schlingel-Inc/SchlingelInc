@@ -103,6 +103,7 @@ local function BuildForm(frameName, positionKey)
     f.scrollChild = scrollChild
 
     f.cards = {}
+    f.collapsedCategories = SchlingelInc.Achievements.NewCollapsedCategoryState()
 
     return f
 end
@@ -149,14 +150,31 @@ function SchlingelInc.Popup.CreateAchievementActionForm(cfg)
             table.insert(f.cards, msg)
             yOff = -20
         else
-            for _, entry in ipairs(eligible) do
-                local card = CreateCard(f.scrollChild, cardW, entry, function(selected)
-                    StaticPopup_Show(cfg.confirmDialogKey, selected.name, currentTarget,
-                        { target = currentTarget, id = selected.id })
-                end)
-                card:SetPoint("TOPLEFT", f.scrollChild, "TOPLEFT", 0, yOff)
-                table.insert(f.cards, card)
-                yOff = yOff - card:GetHeight() - CARD_GAP
+            local groups = SchlingelInc.Achievements.GroupByKind(eligible)
+
+            for _, kind in ipairs(SchlingelInc.Achievements.CATEGORY_ORDER) do
+                local list = groups[kind]
+                if list and #list > 0 then
+                    local header = SchlingelInc.Achievements.CreateCategoryHeader(
+                        f.scrollChild, cardW, kind, #list, f.collapsedCategories, function() Refresh(f) end)
+                    header:SetPoint("TOPLEFT", f.scrollChild, "TOPLEFT", 0, yOff)
+                    table.insert(f.cards, header)
+                    yOff = yOff - header:GetHeight() - 6
+
+                    if not f.collapsedCategories[kind] then
+                        for _, entry in ipairs(list) do
+                            local card = CreateCard(f.scrollChild, cardW, entry, function(selected)
+                                StaticPopup_Show(cfg.confirmDialogKey, selected.name, currentTarget,
+                                    { target = currentTarget, id = selected.id })
+                            end)
+                            card:SetPoint("TOPLEFT", f.scrollChild, "TOPLEFT", 0, yOff)
+                            table.insert(f.cards, card)
+                            yOff = yOff - card:GetHeight() - CARD_GAP
+                        end
+                    end
+
+                    yOff = yOff - 6
+                end
             end
         end
 

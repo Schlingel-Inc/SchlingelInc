@@ -7,7 +7,6 @@ addonLoadedFrame:SetScript("OnEvent", function(self, event, addonName)
             id = "raid",
             label = "Raid",
             onSelected = function()
-                SchlingelInc.Raid:RequestSync()
                 SchlingelInc.GuildPanel:RefreshRaid()
             end,
         }, SchlingelInc.GuildPanel.BuildRaidTab)

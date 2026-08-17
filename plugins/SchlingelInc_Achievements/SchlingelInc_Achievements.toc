@@ -12,6 +12,8 @@ LevelDetector.lua
 KillDetector.lua
 ManualGrant.lua
 
+interfaces\CategoryAccordion.lua
+
 interfaces\popups\AchievementAnnouncement.lua
 interfaces\popups\AchievementForm.lua
 interfaces\popups\AchievementActionForm.lua

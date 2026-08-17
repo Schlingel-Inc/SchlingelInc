@@ -10,8 +10,7 @@
 ## SavedVariables: DiscordHandle, Pronouns, SchlingelGuildProfileCache, SchlingelGuildDB, SchlingelProgressDB, SchlingelRaidDB, SchlingelAchievementDB
 
 # Notwendiges externe Abhängigkeiten aus dem Lib Folder
-## OptionalDeps: LibStub, CallbackHandler-1.0, LibDataBroker-1.1, LibDBIcon-1.0, ChatThrottleLib-1.0
-libs\ChatThrottleLib-1.0\ChatThrottleLib-1.0.lua
+## OptionalDeps: LibStub, CallbackHandler-1.0, LibDataBroker-1.1, LibDBIcon-1.0
 libs\LibStub\LibStub.lua
 libs\CallbackHandler-1.0\CallbackHandler-1.0.lua
 libs\libdatabroker-1-1\LibDataBroker-1.1.lua
@@ -35,6 +34,7 @@ GuildRecruitment.lua
 LevelUp.lua
 AnnouncementQueue.lua
 Broadcast.lua
+interfaces\CollapsibleHeader.lua
 interfaces\popups\GenericPopup.lua
 interfaces\popups\DeathAnnouncement.lua
 interfaces\popups\LevelUpAnnouncement.lua

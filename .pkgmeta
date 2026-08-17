@@ -3,3 +3,4 @@ manual-changelog: CHANGELOG.md
 
 move-folders:
     SchlingelInc/plugins/SchlingelInc_Raid: SchlingelInc_Raid
+    SchlingelInc/plugins/SchlingelInc_Achievements: SchlingelInc_Achievements

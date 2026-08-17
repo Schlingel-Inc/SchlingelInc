@@ -142,6 +142,7 @@ function OfficerPanel.BuildAchievementsTab(content)
     scrollFrame:SetScrollChild(scrollChild)
 
     local cards = {}
+    local collapsedCategories = SchlingelInc.Achievements.NewCollapsedCategoryState()
 
     local function Refresh()
         for _, c in ipairs(cards) do c:Hide() end
@@ -161,11 +162,27 @@ function OfficerPanel.BuildAchievementsTab(content)
             table.insert(cards, msg)
             yOff = -20
         else
-            for _, entry in ipairs(entries) do
-                local card = CreateCard(scrollChild, cardW, entry)
-                card:SetPoint("TOPLEFT", scrollChild, "TOPLEFT", 0, yOff)
-                table.insert(cards, card)
-                yOff = yOff - card:GetHeight() - CARD_GAP
+            local groups = SchlingelInc.Achievements.GroupByKind(entries)
+            for _, kind in ipairs(SchlingelInc.Achievements.CATEGORY_ORDER) do
+                local list = groups[kind]
+                if list and #list > 0 then
+                    local header = SchlingelInc.Achievements.CreateCategoryHeader(
+                        scrollChild, cardW, kind, #list, collapsedCategories, Refresh)
+                    header:SetPoint("TOPLEFT", scrollChild, "TOPLEFT", 0, yOff)
+                    table.insert(cards, header)
+                    yOff = yOff - header:GetHeight() - 6
+
+                    if not collapsedCategories[kind] then
+                        for _, entry in ipairs(list) do
+                            local card = CreateCard(scrollChild, cardW, entry)
+                            card:SetPoint("TOPLEFT", scrollChild, "TOPLEFT", 0, yOff)
+                            table.insert(cards, card)
+                            yOff = yOff - card:GetHeight() - CARD_GAP
+                        end
+                    end
+
+                    yOff = yOff - 6
+                end
             end
         end
 

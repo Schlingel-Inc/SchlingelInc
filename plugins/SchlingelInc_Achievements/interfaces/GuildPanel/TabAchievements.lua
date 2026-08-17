@@ -40,6 +40,19 @@ local function VisibleEntries()
     return out
 end
 
+local function CategoryPoints(list)
+    local Progress = SchlingelInc.Achievements.Progress
+    local current, max = 0, 0
+    for _, entry in ipairs(list) do
+        local points = tonumber(entry.points) or 0
+        max = max + points
+        if entry.id and Progress:IsUnlocked(entry.id) then
+            current = current + points
+        end
+    end
+    return current, max
+end
+
 local function CreateCard(parent, cardW, entry)
     if type(entry) ~= "table" then return nil end
 
@@ -189,6 +202,7 @@ function GP.BuildAchievementsTab(content)
     scrollFrame:SetScrollChild(scrollChild)
 
     local cards = {}
+    local collapsedCategories = SchlingelInc.Achievements.NewCollapsedCategoryState()
 
     local function Refresh()
         RefreshRank()
@@ -210,12 +224,29 @@ function GP.BuildAchievementsTab(content)
             table.insert(cards, msg)
             yOff = -20
         else
-            for _, entry in ipairs(entries) do
-                local card = CreateCard(scrollChild, cardW, entry)
-                if card then
-                    card:SetPoint("TOPLEFT", scrollChild, "TOPLEFT", 0, yOff)
-                    table.insert(cards, card)
-                    yOff = yOff - card:GetHeight() - CARD_GAP
+            local groups = SchlingelInc.Achievements.GroupByKind(entries)
+            for _, kind in ipairs(SchlingelInc.Achievements.CATEGORY_ORDER) do
+                local list = groups[kind]
+                if list and #list > 0 then
+                    local current, max = CategoryPoints(list)
+                    local header = SchlingelInc.Achievements.CreateCategoryHeader(
+                        scrollChild, cardW, kind, #list, collapsedCategories, Refresh, { current = current, max = max })
+                    header:SetPoint("TOPLEFT", scrollChild, "TOPLEFT", 0, yOff)
+                    table.insert(cards, header)
+                    yOff = yOff - header:GetHeight() - 6
+
+                    if not collapsedCategories[kind] then
+                        for _, entry in ipairs(list) do
+                            local card = CreateCard(scrollChild, cardW, entry)
+                            if card then
+                                card:SetPoint("TOPLEFT", scrollChild, "TOPLEFT", 0, yOff)
+                                table.insert(cards, card)
+                                yOff = yOff - card:GetHeight() - CARD_GAP
+                            end
+                        end
+                    end
+
+                    yOff = yOff - 6
                 end
             end
         end

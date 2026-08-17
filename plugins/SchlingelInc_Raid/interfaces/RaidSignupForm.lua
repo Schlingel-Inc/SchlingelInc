@@ -205,26 +205,6 @@ function SchlingelInc.Popup:ShowRaidSignup(entry, existingSignal)
         for _, r in ipairs(SchlingelInc.Constants.ROLES) do table.insert(choices, r) end
     end
 
-    -- Don't offer a role that's already at its cap, unless it's the one this
-    -- player already holds (so they can still keep/re-confirm it).
-    local available = {}
-    for _, r in ipairs(choices) do
-        local isOwnRole = existingSignal and existingSignal.role == r
-        if isOwnRole or not SchlingelInc.Raid:IsRoleFull(entry.id, r, UnitName("player")) then
-            table.insert(available, r)
-        end
-    end
-    choices = available
-
-    if #choices == 0 then
-        f.soloFs:Show()
-        f.soloFs:SetText("|cff888888Keine Rolle mehr frei.|r")
-        for _, b in ipairs(f.roleBtns) do b:Hide() end
-        f.selectedRole = nil
-        f:Show()
-        return
-    end
-
     ApplyRoleChoices(f, choices, existingSignal and existingSignal.role or nil)
 
     f:Show()
