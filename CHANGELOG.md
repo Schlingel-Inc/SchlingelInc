@@ -1,3 +1,13 @@
+# 4.3.0
+
+- Erfolge-Sub-Addon (SchlingelInc_Achievements) angelegt: Erfolge-Modul in ein optionales Sub-Addon ausgelagert, analog zu SchlingelInc_Raid. Dabei auch einen Wire-Protokoll-Bug behoben, der Katalog-Einträge mit langen Namen/Beschreibungen nicht mehr vollständig synchronisieren konnte.
+- Erfolge-Tab (Gilden- und Offizier-Panel) sowie Verleihen-/Entziehen-Popups gruppieren Erfolge jetzt nach Art (Level/Kill-Zähler/Manuell), einklappbar und standardmäßig eingeklappt. Gildenpanel zeigt zusätzlich einen Punkte-Fortschrittsbalken pro Kategorie.
+- Raid-Tab gruppiert Postings jetzt nach Instanz (alphabetisch sortiert), einklappbar und standardmäßig eingeklappt.
+- Raid: Tank/Heal-Zusagelimits und die 10er-Gesamtgrenze entfernt, beliebig viele Zusagen pro Rolle sind jetzt möglich.
+- Raid-Sync ist jetzt komplett manuell über den "Aktualisieren"-Button, kein automatischer Sync mehr bei Login oder Tab-Öffnen (analog zum Erfolge-Tab).
+- Bugfix: /who schloss sich bei jedem Aufruf sofort wieder, weil der interne Offiziers-Online-Check das Fenster ungefragt zugemacht hat – betraf auch manuelle /who-Aufrufe im Chat.
+- ChatThrottleLib komplett entfernt, alle Addon-Nachrichten laufen jetzt über den eigenen Direktversand ohne CTL-Fallback.
+
 # 4.2.9
 
 - Todesmeldungen im Raid wieder vollständig unterdrückt (Gildenchat + Popup), nicht mehr nur das Popup

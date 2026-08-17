@@ -67,6 +67,7 @@ Ein gildenweiter Erfolge-Katalog im Gildenpanel ("Erfolge"-Tab), mit dem eigenen
 - **RP-Erfolge:** Keine automatischen Kriterien – werden von Offizieren per Rechtsklick im Mitglieder-Tab manuell verliehen
 
 **Weitere Features:**
+- Erfolge sind im Gildenpanel nach Art gruppiert (Level/Kill-Zähler/RP), einklappbar, inklusive Punkte-Fortschrittsbalken pro Kategorie
 - Jeder Erfolg gibt Punkte, die zu einer Erfolge-Punktzahl aufsummiert werden – sichtbar im Gildenprofil und im Spieler-Tooltip, inklusive Rang (z.B. "Schlingel-Neuling" bis "Schlingel-Legende")
 - Offiziere verwalten den Katalog über einen eigenen "Erfolge"-Tab im Offizier-Panel (anlegen, bearbeiten, einstellen) – die ab Werk vorhandenen Level-Meilensteine sind als Systemerfolge geschützt und können nicht verändert werden
 - Erfolge können pro Charakter oder "Global" (account-weit) laufen
@@ -118,8 +119,9 @@ Ein "Raid"-Tab im Gildenpanel zum unkomplizierten Organisieren von Raids innerha
 
 **Features:**
 - Raids posten mit Titel, Instanz, Datum/Uhrzeit und optionaler Notiz
-- Per Klick mit Rolle zusagen
-- Einträge werden gildenweit synchronisiert und laufen nach dem Termin automatisch ab
+- Per Klick mit Rolle zusagen, ohne Limit pro Rolle oder insgesamt
+- Postings werden nach Instanz gruppiert (alphabetisch, einklappbar) angezeigt
+- Einträge werden gildenweit synchronisiert (per "Aktualisieren"-Button) und laufen nach dem Termin automatisch ab
 
 ### Schande-System
 
@@ -192,6 +194,8 @@ Das Addon nimmt beim Start automatisch einige Optimierungen vor.
 3. Starte WoW neu oder `/reload` in-game
 4. Minimap-Icon erscheint für schnellen Zugriff auf alle Funktionen
 
+> **Optionale Module:** Der Download enthält neben `SchlingelInc` auch `SchlingelInc_Raid` und `SchlingelInc_Achievements` als eigene Addon-Ordner. Beide sind optional und können unabhängig voneinander im Blizzard-AddOns-Menü deaktiviert werden, ohne den Rest des Addons zu beeinträchtigen.
+
 ---
 
 ## Einstellungen
@@ -261,7 +265,6 @@ Das Addon hat einige optionale Einstellungen die du im WoW Options-Menü unter "
 - CallbackHandler-1.0
 - LibDataBroker-1.1
 - LibDBIcon-1.0
-- ChatThrottleLib-1.0
 - AceConfig-3.0
 - AceGUI-3.0
 
